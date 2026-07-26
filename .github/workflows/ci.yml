@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Check for committed secrets
+        run: |
+          ! grep -RInE "(SUPABASE_SERVICE_ROLE|LOVABLE_API_KEY|BEGIN PRIVATE KEY|API_SECRET)" . \
+            --exclude-dir=.git \
+            --exclude=ci.yml
+
+      - name: Install mobile dependencies
+        run: flutter pub get
+        working-directory: apps/dayweft_mobile
+
+      - name: Install engine dependencies
+        run: dart pub get
+        working-directory: packages/adaptive_day_engine
+
+      - name: Install domain dependencies
+        run: dart pub get
+        working-directory: packages/dayweft_domain
+
+      - name: Install design system dependencies
+        run: flutter pub get
+        working-directory: packages/dayweft_design_system
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+        working-directory: apps/dayweft_mobile
+
+      - name: Verify formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Analyze mobile app
+        run: flutter analyze
+        working-directory: apps/dayweft_mobile
+
+      - name: Analyze engine
+        run: dart analyze
+        working-directory: packages/adaptive_day_engine
+
+      - name: Analyze domain
+        run: dart analyze
+        working-directory: packages/dayweft_domain
+
+      - name: Analyze design system
+        run: flutter analyze
+        working-directory: packages/dayweft_design_system
+
+      - name: Test mobile app with coverage
+        run: flutter test --coverage
+        working-directory: apps/dayweft_mobile
+
+      - name: Test engine
+        run: dart test
+        working-directory: packages/adaptive_day_engine
+
+      - name: Test domain
+        run: dart test
+        working-directory: packages/dayweft_domain
+
+      - name: Test design system
+        run: flutter test
+        working-directory: packages/dayweft_design_system
+
+      - name: Build Android debug
+        run: flutter build apk --debug
+        working-directory: apps/dayweft_mobile
+
+      - name: iOS build note
+        run: echo "iOS build is enabled once signing and Runner configuration are available."

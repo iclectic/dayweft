@@ -1,0 +1,35 @@
+{
+    "name": "Dayweft: Adaptive Day Planner",
+    "short_name": "Dayweft",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FAF7F0",
+    "theme_color": "#1F8A83",
+    "description": "A day that adapts with you.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
