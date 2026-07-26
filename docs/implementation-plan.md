@@ -41,6 +41,11 @@ Acceptance criteria:
 - Manual undo and revision history exist for local planning changes.
 - Widget, domain, database and accessibility tests cover the MVP.
 
+Current status:
+
+- Local-first onboarding, removable sample data, Drift-backed Today Timeline, Inbox, Brain Dump, parser confirmation, template preview/application, revision history and local undo are implemented.
+- Drag gestures, export/import and broader accessibility/golden coverage remain follow-up Phase 3 hardening work.
+
 ## Phase 4: Adaptive Engine, Reality Check And Reweave My Day
 
 Acceptance criteria:

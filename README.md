@@ -14,14 +14,18 @@ Dayweft is a privacy-first adaptive day planner for iOS and Android. It helps pe
   - `packages/dayweft_domain`
 - Initial Material 3 app shell.
 - Initial pure Dart domain and adaptive engine APIs.
-- Initial Drift database schema and migration entry point.
+- Drift database schema and migration entry point.
+- Local-first onboarding with removable sample data.
+- Today Timeline local MVP: create, edit, resize, reorder and delete blocks; create tasks in blocks; move tasks between blocks; complete tasks; revision history; undo for supported local changes.
+- Inbox local MVP: quick capture, Brain Dump, basic offline parsing with confirmation and moving inbox tasks into timeline blocks.
+- Template preview/application for starter templates without overwriting existing blocks.
 - Initial CI workflow for format, analysis, tests, coverage, secret scanning and Android build.
 
 ## Planned
 
-Most product functionality remains planned. The current scaffold is Phase 2 foundation work, not a complete planner.
+Most advanced product functionality remains planned. The current app is a local planning MVP, not a complete adaptive planner.
 
-Planned areas include Today Timeline editing, Reweave My Day, Reality Check, Inbox and Brain Dump, Quiet Focus, templates, calendar import, Your Rhythm, optional sync, sharing, biometric lock and app-store release preparation.
+Planned areas include full Reweave My Day alternatives, complete Adaptive Engine UI integration, advanced Reality Check, estimation calibration, energy-aware planning, Quiet Focus sessions, calendar import, Your Rhythm, optional sync, sharing, biometric lock, export/import and app-store release preparation.
 
 ## Development
 

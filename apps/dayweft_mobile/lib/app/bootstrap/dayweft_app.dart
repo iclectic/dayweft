@@ -1,5 +1,6 @@
 import 'package:dayweft_design_system/dayweft_design_system.dart';
 import 'package:dayweft_mobile/app/routing/app_router.dart';
+import 'package:dayweft_mobile/features/onboarding/presentation/onboarding_gate.dart';
 import 'package:flutter/material.dart';
 
 class DayweftApp extends StatelessWidget {
@@ -12,6 +13,7 @@ class DayweftApp extends StatelessWidget {
       theme: DayweftTheme.light(),
       darkTheme: DayweftTheme.dark(),
       routerConfig: appRouter,
+      builder: (context, child) => OnboardingGate(child: child),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -623,6 +623,638 @@ class DayPlansCompanion extends UpdateCompanion<DayPlan> {
   }
 }
 
+class $UserPreferencesTable extends UserPreferences
+    with TableInfo<$UserPreferencesTable, UserPreference> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserPreferencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _onboardingCompletedMeta =
+      const VerificationMeta('onboardingCompleted');
+  @override
+  late final GeneratedColumn<bool> onboardingCompleted = GeneratedColumn<bool>(
+    'onboarding_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("onboarding_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _sampleDataEnabledMeta = const VerificationMeta(
+    'sampleDataEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> sampleDataEnabled = GeneratedColumn<bool>(
+    'sample_data_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("sample_data_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _wakeTimeMeta = const VerificationMeta(
+    'wakeTime',
+  );
+  @override
+  late final GeneratedColumn<String> wakeTime = GeneratedColumn<String>(
+    'wake_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('07:00'),
+  );
+  static const VerificationMeta _windDownTimeMeta = const VerificationMeta(
+    'windDownTime',
+  );
+  @override
+  late final GeneratedColumn<String> windDownTime = GeneratedColumn<String>(
+    'wind_down_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('22:00'),
+  );
+  static const VerificationMeta _workStartTimeMeta = const VerificationMeta(
+    'workStartTime',
+  );
+  @override
+  late final GeneratedColumn<String> workStartTime = GeneratedColumn<String>(
+    'work_start_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('09:00'),
+  );
+  static const VerificationMeta _workEndTimeMeta = const VerificationMeta(
+    'workEndTime',
+  );
+  @override
+  late final GeneratedColumn<String> workEndTime = GeneratedColumn<String>(
+    'work_end_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('17:00'),
+  );
+  static const VerificationMeta _planningStyleMeta = const VerificationMeta(
+    'planningStyle',
+  );
+  @override
+  late final GeneratedColumn<String> planningStyle = GeneratedColumn<String>(
+    'planning_style',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('balanced'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    onboardingCompleted,
+    sampleDataEnabled,
+    wakeTime,
+    windDownTime,
+    workStartTime,
+    workEndTime,
+    planningStyle,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_preferences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UserPreference> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('onboarding_completed')) {
+      context.handle(
+        _onboardingCompletedMeta,
+        onboardingCompleted.isAcceptableOrUnknown(
+          data['onboarding_completed']!,
+          _onboardingCompletedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sample_data_enabled')) {
+      context.handle(
+        _sampleDataEnabledMeta,
+        sampleDataEnabled.isAcceptableOrUnknown(
+          data['sample_data_enabled']!,
+          _sampleDataEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wake_time')) {
+      context.handle(
+        _wakeTimeMeta,
+        wakeTime.isAcceptableOrUnknown(data['wake_time']!, _wakeTimeMeta),
+      );
+    }
+    if (data.containsKey('wind_down_time')) {
+      context.handle(
+        _windDownTimeMeta,
+        windDownTime.isAcceptableOrUnknown(
+          data['wind_down_time']!,
+          _windDownTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('work_start_time')) {
+      context.handle(
+        _workStartTimeMeta,
+        workStartTime.isAcceptableOrUnknown(
+          data['work_start_time']!,
+          _workStartTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('work_end_time')) {
+      context.handle(
+        _workEndTimeMeta,
+        workEndTime.isAcceptableOrUnknown(
+          data['work_end_time']!,
+          _workEndTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('planning_style')) {
+      context.handle(
+        _planningStyleMeta,
+        planningStyle.isAcceptableOrUnknown(
+          data['planning_style']!,
+          _planningStyleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UserPreference map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserPreference(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      onboardingCompleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}onboarding_completed'],
+      )!,
+      sampleDataEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}sample_data_enabled'],
+      )!,
+      wakeTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wake_time'],
+      )!,
+      windDownTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wind_down_time'],
+      )!,
+      workStartTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}work_start_time'],
+      )!,
+      workEndTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}work_end_time'],
+      )!,
+      planningStyle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}planning_style'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $UserPreferencesTable createAlias(String alias) {
+    return $UserPreferencesTable(attachedDatabase, alias);
+  }
+}
+
+class UserPreference extends DataClass implements Insertable<UserPreference> {
+  final String id;
+  final bool onboardingCompleted;
+  final bool sampleDataEnabled;
+  final String wakeTime;
+  final String windDownTime;
+  final String workStartTime;
+  final String workEndTime;
+  final String planningStyle;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const UserPreference({
+    required this.id,
+    required this.onboardingCompleted,
+    required this.sampleDataEnabled,
+    required this.wakeTime,
+    required this.windDownTime,
+    required this.workStartTime,
+    required this.workEndTime,
+    required this.planningStyle,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['onboarding_completed'] = Variable<bool>(onboardingCompleted);
+    map['sample_data_enabled'] = Variable<bool>(sampleDataEnabled);
+    map['wake_time'] = Variable<String>(wakeTime);
+    map['wind_down_time'] = Variable<String>(windDownTime);
+    map['work_start_time'] = Variable<String>(workStartTime);
+    map['work_end_time'] = Variable<String>(workEndTime);
+    map['planning_style'] = Variable<String>(planningStyle);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  UserPreferencesCompanion toCompanion(bool nullToAbsent) {
+    return UserPreferencesCompanion(
+      id: Value(id),
+      onboardingCompleted: Value(onboardingCompleted),
+      sampleDataEnabled: Value(sampleDataEnabled),
+      wakeTime: Value(wakeTime),
+      windDownTime: Value(windDownTime),
+      workStartTime: Value(workStartTime),
+      workEndTime: Value(workEndTime),
+      planningStyle: Value(planningStyle),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory UserPreference.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserPreference(
+      id: serializer.fromJson<String>(json['id']),
+      onboardingCompleted: serializer.fromJson<bool>(
+        json['onboardingCompleted'],
+      ),
+      sampleDataEnabled: serializer.fromJson<bool>(json['sampleDataEnabled']),
+      wakeTime: serializer.fromJson<String>(json['wakeTime']),
+      windDownTime: serializer.fromJson<String>(json['windDownTime']),
+      workStartTime: serializer.fromJson<String>(json['workStartTime']),
+      workEndTime: serializer.fromJson<String>(json['workEndTime']),
+      planningStyle: serializer.fromJson<String>(json['planningStyle']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'onboardingCompleted': serializer.toJson<bool>(onboardingCompleted),
+      'sampleDataEnabled': serializer.toJson<bool>(sampleDataEnabled),
+      'wakeTime': serializer.toJson<String>(wakeTime),
+      'windDownTime': serializer.toJson<String>(windDownTime),
+      'workStartTime': serializer.toJson<String>(workStartTime),
+      'workEndTime': serializer.toJson<String>(workEndTime),
+      'planningStyle': serializer.toJson<String>(planningStyle),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  UserPreference copyWith({
+    String? id,
+    bool? onboardingCompleted,
+    bool? sampleDataEnabled,
+    String? wakeTime,
+    String? windDownTime,
+    String? workStartTime,
+    String? workEndTime,
+    String? planningStyle,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => UserPreference(
+    id: id ?? this.id,
+    onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+    sampleDataEnabled: sampleDataEnabled ?? this.sampleDataEnabled,
+    wakeTime: wakeTime ?? this.wakeTime,
+    windDownTime: windDownTime ?? this.windDownTime,
+    workStartTime: workStartTime ?? this.workStartTime,
+    workEndTime: workEndTime ?? this.workEndTime,
+    planningStyle: planningStyle ?? this.planningStyle,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  UserPreference copyWithCompanion(UserPreferencesCompanion data) {
+    return UserPreference(
+      id: data.id.present ? data.id.value : this.id,
+      onboardingCompleted: data.onboardingCompleted.present
+          ? data.onboardingCompleted.value
+          : this.onboardingCompleted,
+      sampleDataEnabled: data.sampleDataEnabled.present
+          ? data.sampleDataEnabled.value
+          : this.sampleDataEnabled,
+      wakeTime: data.wakeTime.present ? data.wakeTime.value : this.wakeTime,
+      windDownTime: data.windDownTime.present
+          ? data.windDownTime.value
+          : this.windDownTime,
+      workStartTime: data.workStartTime.present
+          ? data.workStartTime.value
+          : this.workStartTime,
+      workEndTime: data.workEndTime.present
+          ? data.workEndTime.value
+          : this.workEndTime,
+      planningStyle: data.planningStyle.present
+          ? data.planningStyle.value
+          : this.planningStyle,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserPreference(')
+          ..write('id: $id, ')
+          ..write('onboardingCompleted: $onboardingCompleted, ')
+          ..write('sampleDataEnabled: $sampleDataEnabled, ')
+          ..write('wakeTime: $wakeTime, ')
+          ..write('windDownTime: $windDownTime, ')
+          ..write('workStartTime: $workStartTime, ')
+          ..write('workEndTime: $workEndTime, ')
+          ..write('planningStyle: $planningStyle, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    onboardingCompleted,
+    sampleDataEnabled,
+    wakeTime,
+    windDownTime,
+    workStartTime,
+    workEndTime,
+    planningStyle,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserPreference &&
+          other.id == this.id &&
+          other.onboardingCompleted == this.onboardingCompleted &&
+          other.sampleDataEnabled == this.sampleDataEnabled &&
+          other.wakeTime == this.wakeTime &&
+          other.windDownTime == this.windDownTime &&
+          other.workStartTime == this.workStartTime &&
+          other.workEndTime == this.workEndTime &&
+          other.planningStyle == this.planningStyle &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class UserPreferencesCompanion extends UpdateCompanion<UserPreference> {
+  final Value<String> id;
+  final Value<bool> onboardingCompleted;
+  final Value<bool> sampleDataEnabled;
+  final Value<String> wakeTime;
+  final Value<String> windDownTime;
+  final Value<String> workStartTime;
+  final Value<String> workEndTime;
+  final Value<String> planningStyle;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const UserPreferencesCompanion({
+    this.id = const Value.absent(),
+    this.onboardingCompleted = const Value.absent(),
+    this.sampleDataEnabled = const Value.absent(),
+    this.wakeTime = const Value.absent(),
+    this.windDownTime = const Value.absent(),
+    this.workStartTime = const Value.absent(),
+    this.workEndTime = const Value.absent(),
+    this.planningStyle = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UserPreferencesCompanion.insert({
+    required String id,
+    this.onboardingCompleted = const Value.absent(),
+    this.sampleDataEnabled = const Value.absent(),
+    this.wakeTime = const Value.absent(),
+    this.windDownTime = const Value.absent(),
+    this.workStartTime = const Value.absent(),
+    this.workEndTime = const Value.absent(),
+    this.planningStyle = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<UserPreference> custom({
+    Expression<String>? id,
+    Expression<bool>? onboardingCompleted,
+    Expression<bool>? sampleDataEnabled,
+    Expression<String>? wakeTime,
+    Expression<String>? windDownTime,
+    Expression<String>? workStartTime,
+    Expression<String>? workEndTime,
+    Expression<String>? planningStyle,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (onboardingCompleted != null)
+        'onboarding_completed': onboardingCompleted,
+      if (sampleDataEnabled != null) 'sample_data_enabled': sampleDataEnabled,
+      if (wakeTime != null) 'wake_time': wakeTime,
+      if (windDownTime != null) 'wind_down_time': windDownTime,
+      if (workStartTime != null) 'work_start_time': workStartTime,
+      if (workEndTime != null) 'work_end_time': workEndTime,
+      if (planningStyle != null) 'planning_style': planningStyle,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UserPreferencesCompanion copyWith({
+    Value<String>? id,
+    Value<bool>? onboardingCompleted,
+    Value<bool>? sampleDataEnabled,
+    Value<String>? wakeTime,
+    Value<String>? windDownTime,
+    Value<String>? workStartTime,
+    Value<String>? workEndTime,
+    Value<String>? planningStyle,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return UserPreferencesCompanion(
+      id: id ?? this.id,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      sampleDataEnabled: sampleDataEnabled ?? this.sampleDataEnabled,
+      wakeTime: wakeTime ?? this.wakeTime,
+      windDownTime: windDownTime ?? this.windDownTime,
+      workStartTime: workStartTime ?? this.workStartTime,
+      workEndTime: workEndTime ?? this.workEndTime,
+      planningStyle: planningStyle ?? this.planningStyle,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (onboardingCompleted.present) {
+      map['onboarding_completed'] = Variable<bool>(onboardingCompleted.value);
+    }
+    if (sampleDataEnabled.present) {
+      map['sample_data_enabled'] = Variable<bool>(sampleDataEnabled.value);
+    }
+    if (wakeTime.present) {
+      map['wake_time'] = Variable<String>(wakeTime.value);
+    }
+    if (windDownTime.present) {
+      map['wind_down_time'] = Variable<String>(windDownTime.value);
+    }
+    if (workStartTime.present) {
+      map['work_start_time'] = Variable<String>(workStartTime.value);
+    }
+    if (workEndTime.present) {
+      map['work_end_time'] = Variable<String>(workEndTime.value);
+    }
+    if (planningStyle.present) {
+      map['planning_style'] = Variable<String>(planningStyle.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserPreferencesCompanion(')
+          ..write('id: $id, ')
+          ..write('onboardingCompleted: $onboardingCompleted, ')
+          ..write('sampleDataEnabled: $sampleDataEnabled, ')
+          ..write('wakeTime: $wakeTime, ')
+          ..write('windDownTime: $windDownTime, ')
+          ..write('workStartTime: $workStartTime, ')
+          ..write('workEndTime: $workEndTime, ')
+          ..write('planningStyle: $planningStyle, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TimeBlocksTable extends TimeBlocks
     with TableInfo<$TimeBlocksTable, TimeBlock> {
   @override
@@ -1582,6 +2214,17 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -1590,6 +2233,17 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceIdMeta = const VerificationMeta(
+    'sourceId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceId = GeneratedColumn<String>(
+    'source_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _deadlineMeta = const VerificationMeta(
     'deadline',
@@ -1714,7 +2368,9 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     estimatedMinutes,
     actualMinutes,
     priority,
+    category,
     status,
+    sourceId,
     deadline,
     canSplit,
     minimumUsefulMinutes,
@@ -1797,6 +2453,12 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     } else if (isInserting) {
       context.missing(_priorityMeta);
     }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
@@ -1804,6 +2466,12 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
       );
     } else if (isInserting) {
       context.missing(_statusMeta);
+    }
+    if (data.containsKey('source_id')) {
+      context.handle(
+        _sourceIdMeta,
+        sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
+      );
     }
     if (data.containsKey('deadline')) {
       context.handle(
@@ -1915,10 +2583,18 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         DriftSqlType.string,
         data['${effectivePrefix}priority'],
       )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      ),
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      sourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_id'],
+      ),
       deadline: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deadline'],
@@ -1982,7 +2658,9 @@ class Task extends DataClass implements Insertable<Task> {
   final int estimatedMinutes;
   final int? actualMinutes;
   final String priority;
+  final String? category;
   final String status;
+  final String? sourceId;
   final DateTime? deadline;
   final bool canSplit;
   final int minimumUsefulMinutes;
@@ -2002,7 +2680,9 @@ class Task extends DataClass implements Insertable<Task> {
     required this.estimatedMinutes,
     this.actualMinutes,
     required this.priority,
+    this.category,
     required this.status,
+    this.sourceId,
     this.deadline,
     required this.canSplit,
     required this.minimumUsefulMinutes,
@@ -2033,7 +2713,13 @@ class Task extends DataClass implements Insertable<Task> {
       map['actual_minutes'] = Variable<int>(actualMinutes);
     }
     map['priority'] = Variable<String>(priority);
+    if (!nullToAbsent || category != null) {
+      map['category'] = Variable<String>(category);
+    }
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || sourceId != null) {
+      map['source_id'] = Variable<String>(sourceId);
+    }
     if (!nullToAbsent || deadline != null) {
       map['deadline'] = Variable<DateTime>(deadline);
     }
@@ -2075,7 +2761,13 @@ class Task extends DataClass implements Insertable<Task> {
           ? const Value.absent()
           : Value(actualMinutes),
       priority: Value(priority),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value(category),
       status: Value(status),
+      sourceId: sourceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceId),
       deadline: deadline == null && nullToAbsent
           ? const Value.absent()
           : Value(deadline),
@@ -2109,7 +2801,9 @@ class Task extends DataClass implements Insertable<Task> {
       estimatedMinutes: serializer.fromJson<int>(json['estimatedMinutes']),
       actualMinutes: serializer.fromJson<int?>(json['actualMinutes']),
       priority: serializer.fromJson<String>(json['priority']),
+      category: serializer.fromJson<String?>(json['category']),
       status: serializer.fromJson<String>(json['status']),
+      sourceId: serializer.fromJson<String?>(json['sourceId']),
       deadline: serializer.fromJson<DateTime?>(json['deadline']),
       canSplit: serializer.fromJson<bool>(json['canSplit']),
       minimumUsefulMinutes: serializer.fromJson<int>(
@@ -2138,7 +2832,9 @@ class Task extends DataClass implements Insertable<Task> {
       'estimatedMinutes': serializer.toJson<int>(estimatedMinutes),
       'actualMinutes': serializer.toJson<int?>(actualMinutes),
       'priority': serializer.toJson<String>(priority),
+      'category': serializer.toJson<String?>(category),
       'status': serializer.toJson<String>(status),
+      'sourceId': serializer.toJson<String?>(sourceId),
       'deadline': serializer.toJson<DateTime?>(deadline),
       'canSplit': serializer.toJson<bool>(canSplit),
       'minimumUsefulMinutes': serializer.toJson<int>(minimumUsefulMinutes),
@@ -2163,7 +2859,9 @@ class Task extends DataClass implements Insertable<Task> {
     int? estimatedMinutes,
     Value<int?> actualMinutes = const Value.absent(),
     String? priority,
+    Value<String?> category = const Value.absent(),
     String? status,
+    Value<String?> sourceId = const Value.absent(),
     Value<DateTime?> deadline = const Value.absent(),
     bool? canSplit,
     int? minimumUsefulMinutes,
@@ -2185,7 +2883,9 @@ class Task extends DataClass implements Insertable<Task> {
         ? actualMinutes.value
         : this.actualMinutes,
     priority: priority ?? this.priority,
+    category: category.present ? category.value : this.category,
     status: status ?? this.status,
+    sourceId: sourceId.present ? sourceId.value : this.sourceId,
     deadline: deadline.present ? deadline.value : this.deadline,
     canSplit: canSplit ?? this.canSplit,
     minimumUsefulMinutes: minimumUsefulMinutes ?? this.minimumUsefulMinutes,
@@ -2213,7 +2913,9 @@ class Task extends DataClass implements Insertable<Task> {
           ? data.actualMinutes.value
           : this.actualMinutes,
       priority: data.priority.present ? data.priority.value : this.priority,
+      category: data.category.present ? data.category.value : this.category,
       status: data.status.present ? data.status.value : this.status,
+      sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
       canSplit: data.canSplit.present ? data.canSplit.value : this.canSplit,
       minimumUsefulMinutes: data.minimumUsefulMinutes.present
@@ -2244,7 +2946,9 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('estimatedMinutes: $estimatedMinutes, ')
           ..write('actualMinutes: $actualMinutes, ')
           ..write('priority: $priority, ')
+          ..write('category: $category, ')
           ..write('status: $status, ')
+          ..write('sourceId: $sourceId, ')
           ..write('deadline: $deadline, ')
           ..write('canSplit: $canSplit, ')
           ..write('minimumUsefulMinutes: $minimumUsefulMinutes, ')
@@ -2260,7 +2964,7 @@ class Task extends DataClass implements Insertable<Task> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     dayPlanId,
     blockId,
@@ -2269,7 +2973,9 @@ class Task extends DataClass implements Insertable<Task> {
     estimatedMinutes,
     actualMinutes,
     priority,
+    category,
     status,
+    sourceId,
     deadline,
     canSplit,
     minimumUsefulMinutes,
@@ -2280,7 +2986,7 @@ class Task extends DataClass implements Insertable<Task> {
     createdAt,
     updatedAt,
     deletedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2293,7 +2999,9 @@ class Task extends DataClass implements Insertable<Task> {
           other.estimatedMinutes == this.estimatedMinutes &&
           other.actualMinutes == this.actualMinutes &&
           other.priority == this.priority &&
+          other.category == this.category &&
           other.status == this.status &&
+          other.sourceId == this.sourceId &&
           other.deadline == this.deadline &&
           other.canSplit == this.canSplit &&
           other.minimumUsefulMinutes == this.minimumUsefulMinutes &&
@@ -2315,7 +3023,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<int> estimatedMinutes;
   final Value<int?> actualMinutes;
   final Value<String> priority;
+  final Value<String?> category;
   final Value<String> status;
+  final Value<String?> sourceId;
   final Value<DateTime?> deadline;
   final Value<bool> canSplit;
   final Value<int> minimumUsefulMinutes;
@@ -2336,7 +3046,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.estimatedMinutes = const Value.absent(),
     this.actualMinutes = const Value.absent(),
     this.priority = const Value.absent(),
+    this.category = const Value.absent(),
     this.status = const Value.absent(),
+    this.sourceId = const Value.absent(),
     this.deadline = const Value.absent(),
     this.canSplit = const Value.absent(),
     this.minimumUsefulMinutes = const Value.absent(),
@@ -2358,7 +3070,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     required int estimatedMinutes,
     this.actualMinutes = const Value.absent(),
     required String priority,
+    this.category = const Value.absent(),
     required String status,
+    this.sourceId = const Value.absent(),
     this.deadline = const Value.absent(),
     this.canSplit = const Value.absent(),
     this.minimumUsefulMinutes = const Value.absent(),
@@ -2388,7 +3102,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<int>? estimatedMinutes,
     Expression<int>? actualMinutes,
     Expression<String>? priority,
+    Expression<String>? category,
     Expression<String>? status,
+    Expression<String>? sourceId,
     Expression<DateTime>? deadline,
     Expression<bool>? canSplit,
     Expression<int>? minimumUsefulMinutes,
@@ -2410,7 +3126,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (estimatedMinutes != null) 'estimated_minutes': estimatedMinutes,
       if (actualMinutes != null) 'actual_minutes': actualMinutes,
       if (priority != null) 'priority': priority,
+      if (category != null) 'category': category,
       if (status != null) 'status': status,
+      if (sourceId != null) 'source_id': sourceId,
       if (deadline != null) 'deadline': deadline,
       if (canSplit != null) 'can_split': canSplit,
       if (minimumUsefulMinutes != null)
@@ -2435,7 +3153,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<int>? estimatedMinutes,
     Value<int?>? actualMinutes,
     Value<String>? priority,
+    Value<String?>? category,
     Value<String>? status,
+    Value<String?>? sourceId,
     Value<DateTime?>? deadline,
     Value<bool>? canSplit,
     Value<int>? minimumUsefulMinutes,
@@ -2457,7 +3177,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
       actualMinutes: actualMinutes ?? this.actualMinutes,
       priority: priority ?? this.priority,
+      category: category ?? this.category,
       status: status ?? this.status,
+      sourceId: sourceId ?? this.sourceId,
       deadline: deadline ?? this.deadline,
       canSplit: canSplit ?? this.canSplit,
       minimumUsefulMinutes: minimumUsefulMinutes ?? this.minimumUsefulMinutes,
@@ -2499,8 +3221,14 @@ class TasksCompanion extends UpdateCompanion<Task> {
     if (priority.present) {
       map['priority'] = Variable<String>(priority.value);
     }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
+    }
+    if (sourceId.present) {
+      map['source_id'] = Variable<String>(sourceId.value);
     }
     if (deadline.present) {
       map['deadline'] = Variable<DateTime>(deadline.value);
@@ -2551,7 +3279,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('estimatedMinutes: $estimatedMinutes, ')
           ..write('actualMinutes: $actualMinutes, ')
           ..write('priority: $priority, ')
+          ..write('category: $category, ')
           ..write('status: $status, ')
+          ..write('sourceId: $sourceId, ')
           ..write('deadline: $deadline, ')
           ..write('canSplit: $canSplit, ')
           ..write('minimumUsefulMinutes: $minimumUsefulMinutes, ')
@@ -3544,6 +4274,9 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
   _$DayweftDatabase(QueryExecutor e) : super(e);
   $DayweftDatabaseManager get managers => $DayweftDatabaseManager(this);
   late final $DayPlansTable dayPlans = $DayPlansTable(this);
+  late final $UserPreferencesTable userPreferences = $UserPreferencesTable(
+    this,
+  );
   late final $TimeBlocksTable timeBlocks = $TimeBlocksTable(this);
   late final $TasksTable tasks = $TasksTable(this);
   late final $ScheduleRevisionsTable scheduleRevisions =
@@ -3555,6 +4288,7 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     dayPlans,
+    userPreferences,
     timeBlocks,
     tasks,
     scheduleRevisions,
@@ -4165,6 +4899,323 @@ typedef $$DayPlansTableProcessedTableManager =
         bool scheduleRevisionsRefs,
       })
     >;
+typedef $$UserPreferencesTableCreateCompanionBuilder =
+    UserPreferencesCompanion Function({
+      required String id,
+      Value<bool> onboardingCompleted,
+      Value<bool> sampleDataEnabled,
+      Value<String> wakeTime,
+      Value<String> windDownTime,
+      Value<String> workStartTime,
+      Value<String> workEndTime,
+      Value<String> planningStyle,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$UserPreferencesTableUpdateCompanionBuilder =
+    UserPreferencesCompanion Function({
+      Value<String> id,
+      Value<bool> onboardingCompleted,
+      Value<bool> sampleDataEnabled,
+      Value<String> wakeTime,
+      Value<String> windDownTime,
+      Value<String> workStartTime,
+      Value<String> workEndTime,
+      Value<String> planningStyle,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$UserPreferencesTableFilterComposer
+    extends Composer<_$DayweftDatabase, $UserPreferencesTable> {
+  $$UserPreferencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get onboardingCompleted => $composableBuilder(
+    column: $table.onboardingCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get sampleDataEnabled => $composableBuilder(
+    column: $table.sampleDataEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get wakeTime => $composableBuilder(
+    column: $table.wakeTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get windDownTime => $composableBuilder(
+    column: $table.windDownTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workStartTime => $composableBuilder(
+    column: $table.workStartTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workEndTime => $composableBuilder(
+    column: $table.workEndTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get planningStyle => $composableBuilder(
+    column: $table.planningStyle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UserPreferencesTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $UserPreferencesTable> {
+  $$UserPreferencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get onboardingCompleted => $composableBuilder(
+    column: $table.onboardingCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get sampleDataEnabled => $composableBuilder(
+    column: $table.sampleDataEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get wakeTime => $composableBuilder(
+    column: $table.wakeTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get windDownTime => $composableBuilder(
+    column: $table.windDownTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get workStartTime => $composableBuilder(
+    column: $table.workStartTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get workEndTime => $composableBuilder(
+    column: $table.workEndTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get planningStyle => $composableBuilder(
+    column: $table.planningStyle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UserPreferencesTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $UserPreferencesTable> {
+  $$UserPreferencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<bool> get onboardingCompleted => $composableBuilder(
+    column: $table.onboardingCompleted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get sampleDataEnabled => $composableBuilder(
+    column: $table.sampleDataEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get wakeTime =>
+      $composableBuilder(column: $table.wakeTime, builder: (column) => column);
+
+  GeneratedColumn<String> get windDownTime => $composableBuilder(
+    column: $table.windDownTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get workStartTime => $composableBuilder(
+    column: $table.workStartTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get workEndTime => $composableBuilder(
+    column: $table.workEndTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get planningStyle => $composableBuilder(
+    column: $table.planningStyle,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$UserPreferencesTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $UserPreferencesTable,
+          UserPreference,
+          $$UserPreferencesTableFilterComposer,
+          $$UserPreferencesTableOrderingComposer,
+          $$UserPreferencesTableAnnotationComposer,
+          $$UserPreferencesTableCreateCompanionBuilder,
+          $$UserPreferencesTableUpdateCompanionBuilder,
+          (
+            UserPreference,
+            BaseReferences<
+              _$DayweftDatabase,
+              $UserPreferencesTable,
+              UserPreference
+            >,
+          ),
+          UserPreference,
+          PrefetchHooks Function()
+        > {
+  $$UserPreferencesTableTableManager(
+    _$DayweftDatabase db,
+    $UserPreferencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UserPreferencesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserPreferencesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserPreferencesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<bool> onboardingCompleted = const Value.absent(),
+                Value<bool> sampleDataEnabled = const Value.absent(),
+                Value<String> wakeTime = const Value.absent(),
+                Value<String> windDownTime = const Value.absent(),
+                Value<String> workStartTime = const Value.absent(),
+                Value<String> workEndTime = const Value.absent(),
+                Value<String> planningStyle = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UserPreferencesCompanion(
+                id: id,
+                onboardingCompleted: onboardingCompleted,
+                sampleDataEnabled: sampleDataEnabled,
+                wakeTime: wakeTime,
+                windDownTime: windDownTime,
+                workStartTime: workStartTime,
+                workEndTime: workEndTime,
+                planningStyle: planningStyle,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<bool> onboardingCompleted = const Value.absent(),
+                Value<bool> sampleDataEnabled = const Value.absent(),
+                Value<String> wakeTime = const Value.absent(),
+                Value<String> windDownTime = const Value.absent(),
+                Value<String> workStartTime = const Value.absent(),
+                Value<String> workEndTime = const Value.absent(),
+                Value<String> planningStyle = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => UserPreferencesCompanion.insert(
+                id: id,
+                onboardingCompleted: onboardingCompleted,
+                sampleDataEnabled: sampleDataEnabled,
+                wakeTime: wakeTime,
+                windDownTime: windDownTime,
+                workStartTime: workStartTime,
+                workEndTime: workEndTime,
+                planningStyle: planningStyle,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$UserPreferencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $UserPreferencesTable,
+      UserPreference,
+      $$UserPreferencesTableFilterComposer,
+      $$UserPreferencesTableOrderingComposer,
+      $$UserPreferencesTableAnnotationComposer,
+      $$UserPreferencesTableCreateCompanionBuilder,
+      $$UserPreferencesTableUpdateCompanionBuilder,
+      (
+        UserPreference,
+        BaseReferences<
+          _$DayweftDatabase,
+          $UserPreferencesTable,
+          UserPreference
+        >,
+      ),
+      UserPreference,
+      PrefetchHooks Function()
+    >;
 typedef $$TimeBlocksTableCreateCompanionBuilder =
     TimeBlocksCompanion Function({
       required String id,
@@ -4772,7 +5823,9 @@ typedef $$TasksTableCreateCompanionBuilder =
       required int estimatedMinutes,
       Value<int?> actualMinutes,
       required String priority,
+      Value<String?> category,
       required String status,
+      Value<String?> sourceId,
       Value<DateTime?> deadline,
       Value<bool> canSplit,
       Value<int> minimumUsefulMinutes,
@@ -4795,7 +5848,9 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<int> estimatedMinutes,
       Value<int?> actualMinutes,
       Value<String> priority,
+      Value<String?> category,
       Value<String> status,
+      Value<String?> sourceId,
       Value<DateTime?> deadline,
       Value<bool> canSplit,
       Value<int> minimumUsefulMinutes,
@@ -4887,8 +5942,18 @@ class $$TasksTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5029,8 +6094,18 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5162,8 +6237,14 @@ class $$TasksTableAnnotationComposer
   GeneratedColumn<String> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => column);
 
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceId =>
+      $composableBuilder(column: $table.sourceId, builder: (column) => column);
 
   GeneratedColumn<DateTime> get deadline =>
       $composableBuilder(column: $table.deadline, builder: (column) => column);
@@ -5284,7 +6365,9 @@ class $$TasksTableTableManager
                 Value<int> estimatedMinutes = const Value.absent(),
                 Value<int?> actualMinutes = const Value.absent(),
                 Value<String> priority = const Value.absent(),
+                Value<String?> category = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> sourceId = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
                 Value<bool> canSplit = const Value.absent(),
                 Value<int> minimumUsefulMinutes = const Value.absent(),
@@ -5305,7 +6388,9 @@ class $$TasksTableTableManager
                 estimatedMinutes: estimatedMinutes,
                 actualMinutes: actualMinutes,
                 priority: priority,
+                category: category,
                 status: status,
+                sourceId: sourceId,
                 deadline: deadline,
                 canSplit: canSplit,
                 minimumUsefulMinutes: minimumUsefulMinutes,
@@ -5328,7 +6413,9 @@ class $$TasksTableTableManager
                 required int estimatedMinutes,
                 Value<int?> actualMinutes = const Value.absent(),
                 required String priority,
+                Value<String?> category = const Value.absent(),
                 required String status,
+                Value<String?> sourceId = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
                 Value<bool> canSplit = const Value.absent(),
                 Value<int> minimumUsefulMinutes = const Value.absent(),
@@ -5349,7 +6436,9 @@ class $$TasksTableTableManager
                 estimatedMinutes: estimatedMinutes,
                 actualMinutes: actualMinutes,
                 priority: priority,
+                category: category,
                 status: status,
+                sourceId: sourceId,
                 deadline: deadline,
                 canSplit: canSplit,
                 minimumUsefulMinutes: minimumUsefulMinutes,
@@ -6075,6 +7164,8 @@ class $DayweftDatabaseManager {
   $DayweftDatabaseManager(this._db);
   $$DayPlansTableTableManager get dayPlans =>
       $$DayPlansTableTableManager(_db, _db.dayPlans);
+  $$UserPreferencesTableTableManager get userPreferences =>
+      $$UserPreferencesTableTableManager(_db, _db.userPreferences);
   $$TimeBlocksTableTableManager get timeBlocks =>
       $$TimeBlocksTableTableManager(_db, _db.timeBlocks);
   $$TasksTableTableManager get tasks =>

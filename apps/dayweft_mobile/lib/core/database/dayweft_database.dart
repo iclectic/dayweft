@@ -31,6 +31,25 @@ class DayPlans extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class UserPreferences extends Table {
+  TextColumn get id => text()();
+  BoolColumn get onboardingCompleted =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get sampleDataEnabled =>
+      boolean().withDefault(const Constant(false))();
+  TextColumn get wakeTime => text().withDefault(const Constant('07:00'))();
+  TextColumn get windDownTime => text().withDefault(const Constant('22:00'))();
+  TextColumn get workStartTime => text().withDefault(const Constant('09:00'))();
+  TextColumn get workEndTime => text().withDefault(const Constant('17:00'))();
+  TextColumn get planningStyle =>
+      text().withDefault(const Constant('balanced'))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class TimeBlocks extends Table {
   TextColumn get id => text()();
   TextColumn get dayPlanId => text().references(DayPlans, #id)();
@@ -61,7 +80,9 @@ class Tasks extends Table {
   IntColumn get estimatedMinutes => integer()();
   IntColumn get actualMinutes => integer().nullable()();
   TextColumn get priority => text()();
+  TextColumn get category => text().nullable()();
   TextColumn get status => text()();
+  TextColumn get sourceId => text().nullable()();
   DateTimeColumn get deadline => dateTime().nullable()();
   BoolColumn get canSplit => boolean().withDefault(const Constant(false))();
   IntColumn get minimumUsefulMinutes =>
@@ -107,6 +128,7 @@ class SyncOperations extends Table {
 @DriftDatabase(
   tables: <Type>[
     DayPlans,
+    UserPreferences,
     TimeBlocks,
     Tasks,
     ScheduleRevisions,
@@ -119,11 +141,22 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
-    return MigrationStrategy(onCreate: (migrator) => migrator.createAll());
+    return MigrationStrategy(
+      onCreate: (migrator) => migrator.createAll(),
+      onUpgrade: (migrator, from, to) async {
+        if (from < 2) {
+          await migrator.createTable(userPreferences);
+        }
+        if (from < 3) {
+          await migrator.addColumn(tasks, tasks.category);
+          await migrator.addColumn(tasks, tasks.sourceId);
+        }
+      },
+    );
   }
 }
 
