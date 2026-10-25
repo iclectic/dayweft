@@ -1,5 +1,6 @@
+import 'package:dayweft_mobile/features/inbox/presentation/capture_sheet.dart';
 import 'package:dayweft_mobile/features/planning/application/planning_controller.dart';
-import 'package:dayweft_mobile/features/planning/data/local_planning_repository.dart';
+import 'package:dayweft_mobile/features/tasks/presentation/actual_duration_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -44,8 +45,27 @@ class InboxScreen extends ConsumerWidget {
                           .toggleTask(task.id),
                     ),
                     title: Text(task.title),
-                    subtitle: Text(
-                      '${task.estimatedMinutes} min • ${task.priority}',
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${task.estimatedMinutes} min estimated • ${task.priority}',
+                        ),
+                        if (task.status == 'completed')
+                          TextButton(
+                            onPressed: () => showActualDurationDialog(
+                              context,
+                              ref,
+                              taskId: task.id,
+                              previousMinutes: task.actualMinutes,
+                            ),
+                            child: Text(
+                              task.actualMinutes == null
+                                  ? 'Record actual time'
+                                  : '${task.actualMinutes} min actual · Edit',
+                            ),
+                          ),
+                      ],
                     ),
                     trailing: snapshot.blocks.isEmpty
                         ? null
@@ -107,142 +127,18 @@ class _EmptyInbox extends StatelessWidget {
   }
 }
 
-Future<void> _showCapture(BuildContext context, WidgetRef ref) async {
-  final textController = TextEditingController();
-  ParsedCapture? parsed;
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              0,
-              20,
-              MediaQuery.viewInsetsOf(context).bottom + 20,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                TextField(
-                  controller: textController,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Capture',
-                    hintText: 'Urgent: call Sam for 20 min',
-                  ),
-                  onChanged: (value) => setState(
-                    () => parsed = value.trim().isEmpty
-                        ? null
-                        : ref
-                              .read(planningControllerProvider.notifier)
-                              .parseCapture(value),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (parsed != null) _ParsedPreview(parsed: parsed!),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: parsed == null
-                      ? null
-                      : () {
-                          ref
-                              .read(planningControllerProvider.notifier)
-                              .addInboxTask(parsed!.title);
-                          Navigator.of(context).pop();
-                        },
-                  child: const Text('Confirm and add to Inbox'),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
-}
-
-Future<void> _showBrainDump(BuildContext context, WidgetRef ref) async {
-  final textController = TextEditingController();
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (context) => Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        0,
-        20,
-        MediaQuery.viewInsetsOf(context).bottom + 20,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          TextField(
-            controller: textController,
-            autofocus: true,
-            minLines: 5,
-            maxLines: 8,
-            decoration: const InputDecoration(
-              labelText: 'Brain Dump',
-              helperText: 'One task per line.',
-            ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () {
-              ref
-                  .read(planningControllerProvider.notifier)
-                  .addInboxTasks(
-                    textController.text
-                        .split('\n')
-                        .map((line) => line.trim())
-                        .where((line) => line.isNotEmpty)
-                        .toList(),
-                  );
-              Navigator.of(context).pop();
-            },
-            child: const Text('Add lines'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _ParsedPreview extends StatelessWidget {
-  const _ParsedPreview({required this.parsed});
-
-  final ParsedCapture parsed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Parsed values for confirmation',
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'Parsed values',
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 6),
-              Text('Title: ${parsed.title}'),
-              Text('Estimate: ${parsed.estimatedMinutes} min'),
-              Text('Priority: ${parsed.priority}'),
-              if (parsed.hasSchedule)
-                Text('Time: ${parsed.startTime}-${parsed.endTime}'),
-            ],
-          ),
-        ),
-      ),
+Future<void> _showCapture(BuildContext context, WidgetRef ref) =>
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => const CaptureSheet(),
     );
-  }
-}
+
+Future<void> _showBrainDump(BuildContext context, WidgetRef ref) =>
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => const CaptureSheet(brainDump: true),
+    );

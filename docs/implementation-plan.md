@@ -44,7 +44,8 @@ Acceptance criteria:
 Current status:
 
 - Local-first onboarding, removable sample data, Drift-backed Today Timeline, Inbox, Brain Dump, parser confirmation, template preview/application, revision history and local undo are implemented.
-- Drag gestures, export/import and broader accessibility/golden coverage remain follow-up Phase 3 hardening work.
+- Drag reorder handles, accessible reorder buttons, local JSON export/import, accessibility smoke coverage and onboarding golden coverage are implemented.
+- Remaining Phase 3 hardening is mostly polish: richer resize gestures, platform share-sheet export/import and broader golden coverage across more screens.
 
 ## Phase 4: Adaptive Engine, Reality Check And Reweave My Day
 
@@ -58,6 +59,15 @@ Acceptance criteria:
 - Confirmed changes are reversible.
 - Scheduling invariant and property-based tests pass.
 
+Current status:
+
+- Pure Dart engine generates deterministic Reality Check observations for overlaps, excessive utilisation, insufficient transitions, missing breaks, deadline/dependency issues, demanding-task clusters, oversized tasks and inadequate contingency.
+- Reweave My Day generates Protect Essentials, Balanced Reweave and Reduce Pressure alternatives with explanations, protected fixed IDs, deferrals, trade-offs and confidence.
+- Today Timeline uses the engine for Reality Check and Reweave previews.
+- Confirmed deferrals are applied only after user confirmation and can be undone through revision history.
+- Flexible block movement, split-task recommendations, travel/preparation/transition/recovery buffer persistence, user-controlled break/contingency/transition preferences, reversible confirmed Reweave movement and generated invariant tests are implemented.
+- Remaining Phase 4 depth: richer permitted-window editing, persisted split fragments rather than split recommendations, more detailed infeasible-state UI and broader random schedule generation fixtures.
+
 ## Phase 5: Estimation, Energy And Your Rhythm
 
 Acceptance criteria:
@@ -68,6 +78,14 @@ Acceptance criteria:
 - Your Rhythm shows observations, trends and insufficient-data states.
 - No arbitrary productivity scores, streaks or health claims appear.
 - Tests cover estimation thresholds, uncertainty and data deletion.
+
+Current status:
+
+- Local estimation evidence is recorded when planned tasks are completed.
+- Your Rhythm shows estimation sample size, insufficient-data warnings, average estimate factor after enough records, deferred counts, successful Reweaves, Quiet Focus totals and latest energy check-in.
+- Energy check-ins are optional and stored locally.
+- Learning history deletion clears local estimation and energy evidence.
+- Remaining depth: actual-duration entry UI, category/time-bucket calibration controls, uncertainty bands and richer trend charts.
 
 ## Phase 6: Optional Sync And Sharing
 
@@ -81,6 +99,13 @@ Acceptance criteria:
 - Public endpoints hide private details by default and resist token enumeration.
 - Sync conflict and sharing security tests pass.
 
+Current status:
+
+- Local share-link records exist with token hashes, expiry and revocation.
+- Availability sharing hides task details by default.
+- Sync operation queue already exists locally for future cloud operations.
+- Remaining depth: Supabase auth/sync implementation, public endpoint rate limiting, token lookup APIs, conflict UI and remote deletion flows.
+
 ## Phase 7: Platform Integrations, Accessibility And Store Readiness
 
 Acceptance criteria:
@@ -92,6 +117,14 @@ Acceptance criteria:
 - Home-screen quick capture and widgets are implemented where platform support permits.
 - Accessibility audit passes target criteria.
 - App identifiers, icons, splash screen, privacy manifest, permission copy, screenshots, release signing docs, semantic versioning, crash reporting policy, review notes and demonstration data are ready.
+
+Current status:
+
+- Calendar permission-state scaffold exists and is read-only by default.
+- Quiet Focus has an offline timer, pause/resume, completion, abandon and interruption logging.
+- Accessibility smoke coverage and onboarding golden coverage are in place.
+- Store-readiness documentation covers metadata, permissions, screenshots and release gates.
+- Remaining depth: EventKit/Android calendar provider import, local notifications, foreground/live activities, widgets, biometric lock, real screenshots, signing and app-store submission.
 
 ## Risk Register
 

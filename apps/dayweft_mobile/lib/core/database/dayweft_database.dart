@@ -43,6 +43,18 @@ class UserPreferences extends Table {
   TextColumn get workEndTime => text().withDefault(const Constant('17:00'))();
   TextColumn get planningStyle =>
       text().withDefault(const Constant('balanced'))();
+  TextColumn get workingPattern =>
+      text().withDefault(const Constant('flexible'))();
+  TextColumn get calendarPreference =>
+      text().withDefault(const Constant('later'))();
+  BoolColumn get energyEnabled =>
+      boolean().withDefault(const Constant(false))();
+  IntColumn get preferredBreakMinutes =>
+      integer().withDefault(const Constant(20))();
+  IntColumn get contingencyMinutes =>
+      integer().withDefault(const Constant(30))();
+  IntColumn get transitionMinutes =>
+      integer().withDefault(const Constant(10))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -59,6 +71,14 @@ class TimeBlocks extends Table {
   TextColumn get blockType => text()();
   TextColumn get category => text().nullable()();
   TextColumn get sourceId => text().nullable()();
+  IntColumn get travelBufferMinutes =>
+      integer().withDefault(const Constant(0))();
+  IntColumn get preparationBufferMinutes =>
+      integer().withDefault(const Constant(0))();
+  IntColumn get transitionBufferMinutes =>
+      integer().withDefault(const Constant(0))();
+  IntColumn get recoveryBufferMinutes =>
+      integer().withDefault(const Constant(0))();
   IntColumn get sortOrder => integer()();
   TextColumn get syncState => textEnum<SyncState>()();
   IntColumn get localVersion => integer().withDefault(const Constant(1))();
@@ -77,6 +97,12 @@ class Tasks extends Table {
   TextColumn get blockId => text().references(TimeBlocks, #id).nullable()();
   TextColumn get title => text()();
   TextColumn get notes => text().nullable()();
+  TextColumn get energyRequired => text().nullable()();
+  TextColumn get requestedDay => text().nullable()();
+  TextColumn get requestedStartTime => text().nullable()();
+  TextColumn get requestedEndTime => text().nullable()();
+  BoolColumn get approximateTime =>
+      boolean().withDefault(const Constant(false))();
   IntColumn get estimatedMinutes => integer()();
   IntColumn get actualMinutes => integer().nullable()();
   TextColumn get priority => text()();
@@ -111,6 +137,15 @@ class ScheduleRevisions extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class RevisionUndos extends Table {
+  TextColumn get id => text()();
+  TextColumn get revisionId =>
+      text().unique().references(ScheduleRevisions, #id)();
+  DateTimeColumn get undoneAt => dateTime()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class SyncOperations extends Table {
   TextColumn get id => text()();
   TextColumn get entityType => text()();
@@ -125,6 +160,77 @@ class SyncOperations extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class EstimationRecords extends Table {
+  TextColumn get id => text()();
+  TextColumn get taskId => text().nullable().references(Tasks, #id)();
+  TextColumn get category => text().nullable()();
+  IntColumn get estimatedMinutes => integer()();
+  IntColumn get actualMinutes => integer()();
+  TextColumn get measurementSource =>
+      text().withDefault(const Constant('legacy_unknown'))();
+  TextColumn get timeOfDay => text()();
+  IntColumn get dayOfWeek => integer()();
+  IntColumn get interruptionCount => integer().withDefault(const Constant(0))();
+  BoolColumn get wasSplit => boolean().withDefault(const Constant(false))();
+  IntColumn get difficulty => integer().nullable()();
+  BoolColumn get excluded => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class EnergyCheckIns extends Table {
+  TextColumn get id => text()();
+  TextColumn get level => text()();
+  DateTimeColumn get checkedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class FocusSessions extends Table {
+  TextColumn get id => text()();
+  TextColumn get taskId => text().nullable().references(Tasks, #id)();
+  TextColumn get title => text()();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get endedAt => dateTime().nullable()();
+  IntColumn get plannedMinutes => integer()();
+  IntColumn get actualMinutes => integer().nullable()();
+  IntColumn get interruptionCount => integer().withDefault(const Constant(0))();
+  TextColumn get status => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class ShareLinks extends Table {
+  TextColumn get id => text()();
+  TextColumn get tokenHash => text().unique()();
+  TextColumn get shareType => text()();
+  TextColumn get payloadJson => text()();
+  DateTimeColumn get expiresAt => dateTime()();
+  DateTimeColumn get revokedAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class CalendarConnections extends Table {
+  TextColumn get id => text()();
+  TextColumn get platform => text()();
+  TextColumn get permissionState => text()();
+  BoolColumn get readOnly => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: <Type>[
     DayPlans,
@@ -132,7 +238,13 @@ class SyncOperations extends Table {
     TimeBlocks,
     Tasks,
     ScheduleRevisions,
+    RevisionUndos,
     SyncOperations,
+    EstimationRecords,
+    EnergyCheckIns,
+    FocusSessions,
+    ShareLinks,
+    CalendarConnections,
   ],
 )
 class DayweftDatabase extends _$DayweftDatabase {
@@ -141,7 +253,7 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration {
@@ -154,6 +266,70 @@ class DayweftDatabase extends _$DayweftDatabase {
         if (from < 3) {
           await migrator.addColumn(tasks, tasks.category);
           await migrator.addColumn(tasks, tasks.sourceId);
+        }
+        if (from < 4) {
+          await migrator.addColumn(
+            userPreferences,
+            userPreferences.preferredBreakMinutes,
+          );
+          await migrator.addColumn(
+            userPreferences,
+            userPreferences.contingencyMinutes,
+          );
+          await migrator.addColumn(
+            userPreferences,
+            userPreferences.transitionMinutes,
+          );
+          await migrator.addColumn(timeBlocks, timeBlocks.travelBufferMinutes);
+          await migrator.addColumn(
+            timeBlocks,
+            timeBlocks.preparationBufferMinutes,
+          );
+          await migrator.addColumn(
+            timeBlocks,
+            timeBlocks.transitionBufferMinutes,
+          );
+          await migrator.addColumn(
+            timeBlocks,
+            timeBlocks.recoveryBufferMinutes,
+          );
+        }
+        if (from < 5) {
+          await migrator.createTable(estimationRecords);
+          await migrator.createTable(energyCheckIns);
+          await migrator.createTable(focusSessions);
+          await migrator.createTable(shareLinks);
+          await migrator.createTable(calendarConnections);
+        }
+        if (from < 6) {
+          await migrator.addColumn(
+            userPreferences,
+            userPreferences.workingPattern,
+          );
+          await migrator.addColumn(
+            userPreferences,
+            userPreferences.calendarPreference,
+          );
+        }
+        if (from < 7) {
+          await migrator.addColumn(
+            userPreferences,
+            userPreferences.energyEnabled,
+          );
+          await migrator.addColumn(
+            estimationRecords,
+            estimationRecords.measurementSource,
+          );
+        }
+        if (from < 8) {
+          await migrator.createTable(revisionUndos);
+        }
+        if (from < 9) {
+          await migrator.addColumn(tasks, tasks.energyRequired);
+          await migrator.addColumn(tasks, tasks.requestedDay);
+          await migrator.addColumn(tasks, tasks.requestedStartTime);
+          await migrator.addColumn(tasks, tasks.requestedEndTime);
+          await migrator.addColumn(tasks, tasks.approximateTime);
         }
       },
     );

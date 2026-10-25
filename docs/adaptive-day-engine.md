@@ -66,6 +66,29 @@ Balanced Reweave minimises disruption while preserving reasonable transitions an
 
 Reduce Pressure preserves commitments and recovery time, defers optional or lower-priority work more readily and favours lower utilisation.
 
+## Implemented Deterministic Slice
+
+The current pure Dart package implements the first explainable rule set:
+
+- overlap detection;
+- excessive planned-utilisation observations;
+- insufficient transition observations;
+- missing-break observations for heavily scheduled days;
+- deadline and dependency-order observations;
+- demanding-task cluster observations;
+- oversized unsplittable task observations;
+- inadequate contingency observations;
+- generation of Protect Essentials, Balanced Reweave and Reduce Pressure alternatives;
+- protected fixed-commitment IDs;
+- lower-priority task deferral previews;
+- split-capable oversized task recommendations;
+- flexible-block reflow around protected fixed commitments;
+- explicit travel/preparation/transition/recovery buffers from local storage;
+- user-controlled break, contingency and transition thresholds;
+- trade-offs and confidence derived from observed constraints.
+
+The mobile app applies only confirmed deferrals and flexible-block movement from these alternatives and records them as reversible local revisions. Persisted split fragments and richer permitted-window editing remain planned Phase 4 depth.
+
 ## Learning Model
 
 Phase 1 learning is deterministic statistics only:
