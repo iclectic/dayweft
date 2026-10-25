@@ -81,7 +81,11 @@ class DayweftTask {
   final Duration minimumUsefulDuration;
   final TaskStatus status;
 
-  Duration get planningDuration => actualDuration ?? estimatedDuration;
+  // Historical actual time is evidence, never a replacement for remaining work.
+  Duration get planningDuration =>
+      status == TaskStatus.completed || status == TaskStatus.deleted
+      ? Duration.zero
+      : estimatedDuration;
 }
 
 class DayweftBuffer {
