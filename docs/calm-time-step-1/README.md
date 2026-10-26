@@ -4,6 +4,8 @@
 
 Date: 24 October 2026. Status: **proposed; approval pending; reference-source verification blocked**.
 
+Repository comparison and baseline checks refreshed on 26 October 2026. See the [current repository comparison](06-repository-comparison.md) for source-backed feature gaps, scheduling counterexamples and verification results.
+
 This is the first-assignment decision pack. It proposes the Flutter product direction and does not assert that the existing Dayweft application meets the full requirements. The user subsequently authorised continuing unfinished implementation. That work is tracked in the [implementation ledger](../implementation-status.md); proposals here are not automatically treated as approved redesigns.
 
 ## Recommendation
@@ -23,6 +25,7 @@ Use Drift/SQLite as the source of truth, a separate pure Dart engine, and a tran
 | [Domain and adaptive engine](03-domain-and-engine.md) | 4. Initial entities; 5. constraints, invariants, recovery, estimation and test scenarios |
 | [Data, sync and threat model](04-data-sync-and-threat-model.md) | 6. Offline-first storage and sync; 8. security/privacy threat model; platform boundaries |
 | [Phases, risks and approval](05-phases-risks-and-approval.md) | 9. Phased plan and acceptance criteria; 10. decisions requiring approval; risk register and unresolved questions |
+| [Current repository comparison](06-repository-comparison.md) | Existing Flutter implementation versus the brief; concrete missing behaviours, fresh baseline checks and continuation recommendation |
 
 ## Evidence qualification
 
