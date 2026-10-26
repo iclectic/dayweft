@@ -66,12 +66,38 @@ jobs:
         working-directory: apps/dayweft_mobile
 
       - name: Test engine
-        run: dart test
+        run: dart test --coverage=coverage
         working-directory: packages/adaptive_day_engine
 
       - name: Test domain
-        run: dart test
+        run: dart test --coverage=coverage
         working-directory: packages/dayweft_domain
+
+      - name: Format engine coverage
+        run: dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+        working-directory: packages/adaptive_day_engine
+
+      - name: Format domain coverage
+        run: dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+        working-directory: packages/dayweft_domain
+
+      - name: Enforce mobile domain and application coverage
+        run: dart tool/check_coverage.dart apps/dayweft_mobile/coverage/lcov.info mobile
+
+      - name: Enforce engine coverage
+        run: dart tool/check_coverage.dart packages/adaptive_day_engine/coverage/lcov.info package
+
+      - name: Enforce shared domain coverage
+        run: dart tool/check_coverage.dart packages/dayweft_domain/coverage/lcov.info package
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-application-coverage
+          path: |
+            apps/dayweft_mobile/coverage/lcov.info
+            packages/adaptive_day_engine/coverage/lcov.info
+            packages/dayweft_domain/coverage/lcov.info
 
       - name: Test design system
         run: flutter test
@@ -81,5 +107,6 @@ jobs:
         run: flutter build apk --debug
         working-directory: apps/dayweft_mobile
 
-      - name: iOS build note
-        run: echo "iOS build is enabled once signing and Runner configuration are available."
+      - name: Build iOS simulator without signing
+        run: flutter build ios --simulator --debug --no-codesign
+        working-directory: apps/dayweft_mobile
