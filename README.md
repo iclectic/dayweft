@@ -18,12 +18,15 @@ Dayweft is a privacy-first adaptive day planner for iOS and Android. It helps pe
 - Local buffer and planning-default storage for preferred breaks, contingency time, transition time and per-block travel/preparation/transition/recovery buffers.
 - Skippable local-first onboarding for working patterns, day boundaries, planning style and calendar preferences. Sample data is opt-in, removable and reversible without deleting personal tasks.
 - Today Timeline local MVP: create, edit, resize, reorder and delete blocks; create tasks in blocks; move tasks between blocks; complete tasks; revision history; undo for supported local changes.
+- Shared task editor for Today and Inbox: priorities, categories, notes, deadlines, energy, cognitive load, predecessor tasks and split policy; version-checked edits, reversible deletion/return to Inbox and drag-to-block placement.
+- Block category/buffer editing, overnight end times, and before/after details for new task/block edit revisions.
 - Inbox local MVP: quick capture and Brain Dump review dates, preferred/approximate times, duration, priority, energy and category locally. Confirmed fields are persisted; a captured batch can be undone.
 - Template preview/application for starter templates without overwriting existing blocks.
 - Local JSON export/import through Settings.
 - Engine-backed Reality Check observations in Today Timeline.
 - Reweave My Day entry point with Running Late, Meeting Overran, Task Took Longer, New Urgent Task, Energy Changed, Need A Break, Missed Part Of Day and Custom Disruption options.
-- Deterministic Reweave alternatives: Protect Essentials, Balanced Reweave and Reduce Pressure, with protected IDs, deferrals, trade-offs, confidence and confirmation.
+- Deterministic Reweave alternatives: Protect Essentials, Balanced Reweave and Reduce Pressure, with protected IDs, deferrals, trade-offs, evidence explanations and confirmation.
+- Recovery previews validate hard constraints before display and account for entered unavailable time. Unsupported split allocations are not presented as applicable alternatives.
 - Confirmed Reweave deferrals and flexible-block moves are recorded as reversible local revisions.
 - Settings controls for local break, contingency and transition preferences.
 - Your Rhythm local evidence summary with manual actual-time entry, a 12-measurement threshold for overall median estimate/actual comparisons, observed spread, record exclusion/deletion and opt-in energy check-ins. Task completion does not fabricate an actual duration.
@@ -32,7 +35,7 @@ Dayweft is a privacy-first adaptive day planner for iOS and Android. It helps pe
 - Calendar permission-state scaffold. Device permissions and calendar import are not implemented.
 - Store-readiness documentation for metadata, permissions, privacy copy, screenshots and release gates.
 - Widget, accessibility smoke, golden, repository and engine tests for the implemented local slices.
-- Initial CI workflow for format, analysis, tests, coverage, secret scanning and Android build.
+- CI workflow for format, analysis, tests, separate 80% domain/application coverage gates, coverage artifacts, the initial secret check, Android debug builds and unsigned iOS simulator builds.
 
 ## Planned
 
@@ -40,7 +43,7 @@ Most advanced product functionality remains planned. The current app is a local 
 
 Planned areas include richer permitted-window editing, persisted split fragments, full platform calendar import, notification delivery, optional Supabase sync, public sharing endpoints, biometric lock, screenshot production, signing setup and app-store submission.
 
-The full feature and release requirements are unfinished. See [implementation status](docs/implementation-status.md) for current gaps and validation, and the [Calm Time review pack](docs/calm-time-step-1/README.md) for proposed architecture and decisions. The reference React repository could not be re-audited because its URL returned 404.
+The full feature and release requirements are unfinished. See [implementation status](docs/implementation-status.md) for current gaps and validation, the [26 October repository comparison](docs/calm-time-step-1/06-repository-comparison.md) for source-backed findings, and the [Calm Time review pack](docs/calm-time-step-1/README.md) for proposed architecture and decisions. The reference React repository could not be re-audited because its URL returned 404.
 
 ## Development
 

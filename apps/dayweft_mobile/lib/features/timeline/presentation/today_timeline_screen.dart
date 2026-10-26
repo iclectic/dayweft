@@ -3,9 +3,12 @@ import 'package:dayweft_design_system/dayweft_design_system.dart';
 import 'package:dayweft_domain/dayweft_domain.dart' as domain;
 import 'package:dayweft_mobile/core/database/dayweft_database.dart';
 import 'package:dayweft_mobile/core/errors/planning_failure.dart';
+import 'package:dayweft_mobile/features/inbox/presentation/capture_sheet.dart';
 import 'package:dayweft_mobile/features/planning/application/planning_controller.dart';
+import 'package:dayweft_mobile/features/planning/application/revision_comparison.dart';
 import 'package:dayweft_mobile/features/planning/data/local_planning_repository.dart';
-import 'package:dayweft_mobile/features/tasks/presentation/actual_duration_dialog.dart';
+import 'package:dayweft_mobile/features/tasks/presentation/planning_task_tile.dart';
+import 'package:dayweft_mobile/features/timeline/presentation/block_editor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -63,6 +66,17 @@ class TodayTimelineScreen extends ConsumerWidget {
                     const _EmptyTimeline()
                   else
                     _TimelineBlockList(snapshot: snapshot),
+                  if (snapshot.tasks.any((task) => task.blockId == null)) ...[
+                    Text(
+                      'Unscheduled work',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    for (final task in snapshot.tasks.where(
+                      (task) => task.blockId == null,
+                    ))
+                      PlanningTaskTile(task: task, blocks: snapshot.blocks),
+                    const SizedBox(height: 16),
+                  ],
                   FilledButton.icon(
                     onPressed: () => _showAddBlockSheet(context, ref),
                     icon: const Icon(Icons.add),
@@ -125,18 +139,34 @@ class _TimelineBlockList extends ConsumerWidget {
         return Column(
           key: ValueKey<String>(block.id),
           children: <Widget>[
-            _TimelineBlock(
-              block: block,
-              snapshot: snapshot,
-              dragHandle: ReorderableDragStartListener(
-                index: index,
-                child: Tooltip(
-                  message: 'Drag reorder block',
-                  child: Semantics(
-                    label: 'Drag reorder block',
-                    child: const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Icon(Icons.drag_indicator),
+            DragTarget<Task>(
+              onWillAcceptWithDetails: (details) =>
+                  details.data.blockId != block.id,
+              onAcceptWithDetails: (details) =>
+                  moveTaskIntoBlock(context, ref, details.data, block.id),
+              builder: (context, candidates, rejected) => DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: candidates.isEmpty
+                        ? Colors.transparent
+                        : Theme.of(context).colorScheme.primary,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: _TimelineBlock(
+                  block: block,
+                  snapshot: snapshot,
+                  dragHandle: ReorderableDragStartListener(
+                    index: index,
+                    child: Tooltip(
+                      message: 'Drag reorder block',
+                      child: Semantics(
+                        label: 'Drag reorder block',
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(Icons.drag_indicator),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -192,31 +222,46 @@ class _TimelineBlock extends ConsumerWidget {
                     ),
                   ),
                   ?dragHandle,
-                  IconButton(
-                    tooltip: 'Move block earlier',
-                    onPressed: () => ref
-                        .read(planningControllerProvider.notifier)
-                        .moveBlock(blockId: block.id, direction: -1),
-                    icon: const Icon(Icons.arrow_upward),
-                  ),
-                  IconButton(
-                    tooltip: 'Move block later',
-                    onPressed: () => ref
-                        .read(planningControllerProvider.notifier)
-                        .moveBlock(blockId: block.id, direction: 1),
-                    icon: const Icon(Icons.arrow_downward),
-                  ),
-                  IconButton(
-                    tooltip: 'Edit or resize block',
-                    onPressed: () => _showEditBlockSheet(context, ref, block),
-                    icon: const Icon(Icons.edit_outlined),
-                  ),
-                  IconButton(
-                    tooltip: 'Delete block',
-                    onPressed: () => ref
-                        .read(planningControllerProvider.notifier)
-                        .deleteBlock(block.id),
-                    icon: const Icon(Icons.delete_outline),
+                  PopupMenuButton<String>(
+                    tooltip: 'Block actions for ${block.title}',
+                    onSelected: (action) async {
+                      final controller = ref.read(
+                        planningControllerProvider.notifier,
+                      );
+                      if (action == 'edit') {
+                        await _showEditBlockSheet(context, ref, block);
+                      } else if (action == 'earlier') {
+                        await controller.moveBlock(
+                          blockId: block.id,
+                          direction: -1,
+                        );
+                      } else if (action == 'later') {
+                        await controller.moveBlock(
+                          blockId: block.id,
+                          direction: 1,
+                        );
+                      } else if (action == 'delete') {
+                        await controller.deleteBlock(block.id);
+                      }
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text('Edit or resize block'),
+                      ),
+                      PopupMenuItem(
+                        value: 'earlier',
+                        child: Text('Move block earlier'),
+                      ),
+                      PopupMenuItem(
+                        value: 'later',
+                        child: Text('Move block later'),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text('Delete block'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -228,57 +273,7 @@ class _TimelineBlock extends ConsumerWidget {
                 )
               else
                 for (final task in tasks)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Checkbox(
-                      value: task.status == 'completed',
-                      onChanged: (_) => ref
-                          .read(planningControllerProvider.notifier)
-                          .toggleTask(task.id),
-                    ),
-                    title: Text(task.title),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${task.estimatedMinutes} min estimated • ${task.priority}',
-                        ),
-                        if (task.status == 'completed')
-                          TextButton(
-                            onPressed: () => showActualDurationDialog(
-                              context,
-                              ref,
-                              taskId: task.id,
-                              previousMinutes: task.actualMinutes,
-                            ),
-                            child: Text(
-                              task.actualMinutes == null
-                                  ? 'Record actual time'
-                                  : '${task.actualMinutes} min actual · Edit',
-                            ),
-                          ),
-                      ],
-                    ),
-                    trailing: PopupMenuButton<String>(
-                      tooltip: 'Move task',
-                      icon: const Icon(Icons.drive_file_move_outline),
-                      onSelected: (blockId) => ref
-                          .read(planningControllerProvider.notifier)
-                          .movePlannedTaskToBlock(
-                            taskId: task.id,
-                            blockId: blockId,
-                          ),
-                      itemBuilder: (context) => snapshot.blocks
-                          .where((candidate) => candidate.id != block.id)
-                          .map(
-                            (candidate) => PopupMenuItem<String>(
-                              value: candidate.id,
-                              child: Text(candidate.title),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
+                  PlanningTaskTile(task: task, blocks: snapshot.blocks),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
@@ -352,316 +347,25 @@ class _FailureState extends StatelessWidget {
   }
 }
 
-Future<void> _showAddBlockSheet(BuildContext context, WidgetRef ref) async {
-  final titleController = TextEditingController();
-  var type = 'flexible';
-  var start = const TimeOfDay(hour: 9, minute: 0);
-  var end = const TimeOfDay(hour: 10, minute: 0);
-  String? error;
-  var saving = false;
-
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              0,
-              20,
-              MediaQuery.viewInsetsOf(context).bottom + 20,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextField(
-                  controller: titleController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: 'Block title',
-                    errorText: error,
-                  ),
-                  textInputAction: TextInputAction.done,
-                ),
-                const SizedBox(height: 12),
-                SegmentedButton<String>(
-                  segments: const <ButtonSegment<String>>[
-                    ButtonSegment(value: 'fixed', label: Text('Fixed')),
-                    ButtonSegment(value: 'flexible', label: Text('Flexible')),
-                    ButtonSegment(value: 'optional', label: Text('Optional')),
-                  ],
-                  selected: <String>{type},
-                  onSelectionChanged: (values) =>
-                      setState(() => type = values.first),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: start,
-                          );
-                          if (picked != null) {
-                            setState(() => start = picked);
-                          }
-                        },
-                        child: Text('Start ${start.format(context)}'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: end,
-                          );
-                          if (picked != null) {
-                            setState(() => end = picked);
-                          }
-                        },
-                        child: Text('End ${end.format(context)}'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: saving
-                      ? null
-                      : () async {
-                          final title = titleController.text.trim();
-                          if (title.isEmpty) {
-                            setState(() => error = 'Add a block title.');
-                            return;
-                          }
-                          setState(() {
-                            saving = true;
-                            error = null;
-                          });
-                          try {
-                            await ref
-                                .read(planningControllerProvider.notifier)
-                                .addBlock(
-                                  title: title,
-                                  startsAt: _todayAt(start),
-                                  endsAt: _todayAt(end),
-                                  blockType: type,
-                                );
-                            if (context.mounted) Navigator.of(context).pop();
-                          } on Object catch (failure) {
-                            if (context.mounted) {
-                              setState(() {
-                                saving = false;
-                                error = failure is PlanningFailure
-                                    ? failure.message
-                                    : 'The block could not be saved. Please try again.';
-                              });
-                            }
-                          }
-                        },
-                  child: const Text('Save block'),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+Future<void> _showAddBlockSheet(BuildContext context, WidgetRef ref) =>
+    showBlockEditor(context);
 
 Future<void> _showEditBlockSheet(
   BuildContext context,
   WidgetRef ref,
   TimeBlock block,
-) async {
-  final titleController = TextEditingController(text: block.title);
-  var type = block.blockType;
-  var start = TimeOfDay.fromDateTime(block.startsAt);
-  var end = TimeOfDay.fromDateTime(block.endsAt);
-  String? error;
-  var saving = false;
-
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              0,
-              20,
-              MediaQuery.viewInsetsOf(context).bottom + 20,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextField(
-                  controller: titleController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: 'Block title',
-                    errorText: error,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SegmentedButton<String>(
-                  segments: const <ButtonSegment<String>>[
-                    ButtonSegment(value: 'fixed', label: Text('Fixed')),
-                    ButtonSegment(value: 'flexible', label: Text('Flexible')),
-                    ButtonSegment(value: 'optional', label: Text('Optional')),
-                  ],
-                  selected: <String>{type},
-                  onSelectionChanged: (values) =>
-                      setState(() => type = values.first),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: start,
-                          );
-                          if (picked != null) {
-                            setState(() => start = picked);
-                          }
-                        },
-                        child: Text('Start ${start.format(context)}'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: end,
-                          );
-                          if (picked != null) {
-                            setState(() => end = picked);
-                          }
-                        },
-                        child: Text('End ${end.format(context)}'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: saving
-                      ? null
-                      : () async {
-                          final title = titleController.text.trim();
-                          if (title.isEmpty) {
-                            setState(() => error = 'Add a block title.');
-                            return;
-                          }
-                          setState(() {
-                            saving = true;
-                            error = null;
-                          });
-                          try {
-                            await ref
-                                .read(planningControllerProvider.notifier)
-                                .updateBlock(
-                                  blockId: block.id,
-                                  title: title,
-                                  startsAt: _todayAt(start),
-                                  endsAt: _todayAt(end),
-                                  blockType: type,
-                                );
-                            if (context.mounted) Navigator.of(context).pop();
-                          } on Object catch (failure) {
-                            if (context.mounted) {
-                              setState(() {
-                                saving = false;
-                                error = failure is PlanningFailure
-                                    ? failure.message
-                                    : 'The block could not be saved. Please try again.';
-                              });
-                            }
-                          }
-                        },
-                  child: const Text('Save changes'),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+) => showBlockEditor(context, block: block);
 
 Future<void> _showAddTaskSheet(
   BuildContext context,
   WidgetRef ref,
   TimeBlock block,
-) async {
-  final controller = TextEditingController();
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (context) {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          0,
-          20,
-          MediaQuery.viewInsetsOf(context).bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Task',
-                helperText:
-                    'Basic parsing understands durations like "45 min".',
-              ),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {
-                final parsed = ref
-                    .read(planningControllerProvider.notifier)
-                    .parseCapture(controller.text);
-                if (parsed.title.isEmpty) {
-                  return;
-                }
-                ref
-                    .read(planningControllerProvider.notifier)
-                    .addTaskToBlock(
-                      blockId: block.id,
-                      title: parsed.title,
-                      estimatedMinutes: parsed.estimatedMinutes,
-                    );
-                Navigator.of(context).pop();
-              },
-              child: const Text('Add task'),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  showDragHandle: true,
+  builder: (_) => CaptureSheet(blockId: block.id),
+);
 
 Future<void> _showTemplatePreview(BuildContext context, WidgetRef ref) async {
   await showModalBottomSheet<void>(
@@ -783,21 +487,92 @@ Future<void> _showReweaveSheet(BuildContext context, WidgetRef ref) async {
             leading: const Icon(Icons.report_problem_outlined),
             title: Text(_disruptionLabel(disruption)),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showReweaveAlternatives(context, ref, disruption),
+            onTap: () => _requestDisruption(context, ref, disruption),
           ),
       ],
     ),
   );
 }
 
+Future<void> _requestDisruption(
+  BuildContext context,
+  WidgetRef ref,
+  domain.DisruptionType type,
+) async {
+  final needsDuration = switch (type) {
+    domain.DisruptionType.runningLate ||
+    domain.DisruptionType.meetingOverran ||
+    domain.DisruptionType.taskTookLonger ||
+    domain.DisruptionType.needBreak ||
+    domain.DisruptionType.missedPartOfDay ||
+    domain.DisruptionType.custom => true,
+    _ => false,
+  };
+  if (!needsDuration) {
+    return _showReweaveAlternatives(context, ref, type);
+  }
+  final field = TextEditingController(text: '30');
+  final form = GlobalKey<FormState>();
+  final minutes = await showDialog<int>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(_disruptionLabel(type)),
+      content: Form(
+        key: form,
+        child: TextFormField(
+          controller: field,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Unavailable minutes from now',
+            helperText: 'Your fixed commitments stay in place.',
+          ),
+          validator: (value) {
+            final parsed = int.tryParse(value ?? '');
+            return parsed == null || parsed < 1 || parsed > 1440
+                ? 'Enter 1 to 1440 minutes.'
+                : null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (form.currentState!.validate()) {
+              Navigator.pop(context, int.parse(field.text));
+            }
+          },
+          child: const Text('Review recovery'),
+        ),
+      ],
+    ),
+  );
+  field.dispose();
+  if (minutes != null && context.mounted) {
+    await _showReweaveAlternatives(
+      context,
+      ref,
+      type,
+      unavailableMinutes: minutes,
+    );
+  }
+}
+
 Future<void> _showReweaveAlternatives(
   BuildContext context,
   WidgetRef ref,
-  domain.DisruptionType disruptionType,
-) async {
+  domain.DisruptionType disruptionType, {
+  int? unavailableMinutes,
+}) async {
   final result = await ref
       .read(planningControllerProvider.notifier)
-      .reweaveToday(disruptionType: disruptionType);
+      .reweaveToday(
+        disruptionType: disruptionType,
+        unavailableMinutes: unavailableMinutes,
+      );
   if (!context.mounted) {
     return;
   }
@@ -812,9 +587,12 @@ Future<void> _showReweaveAlternatives(
           children: <Widget>[
             Text(
               result.isFeasible
-                  ? 'The Dayweft Adaptive Engine found recovery options.'
-                  : 'The current plan has constraints that may remain infeasible.',
+                  ? 'Recovery options passed the current scheduling checks.'
+                  : 'No validated recovery option was found. Your plan is unchanged. Review the constraints or adjust remaining work.',
             ),
+            if (result.alternatives.isEmpty)
+              for (final observation in result.observations)
+                Text(observation.message),
             const SizedBox(height: 12),
             for (final alternative in result.alternatives)
               Card(
@@ -828,9 +606,7 @@ Future<void> _showReweaveAlternatives(
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Confidence ${(alternative.confidence * 100).round()}%',
-                      ),
+                      Text(alternative.evidenceSummary),
                       Text(
                         '${alternative.protectedIds.length} fixed item(s) protected',
                       ),
@@ -842,8 +618,15 @@ Future<void> _showReweaveAlternatives(
                           '${alternative.splitTaskIds.length} task(s) may split',
                         ),
                       const SizedBox(height: 8),
-                      for (final change in alternative.changes)
-                        Text('Change: ${change.summary}'),
+                      for (final change in alternative.changes) ...[
+                        Text(
+                          'Change: ${change.summary}\nWhy: ${change.reason}',
+                        ),
+                        if (change.before != null && change.after != null)
+                          Text(
+                            'Original: ${_formatInstant(context, change.before!.start)} – ${_formatInstant(context, change.before!.end)}\nRevised: ${_formatInstant(context, change.after!.start)} – ${_formatInstant(context, change.after!.end)}',
+                          ),
+                      ],
                       for (final tradeOff in alternative.tradeOffs)
                         Text('Trade-off: $tradeOff'),
                       const SizedBox(height: 8),
@@ -911,12 +694,23 @@ void _showRevisionHistory(BuildContext context, LocalDaySnapshot snapshot) {
           const Text('No revisions yet.')
         else
           for (final revision in snapshot.revisions)
-            ListTile(
+            ExpansionTile(
               leading: const Icon(Icons.history),
               title: Text(
                 '${revision.reason}${snapshot.undoneRevisionIds.contains(revision.id) ? ' (undone)' : ''}',
               ),
               subtitle: Text('Revision ${revision.revisionNumber}'),
+              children: [
+                for (final change in compareRevision(
+                  revision.reversibleChangeSetJson,
+                ))
+                  ListTile(
+                    title: Text(change.label),
+                    subtitle: Text(
+                      'Before: ${_revisionValue(context, change.before, change.type)}\nAfter: ${_revisionValue(context, change.after, change.type)}',
+                    ),
+                  ),
+              ],
             ),
       ],
     ),
@@ -931,8 +725,32 @@ IconData _iconForBlockType(String blockType) {
   };
 }
 
+String _formatInstant(BuildContext context, DateTime value) =>
+    '${MaterialLocalizations.of(context).formatShortDate(value)} ${TimeOfDay.fromDateTime(value).format(context)}';
+
+String _revisionValue(
+  BuildContext context,
+  Object? value,
+  RevisionValueType type,
+) {
+  if (value == null || value == '') return 'Not set';
+  return switch (type) {
+    RevisionValueType.instant => _formatInstant(
+      context,
+      DateTime.parse(value as String),
+    ),
+    RevisionValueType.minutes => '$value min',
+    RevisionValueType.flag => value == true ? 'Yes' : 'No',
+    RevisionValueType.predecessors =>
+      '${(value as List<Object?>).length} task(s); selection changed',
+    RevisionValueType.text => '$value',
+  };
+}
+
 IconData _iconForObservation(RealityIssueType type) {
   return switch (type) {
+    RealityIssueType.invalidInput => Icons.error_outline,
+    RealityIssueType.outsideWorkingHours => Icons.schedule_outlined,
     RealityIssueType.overlap => Icons.call_merge,
     RealityIssueType.excessiveUtilisation => Icons.speed_outlined,
     RealityIssueType.insufficientTransition => Icons.swap_horiz,
@@ -964,11 +782,6 @@ String _strategyLabel(domain.ReweaveStrategy strategy) {
     domain.ReweaveStrategy.balancedReweave => 'Balanced Reweave',
     domain.ReweaveStrategy.reducePressure => 'Reduce Pressure',
   };
-}
-
-DateTime _todayAt(TimeOfDay value) {
-  final now = DateTime.now();
-  return DateTime(now.year, now.month, now.day, value.hour, value.minute);
 }
 
 String _formatTime(DateTime value) {

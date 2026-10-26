@@ -98,6 +98,9 @@ class Tasks extends Table {
   TextColumn get title => text()();
   TextColumn get notes => text().nullable()();
   TextColumn get energyRequired => text().nullable()();
+  TextColumn get cognitiveLoad => text().nullable()();
+  TextColumn get dependencyIdsJson =>
+      text().withDefault(const Constant('[]'))();
   TextColumn get requestedDay => text().nullable()();
   TextColumn get requestedStartTime => text().nullable()();
   TextColumn get requestedEndTime => text().nullable()();
@@ -253,7 +256,7 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -330,6 +333,10 @@ class DayweftDatabase extends _$DayweftDatabase {
           await migrator.addColumn(tasks, tasks.requestedStartTime);
           await migrator.addColumn(tasks, tasks.requestedEndTime);
           await migrator.addColumn(tasks, tasks.approximateTime);
+        }
+        if (from < 10) {
+          await migrator.addColumn(tasks, tasks.cognitiveLoad);
+          await migrator.addColumn(tasks, tasks.dependencyIdsJson);
         }
       },
     );

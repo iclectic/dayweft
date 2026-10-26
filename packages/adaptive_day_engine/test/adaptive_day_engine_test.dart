@@ -331,7 +331,13 @@ void main() {
       ),
     );
 
-    expect(result.alternatives.first.splitTaskIds, contains('large'));
+    expect(
+      result.alternatives.every(
+        (alternative) => alternative.splitTaskIds.isEmpty,
+      ),
+      isTrue,
+    );
+    expect(plan.tasks.single.estimatedDuration, const Duration(minutes: 120));
   });
 
   test(

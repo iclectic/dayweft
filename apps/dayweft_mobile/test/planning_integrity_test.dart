@@ -1,3 +1,4 @@
+import 'package:adaptive_day_engine/adaptive_day_engine.dart';
 import 'package:dayweft_domain/dayweft_domain.dart' as domain;
 import 'package:dayweft_mobile/core/database/dayweft_database.dart';
 import 'package:dayweft_mobile/core/errors/planning_failure.dart';
@@ -168,6 +169,71 @@ void main() {
         throwsA(isA<PlanningFailure>()),
       );
       expect((await repository.loadToday()).inboxTasks.single.id, task.id);
+    },
+  );
+
+  test(
+    'proposal change lists cannot bypass fixed commitments or drop tasks',
+    () async {
+      final work = await block();
+      await repository.addTaskToBlock(
+        blockId: work.id,
+        title: 'Preserve identity',
+        estimatedMinutes: 20,
+      );
+      final current = await repository.loadToday();
+      final trusted = (await repository.reweaveToday(
+        disruptionType: domain.DisruptionType.custom,
+      )).alternatives.first;
+      final missingTaskPreview = domain.DayPlan(
+        id: trusted.preview.id,
+        day: trusted.preview.day,
+        timeZone: trusted.preview.timeZone,
+        workingWindow: trusted.preview.workingWindow,
+        blocks: trusted.preview.blocks,
+        tasks: const [],
+        revision: trusted.preview.revision,
+      );
+      for (final forged in [
+        ReweaveAlternative(
+          strategy: trusted.strategy,
+          preview: missingTaskPreview,
+          changes: trusted.changes,
+          protectedIds: trusted.protectedIds,
+          deferredTaskIds: trusted.deferredTaskIds,
+          tradeOffs: trusted.tradeOffs,
+          evidenceSummary: trusted.evidenceSummary,
+        ),
+        ReweaveAlternative(
+          strategy: trusted.strategy,
+          preview: trusted.preview,
+          changes: [
+            domain.ScheduleChange(
+              entityId: work.id,
+              summary: 'Misleading change',
+              reason: 'invalid',
+              before: domain.TimeWindow(start: work.startsAt, end: work.endsAt),
+              after: domain.TimeWindow(
+                start: work.startsAt.add(const Duration(hours: 1)),
+                end: work.endsAt.add(const Duration(hours: 1)),
+              ),
+            ),
+          ],
+          protectedIds: trusted.protectedIds,
+          deferredTaskIds: trusted.deferredTaskIds,
+          tradeOffs: trusted.tradeOffs,
+          evidenceSummary: trusted.evidenceSummary,
+        ),
+      ]) {
+        await expectLater(
+          repository.applyReweaveAlternative(forged),
+          throwsA(isA<PlanningFailure>()),
+        );
+      }
+      final after = await repository.loadToday();
+      expect(after.tasks.single.id, current.tasks.single.id);
+      expect(after.blocks.single.startsAt, work.startsAt);
+      expect(after.plan.revision, current.plan.revision);
     },
   );
 }

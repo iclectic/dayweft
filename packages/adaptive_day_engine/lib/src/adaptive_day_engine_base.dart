@@ -1,6 +1,8 @@
 import 'package:dayweft_domain/dayweft_domain.dart';
 
 enum RealityIssueType {
+  invalidInput,
+  outsideWorkingHours,
   overlap,
   excessiveUtilisation,
   insufficientTransition,
@@ -22,6 +24,15 @@ class RealityObservation {
   final RealityIssueType type;
   final String message;
   final List<String> affectedIds;
+
+  bool get isHardConstraint => switch (type) {
+    RealityIssueType.invalidInput ||
+    RealityIssueType.outsideWorkingHours ||
+    RealityIssueType.overlap ||
+    RealityIssueType.impossibleDeadline ||
+    RealityIssueType.oversizedTask => true,
+    _ => false,
+  };
 }
 
 class ReweaveAlternative {
@@ -33,7 +44,7 @@ class ReweaveAlternative {
     required this.deferredTaskIds,
     this.splitTaskIds = const <String>[],
     required this.tradeOffs,
-    required this.confidence,
+    required this.evidenceSummary,
   });
 
   final ReweaveStrategy strategy;
@@ -43,7 +54,7 @@ class ReweaveAlternative {
   final List<String> deferredTaskIds;
   final List<String> splitTaskIds;
   final List<String> tradeOffs;
-  final double confidence;
+  final String evidenceSummary;
 }
 
 class ReweaveResult {
@@ -71,13 +82,119 @@ class DayweftAdaptiveEngine {
   final Duration preferredBreakDuration;
   final Duration contingencyDuration;
 
+  int _compareBlocks(TimeBlock a, TimeBlock b) {
+    final order = a.window.start.compareTo(b.window.start);
+    return order == 0 ? a.id.compareTo(b.id) : order;
+  }
+
+  List<RealityObservation> _inputObservations(DayPlan plan) {
+    final issues = <RealityObservation>[];
+    void invalid(String message, List<String> ids) => issues.add(
+      RealityObservation(
+        type: RealityIssueType.invalidInput,
+        message: message,
+        affectedIds: ids,
+      ),
+    );
+    if (plan.workingWindow.duration <= Duration.zero ||
+        targetUtilisation <= 0 ||
+        targetUtilisation > 1 ||
+        minimumTransition.isNegative ||
+        preferredBreakDuration <= Duration.zero ||
+        contingencyDuration.isNegative) {
+      invalid('Review the working window and planning buffer preferences.', [
+        plan.id,
+      ]);
+    }
+    if (plan.blocks.map((block) => block.id).toSet().length !=
+            plan.blocks.length ||
+        plan.tasks.map((task) => task.id).toSet().length != plan.tasks.length) {
+      invalid('Every block and task must have a unique identity.', [plan.id]);
+    }
+    final tasks = plan.tasksById;
+    final assigned = <String>{};
+    for (final block in plan.blocks) {
+      if (block.duration <= Duration.zero ||
+          block.buffers.any((buffer) => buffer.duration.isNegative) ||
+          block.reservedBufferDuration > block.duration) {
+        invalid(
+          'Review the duration and internal buffers for ${block.title}.',
+          [block.id],
+        );
+      }
+      for (final id in block.taskIds) {
+        if (!tasks.containsKey(id) || !assigned.add(id)) {
+          invalid(
+            'A task is missing or is assigned more than once without fragment allocations.',
+            [block.id, id],
+          );
+        }
+      }
+    }
+    final graph = {for (final task in plan.tasks) task.id: task.dependencyIds};
+    for (final task in plan.tasks) {
+      final details = TaskDetails(
+        title: task.title,
+        estimatedMinutes: task.estimatedDuration.inMinutes,
+        canSplit: task.canSplit,
+        minimumUsefulMinutes: task.minimumUsefulDuration.inMinutes,
+        dependencyIds: task.dependencyIds,
+      );
+      final issue =
+          details.validationMessage ??
+          taskDependencyIssue(task.id, task.dependencyIds, graph);
+      if (issue != null) invalid(issue, [task.id]);
+      if (task.status == TaskStatus.planned && !assigned.contains(task.id)) {
+        invalid('${task.title} is marked planned but has no allocation.', [
+          task.id,
+        ]);
+      }
+    }
+    return issues;
+  }
+
+  Duration _occupiedDuration(DayPlan plan) {
+    final windows = <TimeWindow>[];
+    for (final block in plan.blocks) {
+      final start = _latestDateTime(
+        block.window.start,
+        plan.workingWindow.start,
+      );
+      final end = block.window.end.isBefore(plan.workingWindow.end)
+          ? block.window.end
+          : plan.workingWindow.end;
+      if (start.isBefore(end)) windows.add(TimeWindow(start: start, end: end));
+    }
+    windows.sort((a, b) => a.start.compareTo(b.start));
+    var total = Duration.zero;
+    DateTime? end;
+    for (final window in windows) {
+      final start = end == null
+          ? window.start
+          : _latestDateTime(window.start, end);
+      if (start.isBefore(window.end)) total += window.end.difference(start);
+      if (end == null || window.end.isAfter(end)) end = window.end;
+    }
+    return total;
+  }
+
   List<RealityObservation> realityCheck(DayPlan plan) {
-    final sortedBlocks = [...plan.blocks]
-      ..sort((a, b) => a.window.start.compareTo(b.window.start));
-    final observations = <RealityObservation>[];
+    final sortedBlocks = [...plan.blocks]..sort(_compareBlocks);
+    final observations = _inputObservations(plan);
 
     for (var index = 0; index < sortedBlocks.length; index += 1) {
       final block = sortedBlocks[index];
+      if (block.type != BlockType.fixed &&
+          (block.window.start.isBefore(plan.workingWindow.start) ||
+              block.window.end.isAfter(plan.workingWindow.end))) {
+        observations.add(
+          RealityObservation(
+            type: RealityIssueType.outsideWorkingHours,
+            message: '${block.title} is outside the permitted working window.',
+            affectedIds: [block.id],
+          ),
+        );
+      }
       if (block.duration.isNegative || block.duration == Duration.zero) {
         observations.add(
           RealityObservation(
@@ -93,14 +210,17 @@ class DayweftAdaptiveEngine {
       }
 
       final previous = sortedBlocks[index - 1];
-      if (previous.window.overlaps(block.window)) {
-        observations.add(
-          RealityObservation(
-            type: RealityIssueType.overlap,
-            message: '${previous.title} overlaps ${block.title}.',
-            affectedIds: <String>[previous.id, block.id],
-          ),
-        );
+      for (var earlier = 0; earlier < index; earlier++) {
+        final other = sortedBlocks[earlier];
+        if (other.window.overlaps(block.window)) {
+          observations.add(
+            RealityObservation(
+              type: RealityIssueType.overlap,
+              message: '${other.title} overlaps ${block.title}.',
+              affectedIds: [other.id, block.id],
+            ),
+          );
+        }
       }
 
       final gap = block.window.start.difference(previous.window.end);
@@ -117,13 +237,10 @@ class DayweftAdaptiveEngine {
       }
     }
 
-    final planned = sortedBlocks.fold<Duration>(
-      Duration.zero,
-      (total, block) => total + block.duration + block.reservedBufferDuration,
-    );
+    final planned = _occupiedDuration(plan);
     final available = plan.workingWindow.duration;
     if (available > Duration.zero) {
-      final utilisation = planned.inMinutes / available.inMinutes;
+      final utilisation = planned.inMicroseconds / available.inMicroseconds;
       if (utilisation > targetUtilisation) {
         observations.add(
           RealityObservation(
@@ -158,56 +275,92 @@ class DayweftAdaptiveEngine {
         .map((block) => block.id)
         .toList();
 
-    final alternatives = ReweaveStrategy.values.map((strategy) {
-      final deferred = _deferredTasksFor(plan, strategy);
-      final split = _splitTaskIdsFor(plan, deferred);
-      final deferredPreview = _previewWithDeferredTasks(plan, deferred);
-      final preview = _reflowFlexibleBlocks(deferredPreview, strategy);
-      final changes = <ScheduleChange>[
-        ScheduleChange(
-          entityId: plan.id,
-          summary: 'Preview generated for ${strategy.label}.',
-          reason: _reasonFor(strategy, disruption),
-        ),
-        ...deferred.map((taskId) {
-          final task = plan.tasksById[taskId];
-          return ScheduleChange(
-            entityId: taskId,
-            summary: 'Defer ${task?.title ?? 'optional task'}.',
-            reason:
-                '${strategy.label} protects fixed commitments by removing '
-                'lower-priority work from today.',
-          );
-        }),
-        ...split.map((taskId) {
-          final task = plan.tasksById[taskId];
-          return ScheduleChange(
-            entityId: taskId,
-            summary: 'Split ${task?.title ?? 'task'} into useful fragments.',
-            reason:
-                'The task is larger than one available window and permits '
-                'splitting without going below its minimum useful duration.',
-          );
-        }),
-        ..._movementChanges(plan, preview),
-      ];
-
-      return ReweaveAlternative(
-        strategy: strategy,
-        preview: preview,
-        changes: changes,
-        protectedIds: fixedIds,
-        deferredTaskIds: deferred,
-        splitTaskIds: split,
-        tradeOffs: _tradeOffsFor(strategy, deferred.length),
-        confidence: _confidenceFor(observations),
+    if (observations.any(
+          (issue) => issue.type == RealityIssueType.invalidInput,
+        ) ||
+        (disruption.duration?.isNegative ?? false)) {
+      return ReweaveResult(
+        observations: [
+          ...observations,
+          if (disruption.duration?.isNegative ?? false)
+            const RealityObservation(
+              type: RealityIssueType.invalidInput,
+              message: 'Disruption duration must not be negative.',
+              affectedIds: [],
+            ),
+        ],
+        alternatives: const [],
+        isFeasible: false,
       );
-    }).toList();
+    }
+    final unavailable =
+        disruption.duration == null || disruption.duration == Duration.zero
+        ? null
+        : TimeWindow(
+            start: disruption.reportedAt,
+            end: disruption.reportedAt.add(disruption.duration!),
+          );
+    final alternatives = ReweaveStrategy.values
+        .map((strategy) {
+          final deferred = _deferredTasksFor(plan, strategy);
+          final split = _splitTaskIdsFor(plan, deferred);
+          final deferredPreview = _previewWithDeferredTasks(plan, deferred);
+          final preview = _reflowFlexibleBlocks(deferredPreview, unavailable);
+          if (preview == null ||
+              split.isNotEmpty ||
+              !_isFeasible(realityCheck(preview))) {
+            return null;
+          }
+          final changes = <ScheduleChange>[
+            ScheduleChange(
+              entityId: plan.id,
+              summary: 'Preview generated for ${strategy.label}.',
+              reason: _reasonFor(strategy, disruption),
+            ),
+            ...deferred.map((taskId) {
+              final task = plan.tasksById[taskId];
+              return ScheduleChange(
+                entityId: taskId,
+                summary: 'Defer ${task?.title ?? 'optional task'}.',
+                reason:
+                    '${strategy.label} protects fixed commitments by removing '
+                    'lower-priority work from today.',
+              );
+            }),
+            ...split.map((taskId) {
+              final task = plan.tasksById[taskId];
+              return ScheduleChange(
+                entityId: taskId,
+                summary:
+                    'Split ${task?.title ?? 'task'} into useful fragments.',
+                reason:
+                    'The task is larger than one available window and permits '
+                    'splitting without going below its minimum useful duration.',
+              );
+            }),
+            ..._movementChanges(plan, preview),
+          ];
+
+          return ReweaveAlternative(
+            strategy: strategy,
+            preview: preview,
+            changes: changes,
+            protectedIds: fixedIds,
+            deferredTaskIds: deferred,
+            splitTaskIds: split,
+            tradeOffs: _tradeOffsFor(strategy, deferred.length),
+            evidenceSummary: plan.tasks.isEmpty
+                ? 'No task-duration evidence is available. Only block reservations were checked.'
+                : 'Based on ${plan.tasks.where((task) => task.status == TaskStatus.planned).length} user-entered task estimate(s). This is not a prediction of completion.',
+          );
+        })
+        .whereType<ReweaveAlternative>()
+        .toList();
 
     return ReweaveResult(
       observations: observations,
       alternatives: alternatives,
-      isFeasible: _isFeasible(observations),
+      isFeasible: alternatives.isNotEmpty,
     );
   }
 
@@ -218,7 +371,10 @@ class DayweftAdaptiveEngine {
       for (final taskId in block.taskIds) {
         final task = tasksById[taskId];
         final deadline = task?.deadline;
-        if (task == null || deadline == null) {
+        if (task == null ||
+            deadline == null ||
+            task.status == TaskStatus.completed ||
+            task.status == TaskStatus.deferred) {
           continue;
         }
         if (block.window.end.isAfter(deadline)) {
@@ -240,6 +396,25 @@ class DayweftAdaptiveEngine {
     final observations = <RealityObservation>[];
     for (final block in plan.blocks) {
       final usableDuration = block.duration - block.reservedBufferDuration;
+      final remaining = block.taskIds
+          .map((id) => tasksById[id])
+          .whereType<DayweftTask>()
+          .where((task) => task.status == TaskStatus.planned)
+          .toList();
+      final demand = remaining.fold(
+        Duration.zero,
+        (total, task) => total + task.planningDuration,
+      );
+      if (remaining.length > 1 && demand > usableDuration) {
+        observations.add(
+          RealityObservation(
+            type: RealityIssueType.oversizedTask,
+            message:
+                '${block.title} has ${demand.inMinutes} minutes of work but only ${usableDuration.inMinutes} usable minutes.',
+            affectedIds: [block.id, ...remaining.map((task) => task.id)],
+          ),
+        );
+      }
       for (final taskId in block.taskIds) {
         final task = tasksById[taskId];
         if (task == null) {
@@ -424,18 +599,24 @@ class DayweftAdaptiveEngine {
   }
 
   bool _isFeasible(List<RealityObservation> observations) {
-    return observations.every(
-      (observation) =>
-          observation.type != RealityIssueType.overlap &&
-          observation.type != RealityIssueType.impossibleDeadline &&
-          observation.type != RealityIssueType.oversizedTask,
-    );
+    return !observations.any((observation) => observation.isHardConstraint);
   }
 
   List<String> _deferredTasksFor(DayPlan plan, ReweaveStrategy strategy) {
     final candidates =
         plan.tasks.where((task) {
           return task.status == TaskStatus.planned &&
+              task.deadline == null &&
+              !plan.blocks.any(
+                (block) =>
+                    block.type == BlockType.fixed &&
+                    block.taskIds.contains(task.id),
+              ) &&
+              !plan.tasks.any(
+                (other) =>
+                    other.status == TaskStatus.planned &&
+                    other.dependencyIds.contains(task.id),
+              ) &&
               (task.priority == TaskPriority.low ||
                   task.priority == TaskPriority.medium);
         }).toList()..sort((a, b) {
@@ -445,7 +626,10 @@ class DayweftAdaptiveEngine {
           if (priorityComparison != 0) {
             return priorityComparison;
           }
-          return b.planningDuration.compareTo(a.planningDuration);
+          final durationOrder = b.planningDuration.compareTo(
+            a.planningDuration,
+          );
+          return durationOrder == 0 ? a.id.compareTo(b.id) : durationOrder;
         });
 
     final limit = switch (strategy) {
@@ -506,74 +690,61 @@ class DayweftAdaptiveEngine {
     return changes;
   }
 
-  DayPlan _reflowFlexibleBlocks(DayPlan plan, ReweaveStrategy strategy) {
-    final sortedBlocks = [...plan.blocks]
-      ..sort((a, b) => a.window.start.compareTo(b.window.start));
-    final reflowedBlocks = <TimeBlock>[];
-    var currentEnd = plan.workingWindow.start;
-    for (final block in sortedBlocks) {
-      if (block.type == BlockType.fixed) {
-        reflowedBlocks.add(block);
-        if (block.window.end.isAfter(currentEnd)) {
-          currentEnd = block.window.end;
-        }
+  DayPlan? _reflowFlexibleBlocks(DayPlan plan, TimeWindow? unavailable) {
+    final fixed = plan.blocks
+        .where((block) => block.type == BlockType.fixed)
+        .toList();
+    final occupied = [for (final block in fixed) block.window, ?unavailable];
+    final reflowed = [...fixed];
+    final flexible =
+        plan.blocks.where((block) => block.type != BlockType.fixed).toList()
+          ..sort(_compareBlocks);
+    for (final block in flexible) {
+      // Fully elapsed reservations stay in place; unfinished work needs explicit remaining-work input.
+      if (unavailable != null && !block.window.end.isAfter(unavailable.start)) {
+        reflowed.add(block);
+        occupied.add(block.window);
         continue;
       }
-
-      final nextFixed = _nextFixedBlock(sortedBlocks, block);
-      final latestEnd = nextFixed == null
-          ? plan.workingWindow.end
-          : nextFixed.window.start.subtract(minimumTransition);
-      final earliestStart = currentEnd == plan.workingWindow.start
-          ? block.window.start
-          : currentEnd.add(minimumTransition);
-      final start = _latestDateTime(block.window.start, earliestStart);
-      final end = start.add(block.duration);
-      final canMove =
-          !end.isAfter(latestEnd) &&
-          !start.isBefore(plan.workingWindow.start) &&
-          !end.isAfter(plan.workingWindow.end);
-
-      if (canMove) {
-        final movedBlock = TimeBlock(
-          id: block.id,
-          title: block.title,
-          window: TimeWindow(start: start, end: end),
-          type: block.type,
-          taskIds: block.taskIds,
-          category: block.category,
-          sourceId: block.sourceId,
-          buffers: block.buffers,
-        );
-        reflowedBlocks.add(movedBlock);
-        currentEnd = movedBlock.window.end;
-      } else {
-        reflowedBlocks.add(block);
-        if (block.window.end.isAfter(currentEnd)) {
-          currentEnd = block.window.end;
+      if (unavailable != null &&
+          block.window.start.isBefore(unavailable.start)) {
+        return null;
+      }
+      var start = _latestDateTime(block.window.start, plan.workingWindow.start);
+      occupied.sort((a, b) => a.start.compareTo(b.start));
+      for (final window in occupied) {
+        if (start.isBefore(window.end.add(minimumTransition)) &&
+            start
+                .add(block.duration)
+                .isAfter(window.start.subtract(minimumTransition))) {
+          start = window.end.add(minimumTransition);
         }
       }
+      final end = start.add(block.duration);
+      if (end.isAfter(plan.workingWindow.end)) return null;
+      final moved = TimeBlock(
+        id: block.id,
+        title: block.title,
+        window: TimeWindow(start: start, end: end),
+        type: block.type,
+        taskIds: block.taskIds,
+        category: block.category,
+        sourceId: block.sourceId,
+        buffers: block.buffers,
+      );
+      reflowed.add(moved);
+      occupied.add(moved.window);
     }
-
+    reflowed.sort(_compareBlocks);
     return DayPlan(
       id: plan.id,
       day: plan.day,
       timeZone: plan.timeZone,
       workingWindow: plan.workingWindow,
-      blocks: reflowedBlocks,
+      blocks: reflowed,
       tasks: plan.tasks,
       revision: plan.revision,
     );
-  }
-
-  TimeBlock? _nextFixedBlock(List<TimeBlock> sortedBlocks, TimeBlock block) {
-    for (final candidate in sortedBlocks) {
-      if (candidate.window.start.isAfter(block.window.start) &&
-          candidate.type == BlockType.fixed) {
-        return candidate;
-      }
-    }
-    return null;
   }
 
   DateTime _latestDateTime(DateTime first, DateTime second) {
@@ -664,17 +835,5 @@ class DayweftAdaptiveEngine {
           'Defers $deferredCount lower-priority task(s).',
       ],
     };
-  }
-
-  double _confidenceFor(List<RealityObservation> observations) {
-    final severeCount = observations
-        .where(
-          (observation) =>
-              observation.type == RealityIssueType.overlap ||
-              observation.type == RealityIssueType.impossibleDeadline,
-        )
-        .length;
-    final confidence = 0.9 - (severeCount * 0.2) - (observations.length * 0.03);
-    return confidence.clamp(0.3, 0.9);
   }
 }

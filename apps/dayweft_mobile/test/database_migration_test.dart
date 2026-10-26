@@ -1,33 +1,37 @@
 import 'dart:io';
 
 import 'package:dayweft_mobile/core/database/dayweft_database.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('database schema starts at version 9 and creates core tables', () async {
-    final database = DayweftDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
+  test(
+    'database schema starts at version 10 and creates core tables',
+    () async {
+      final database = DayweftDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
 
-    expect(database.schemaVersion, 9);
+      expect(database.schemaVersion, 10);
 
-    final tables = await database
-        .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
-        .get();
+      final tables = await database
+          .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
+          .get();
 
-    final tableNames = tables.map((row) => row.read<String>('name'));
-    expect(tableNames, contains('day_plans'));
-    expect(tableNames, contains('user_preferences'));
-    expect(tableNames, contains('time_blocks'));
-    expect(tableNames, contains('tasks'));
-    expect(tableNames, contains('schedule_revisions'));
-    expect(tableNames, contains('sync_operations'));
-    expect(tableNames, contains('estimation_records'));
-    expect(tableNames, contains('energy_check_ins'));
-    expect(tableNames, contains('focus_sessions'));
-    expect(tableNames, contains('share_links'));
-    expect(tableNames, contains('calendar_connections'));
-  });
+      final tableNames = tables.map((row) => row.read<String>('name'));
+      expect(tableNames, contains('day_plans'));
+      expect(tableNames, contains('user_preferences'));
+      expect(tableNames, contains('time_blocks'));
+      expect(tableNames, contains('tasks'));
+      expect(tableNames, contains('schedule_revisions'));
+      expect(tableNames, contains('sync_operations'));
+      expect(tableNames, contains('estimation_records'));
+      expect(tableNames, contains('energy_check_ins'));
+      expect(tableNames, contains('focus_sessions'));
+      expect(tableNames, contains('share_links'));
+      expect(tableNames, contains('calendar_connections'));
+    },
+  );
 
   test('version 5 preferences migrate without losing local choices', () async {
     final executor = NativeDatabase.memory(
@@ -76,7 +80,7 @@ void main() {
     final version = await database
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 9);
+    expect(version.read<int>('user_version'), 10);
     final legacy = await database
         .select(database.estimationRecords)
         .getSingle();
@@ -108,6 +112,8 @@ void main() {
           ),
         );
     for (final column in [
+      'cognitive_load',
+      'dependency_ids_json',
       'energy_required',
       'requested_day',
       'requested_start_time',
@@ -134,4 +140,49 @@ void main() {
       contains('revision_undos'),
     );
   });
+
+  test(
+    'version 9 task details survive the cognitive-load/dependency upgrade',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('calm-time-v9-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final previous = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime.now();
+      await previous
+          .into(previous.tasks)
+          .insert(
+            TasksCompanion.insert(
+              id: 'v9-task',
+              title: 'Preserve existing details',
+              estimatedMinutes: 45,
+              priority: 'high',
+              status: 'inbox',
+              sortOrder: 0,
+              notes: const Value('Personal notes'),
+              energyRequired: const Value('low'),
+              syncState: SyncState.localOnly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await previous.customStatement(
+        'ALTER TABLE tasks DROP COLUMN cognitive_load',
+      );
+      await previous.customStatement(
+        'ALTER TABLE tasks DROP COLUMN dependency_ids_json',
+      );
+      await previous.customStatement('PRAGMA user_version = 9');
+      await previous.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final task = await upgraded.select(upgraded.tasks).getSingle();
+      expect(task.title, 'Preserve existing details');
+      expect(task.notes, 'Personal notes');
+      expect(task.energyRequired, 'low');
+      expect(task.cognitiveLoad, isNull);
+      expect(task.dependencyIdsJson, '[]');
+      expect(task.localVersion, 1);
+    },
+  );
 }

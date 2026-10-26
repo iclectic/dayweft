@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:adaptive_day_engine/adaptive_day_engine.dart';
 import 'package:dayweft_domain/dayweft_domain.dart' as domain;
@@ -7,6 +8,35 @@ import 'package:dayweft_mobile/core/errors/planning_failure.dart';
 import 'package:dayweft_mobile/features/onboarding/domain/onboarding_preferences.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+
+List<String> taskDependencyIds(Task task) {
+  final Object? decoded = jsonDecode(task.dependencyIdsJson);
+  if (decoded is! List<Object?> || decoded.any((id) => id is! String)) {
+    throw const PlanningFailure(
+      PlanningFailureCode.invalidInput,
+      'Stored task dependencies could not be read. Restore a valid local backup.',
+    );
+  }
+  return decoded.cast<String>();
+}
+
+domain.TaskDetails taskDetailsFor(Task task) => domain.TaskDetails(
+  title: task.title,
+  estimatedMinutes: task.estimatedMinutes,
+  priority: domain.TaskPriority.values.byName(task.priority),
+  category: task.category,
+  notes: task.notes,
+  deadline: task.deadline,
+  energyRequired: task.energyRequired == null
+      ? null
+      : domain.EnergyLevel.values.byName(task.energyRequired!),
+  cognitiveLoad: task.cognitiveLoad == null
+      ? null
+      : domain.CognitiveLoad.values.byName(task.cognitiveLoad!),
+  canSplit: task.canSplit,
+  minimumUsefulMinutes: task.minimumUsefulMinutes,
+  dependencyIds: taskDependencyIds(task),
+);
 
 class LocalDaySnapshot {
   const LocalDaySnapshot({
@@ -211,9 +241,8 @@ class LocalPlanningRepository {
     await _database.transaction(() async {
       for (final task in allTasks) {
         if (task.sourceId == 'sample-data') {
-          await (_database.update(
-            _database.tasks,
-          )..where((row) => row.id.equals(task.id))).write(
+          await _writeTask(
+            task.id,
             TasksCompanion(
               status: const Value('deleted'),
               deletedAt: Value(now),
@@ -222,9 +251,8 @@ class LocalPlanningRepository {
           );
         } else if (sampleBlocks.contains(task.blockId)) {
           // Personal tasks survive removal of the sample container.
-          await (_database.update(
-            _database.tasks,
-          )..where((row) => row.id.equals(task.id))).write(
+          await _writeTask(
+            task.id,
             TasksCompanion(
               blockId: const Value(null),
               dayPlanId: const Value(null),
@@ -235,9 +263,8 @@ class LocalPlanningRepository {
         }
       }
       for (final block in allSampleBlocks) {
-        await (_database.update(
-          _database.timeBlocks,
-        )..where((row) => row.id.equals(block.id))).write(
+        await _writeBlock(
+          block.id,
           TimeBlocksCompanion(deletedAt: Value(now), updatedAt: Value(now)),
         );
       }
@@ -400,15 +427,13 @@ class LocalPlanningRepository {
     final blockTasks = snapshot.tasksForBlock(blockId);
     final now = DateTime.now();
     await _database.transaction(() async {
-      await (_database.update(
-        _database.timeBlocks,
-      )..where((row) => row.id.equals(blockId))).write(
+      await _writeBlock(
+        blockId,
         TimeBlocksCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
       for (final task in blockTasks) {
-        await (_database.update(
-          _database.tasks,
-        )..where((row) => row.id.equals(task.id))).write(
+        await _writeTask(
+          task.id,
           TasksCompanion(
             status: Value(task.status == 'completed' ? 'completed' : 'inbox'),
             dayPlanId: const Value(null),
@@ -435,29 +460,66 @@ class LocalPlanningRepository {
     required DateTime startsAt,
     required DateTime endsAt,
     required String blockType,
+    int? expectedVersion,
+    String? category,
+    int? travelBufferMinutes,
+    int? preparationBufferMinutes,
+    int? transitionBufferMinutes,
+    int? recoveryBufferMinutes,
   }) async {
-    _validateBlock(title, startsAt, endsAt, blockType, const []);
     final snapshot = await loadToday();
     final block = snapshot.blocks.firstWhere(
       (candidate) => candidate.id == blockId,
     );
+    if (expectedVersion != null && block.localVersion != expectedVersion) {
+      throw const PlanningFailure(
+        PlanningFailureCode.staleProposal,
+        'This block changed. Close the editor and review the latest version.',
+      );
+    }
+    _validateBlock(title, startsAt, endsAt, blockType, [
+      travelBufferMinutes ?? block.travelBufferMinutes,
+      preparationBufferMinutes ?? block.preparationBufferMinutes,
+      transitionBufferMinutes ?? block.transitionBufferMinutes,
+      recoveryBufferMinutes ?? block.recoveryBufferMinutes,
+    ]);
     final now = DateTime.now();
     await _database.transaction(() async {
-      await (_database.update(
-        _database.timeBlocks,
-      )..where((row) => row.id.equals(blockId))).write(
+      await _writeBlock(
+        blockId,
         TimeBlocksCompanion(
           title: Value(title),
           startsAt: Value(startsAt),
           endsAt: Value(endsAt),
           blockType: Value(blockType),
+          category: Value(_optionalText(category ?? block.category)),
+          travelBufferMinutes: Value(
+            travelBufferMinutes ?? block.travelBufferMinutes,
+          ),
+          preparationBufferMinutes: Value(
+            preparationBufferMinutes ?? block.preparationBufferMinutes,
+          ),
+          transitionBufferMinutes: Value(
+            transitionBufferMinutes ?? block.transitionBufferMinutes,
+          ),
+          recoveryBufferMinutes: Value(
+            recoveryBufferMinutes ?? block.recoveryBufferMinutes,
+          ),
           updatedAt: Value(now),
         ),
       );
       await _recordRevision(
         snapshot.plan,
         'Edited block "${block.title}".',
-        <String, Object?>{'undo': 'update_block', 'block': _blockJson(block)},
+        <String, Object?>{
+          'undo': 'update_block',
+          'block': _blockJson(block),
+          'after': _blockJson(
+            await (_database.select(
+              _database.timeBlocks,
+            )..where((row) => row.id.equals(blockId))).getSingle(),
+          ),
+        },
       );
     });
   }
@@ -505,9 +567,8 @@ class LocalPlanningRepository {
     final now = DateTime.now();
     await _database.transaction(() async {
       for (var index = 0; index < blocks.length; index += 1) {
-        await (_database.update(
-          _database.timeBlocks,
-        )..where((row) => row.id.equals(blocks[index].id))).write(
+        await _writeBlock(
+          blocks[index].id,
           TimeBlocksCompanion(sortOrder: Value(index), updatedAt: Value(now)),
         );
       }
@@ -579,6 +640,175 @@ class LocalPlanningRepository {
     ),
   ], sourceId: sourceId);
 
+  Future<void> updateTask({
+    required String taskId,
+    required int expectedVersion,
+    required domain.TaskDetails details,
+  }) async {
+    final issue = details.validationMessage;
+    if (issue != null) {
+      throw PlanningFailure(PlanningFailureCode.invalidInput, issue);
+    }
+    final snapshot = await loadToday();
+    await _database.transaction(() async {
+      final task = await _requireTask(taskId, expectedVersion: expectedVersion);
+      final allTasks = await (_database.select(
+        _database.tasks,
+      )..where((row) => row.deletedAt.isNull())).get();
+      final dependencyIssue = domain.taskDependencyIssue(
+        taskId,
+        details.dependencyIds,
+        {for (final row in allTasks) row.id: taskDependencyIds(row)},
+      );
+      if (dependencyIssue != null) {
+        throw PlanningFailure(
+          PlanningFailureCode.constraintViolation,
+          dependencyIssue,
+        );
+      }
+      await _writeTask(
+        taskId,
+        TasksCompanion(
+          title: Value(details.title.trim()),
+          estimatedMinutes: Value(details.estimatedMinutes),
+          priority: Value(details.priority.name),
+          category: Value(_optionalText(details.category)),
+          notes: Value(_optionalText(details.notes)),
+          deadline: Value(details.deadline),
+          energyRequired: Value(details.energyRequired?.name),
+          cognitiveLoad: Value(details.cognitiveLoad?.name),
+          dependencyIdsJson: Value(jsonEncode(details.dependencyIds)),
+          canSplit: Value(details.canSplit),
+          minimumUsefulMinutes: Value(details.minimumUsefulMinutes),
+        ),
+      );
+      final after = await _requireTask(taskId);
+      await _recordRevision(snapshot.plan, 'Edited task "${task.title}".', {
+        'undo': 'restore_task_details',
+        'task': _taskJson(task),
+        'after': _taskJson(after),
+      });
+    });
+  }
+
+  Future<List<Task>> loadTaskCandidates() =>
+      (_database.select(_database.tasks)
+            ..where((row) => row.deletedAt.isNull())
+            ..orderBy([(row) => OrderingTerm(expression: row.createdAt)]))
+          .get();
+
+  Future<String> deleteTask(
+    String taskId, {
+    required int expectedVersion,
+  }) async {
+    final snapshot = await loadToday();
+    return _database.transaction(() async {
+      final task = await _requireTask(taskId, expectedVersion: expectedVersion);
+      final dependents =
+          await (_database.select(_database.tasks)..where(
+                (row) =>
+                    row.deletedAt.isNull() & row.status.isNotValue('completed'),
+              ))
+              .get();
+      if (dependents.any((row) => taskDependencyIds(row).contains(taskId))) {
+        throw const PlanningFailure(
+          PlanningFailureCode.constraintViolation,
+          'Another task needs this predecessor. Remove that dependency before deleting it.',
+        );
+      }
+      await _writeTask(
+        taskId,
+        TasksCompanion(
+          status: const Value('deleted'),
+          deletedAt: Value(DateTime.now()),
+        ),
+      );
+      return _recordRevision(snapshot.plan, 'Deleted task "${task.title}".', {
+        'undo': 'restore_task_details',
+        'task': _taskJson(task),
+      });
+    });
+  }
+
+  Future<void> returnTaskToInbox(
+    String taskId, {
+    required int expectedVersion,
+  }) async {
+    final snapshot = await loadToday();
+    await _database.transaction(() async {
+      final task = await _requireTask(taskId, expectedVersion: expectedVersion);
+      if (task.blockId == null && task.status == 'inbox') return;
+      await _writeTask(
+        taskId,
+        TasksCompanion(
+          dayPlanId: const Value(null),
+          blockId: const Value(null),
+          status: Value(task.status == 'completed' ? 'completed' : 'inbox'),
+          sortOrder: Value(snapshot.inboxTasks.length),
+        ),
+      );
+      await _recordRevision(
+        snapshot.plan,
+        'Returned "${task.title}" to Inbox.',
+        {
+          'undo': 'restore_tasks',
+          'tasks': [_taskPlacementJson(task)],
+        },
+      );
+    });
+  }
+
+  Future<Task> _requireTask(String id, {int? expectedVersion}) async {
+    final task =
+        await (_database.select(_database.tasks)
+              ..where((row) => row.id.equals(id) & row.deletedAt.isNull()))
+            .getSingleOrNull();
+    if (task == null) {
+      throw const PlanningFailure(
+        PlanningFailureCode.notFound,
+        'This task is no longer available.',
+      );
+    }
+    if (expectedVersion != null && task.localVersion != expectedVersion) {
+      throw const PlanningFailure(
+        PlanningFailureCode.staleProposal,
+        'This task changed. Close the editor and review the latest version.',
+      );
+    }
+    return task;
+  }
+
+  Future<void> _writeTask(String id, TasksCompanion changes) async {
+    final current = await (_database.select(
+      _database.tasks,
+    )..where((row) => row.id.equals(id))).getSingle();
+    await (_database.update(
+      _database.tasks,
+    )..where((row) => row.id.equals(id))).write(
+      changes.copyWith(
+        localVersion: Value(current.localVersion + 1),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> _writeBlock(String id, TimeBlocksCompanion changes) async {
+    final current = await (_database.select(
+      _database.timeBlocks,
+    )..where((row) => row.id.equals(id))).getSingle();
+    await (_database.update(
+      _database.timeBlocks,
+    )..where((row) => row.id.equals(id))).write(
+      changes.copyWith(
+        localVersion: Value(current.localVersion + 1),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  String? _optionalText(String? value) =>
+      value == null || value.trim().isEmpty ? null : value.trim();
+
   Future<void> addInboxTasks(List<String> titles) => addConfirmedCaptures(
     titles
         .where((title) => title.trim().isNotEmpty)
@@ -591,12 +821,15 @@ class LocalPlanningRepository {
   Future<void> addConfirmedCapture(ParsedCapture capture) =>
       addConfirmedCaptures([capture]);
 
-  Future<void> addConfirmedCaptures(List<ParsedCapture> captures) =>
-      _saveCaptures(captures);
+  Future<void> addConfirmedCaptures(
+    List<ParsedCapture> captures, {
+    String? blockId,
+  }) => _saveCaptures(captures, blockId: blockId);
 
   Future<void> _saveCaptures(
     List<ParsedCapture> captures, {
     String? sourceId,
+    String? blockId,
   }) async {
     if (captures.isEmpty || captures.length > 200) {
       throw const PlanningFailure(
@@ -620,6 +853,9 @@ class LocalPlanningRepository {
       }
     }
     final snapshot = await loadToday();
+    if (blockId != null) {
+      _requireBlock(snapshot, blockId);
+    }
     final now = DateTime.now();
     final ids = <String>[];
     await _database.transaction(() async {
@@ -632,10 +868,12 @@ class LocalPlanningRepository {
             .insert(
               TasksCompanion.insert(
                 id: id,
+                dayPlanId: Value(blockId == null ? null : snapshot.plan.id),
+                blockId: Value(blockId),
                 title: capture.title.trim(),
                 estimatedMinutes: capture.estimatedMinutes,
                 priority: capture.priority,
-                status: 'inbox',
+                status: blockId == null ? 'inbox' : 'planned',
                 category: Value(capture.category),
                 sourceId: Value(sourceId),
                 energyRequired: Value(capture.energyRequired),
@@ -668,18 +906,15 @@ class LocalPlanningRepository {
   }) async {
     final snapshot = await loadToday();
     _requireBlock(snapshot, blockId);
-    final task = snapshot.inboxTasks.firstWhere(
-      (candidate) => candidate.id == taskId,
-    );
+    final task = await _requireTask(taskId);
     final now = DateTime.now();
     await _database.transaction(() async {
-      await (_database.update(
-        _database.tasks,
-      )..where((row) => row.id.equals(taskId))).write(
+      await _writeTask(
+        taskId,
         TasksCompanion(
           dayPlanId: Value(snapshot.plan.id),
           blockId: Value(blockId),
-          status: const Value('planned'),
+          status: Value(task.status == 'completed' ? 'completed' : 'planned'),
           sortOrder: Value(snapshot.tasksForBlock(blockId).length),
           updatedAt: Value(now),
         ),
@@ -687,7 +922,10 @@ class LocalPlanningRepository {
       await _recordRevision(
         snapshot.plan,
         'Moved "${task.title}" from Inbox to Today Timeline.',
-        <String, Object?>{'undo': 'move_task_to_inbox', 'taskId': taskId},
+        <String, Object?>{
+          'undo': 'restore_tasks',
+          'tasks': [_taskPlacementJson(task)],
+        },
       );
     });
   }
@@ -703,9 +941,8 @@ class LocalPlanningRepository {
     );
     final now = DateTime.now();
     await _database.transaction(() async {
-      await (_database.update(
-        _database.tasks,
-      )..where((row) => row.id.equals(taskId))).write(
+      await _writeTask(
+        taskId,
         TasksCompanion(
           blockId: Value(blockId),
           sortOrder: Value(snapshot.tasksForBlock(blockId).length),
@@ -716,9 +953,8 @@ class LocalPlanningRepository {
         snapshot.plan,
         'Moved "${task.title}" between blocks.',
         <String, Object?>{
-          'undo': 'move_task_to_block',
-          'taskId': taskId,
-          'blockId': task.blockId,
+          'undo': 'restore_tasks',
+          'tasks': [_taskPlacementJson(task)],
         },
       );
     });
@@ -735,9 +971,8 @@ class LocalPlanningRepository {
         : 'completed';
     final now = DateTime.now();
     await _database.transaction(() async {
-      await (_database.update(
-        _database.tasks,
-      )..where((row) => row.id.equals(taskId))).write(
+      await _writeTask(
+        taskId,
         TasksCompanion(status: Value(nextStatus), updatedAt: Value(now)),
       );
       await _recordRevision(
@@ -805,6 +1040,12 @@ class LocalPlanningRepository {
   }
 
   Future<void> importLocalData(String rawJson) async {
+    if (rawJson.length > 5 * 1024 * 1024) {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'Import up to 5 MB at a time.',
+      );
+    }
     final decoded = jsonDecode(rawJson);
     if (decoded is! Map<String, Object?>) {
       throw const FormatException('Dayweft import must be a JSON object.');
@@ -815,6 +1056,66 @@ class LocalPlanningRepository {
     final tasks = (decoded['tasks'] as List<Object?>? ?? const <Object?>[])
         .whereType<Map<String, Object?>>()
         .toList();
+    if (blocks.length > 500 || tasks.length > 2000) {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'Import up to 500 blocks and 2000 tasks at a time.',
+      );
+    }
+    final originalTaskIds = [
+      for (var index = 0; index < tasks.length; index++)
+        tasks[index]['id'] as String? ?? 'import-task-$index',
+    ];
+    if (originalTaskIds.toSet().length != originalTaskIds.length) {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'Imported task identities must be unique.',
+      );
+    }
+    final taskIdMap = {for (final id in originalTaskIds) id: _uuid.v4()};
+    final dependencies = <String, List<String>>{};
+    for (var index = 0; index < tasks.length; index++) {
+      final task = tasks[index];
+      final ids = (task['dependencyIds'] as List<Object?>? ?? [])
+          .cast<String>();
+      dependencies[originalTaskIds[index]] = ids;
+      final details = domain.TaskDetails(
+        title: task['title'] as String? ?? 'Imported task',
+        estimatedMinutes: task['estimatedMinutes'] as int? ?? 30,
+        priority: domain.TaskPriority.values.byName(
+          task['priority'] as String? ?? 'medium',
+        ),
+        notes: task['notes'] as String?,
+        category: task['category'] as String?,
+        energyRequired: task['energyRequired'] == null
+            ? null
+            : domain.EnergyLevel.values.byName(
+                task['energyRequired']! as String,
+              ),
+        cognitiveLoad: task['cognitiveLoad'] == null
+            ? null
+            : domain.CognitiveLoad.values.byName(
+                task['cognitiveLoad']! as String,
+              ),
+        canSplit: task['canSplit'] as bool? ?? false,
+        minimumUsefulMinutes: task['minimumUsefulMinutes'] as int? ?? 15,
+        dependencyIds: ids,
+      );
+      final issue = details.validationMessage;
+      if (issue != null) {
+        throw PlanningFailure(PlanningFailureCode.invalidInput, issue);
+      }
+    }
+    for (final entry in dependencies.entries) {
+      final issue = domain.taskDependencyIssue(
+        entry.key,
+        entry.value,
+        dependencies,
+      );
+      if (issue != null) {
+        throw PlanningFailure(PlanningFailureCode.constraintViolation, issue);
+      }
+    }
     final snapshot = await loadToday();
     final now = DateTime.now();
     final importedBlockIds = <String, String>{};
@@ -822,6 +1123,18 @@ class LocalPlanningRepository {
 
     await _database.transaction(() async {
       for (final block in blocks) {
+        _validateBlock(
+          block['title'] as String? ?? 'Imported block',
+          DateTime.parse(block['startsAt']! as String),
+          DateTime.parse(block['endsAt']! as String),
+          block['blockType'] as String? ?? 'flexible',
+          [
+            block['travelBufferMinutes'] as int? ?? 0,
+            block['preparationBufferMinutes'] as int? ?? 0,
+            block['transitionBufferMinutes'] as int? ?? 0,
+            block['recoveryBufferMinutes'] as int? ?? 0,
+          ],
+        );
         final originalId = block['id'] as String? ?? _uuid.v4();
         final importedId = _uuid.v4();
         importedBlockIds[originalId] = importedId;
@@ -861,12 +1174,13 @@ class LocalPlanningRepository {
             );
       }
 
-      for (final task in tasks) {
+      for (var index = 0; index < tasks.length; index++) {
+        final task = tasks[index];
         final originalBlockId = task['blockId'] as String?;
         final importedBlockId = originalBlockId == null
             ? null
             : importedBlockIds[originalBlockId];
-        final importedTaskId = _uuid.v4();
+        final importedTaskId = taskIdMap[originalTaskIds[index]]!;
         importedTaskIds.add(importedTaskId);
         final importedStatus = importedBlockId == null
             ? ((task['status'] as String?) == 'completed'
@@ -884,6 +1198,23 @@ class LocalPlanningRepository {
                 blockId: Value(importedBlockId),
                 title: (task['title'] as String?) ?? 'Imported task',
                 notes: Value(task['notes'] as String?),
+                energyRequired: Value(task['energyRequired'] as String?),
+                cognitiveLoad: Value(task['cognitiveLoad'] as String?),
+                dependencyIdsJson: Value(
+                  jsonEncode(
+                    dependencies[originalTaskIds[index]]!
+                        .map((id) => taskIdMap[id]!)
+                        .toList(),
+                  ),
+                ),
+                requestedDay: Value(task['requestedDay'] as String?),
+                requestedStartTime: Value(
+                  task['requestedStartTime'] as String?,
+                ),
+                requestedEndTime: Value(task['requestedEndTime'] as String?),
+                approximateTime: Value(
+                  task['approximateTime'] as bool? ?? false,
+                ),
                 estimatedMinutes: (task['estimatedMinutes'] as int?) ?? 30,
                 actualMinutes: Value(task['actualMinutes'] as int?),
                 priority: (task['priority'] as String?) ?? 'medium',
@@ -920,20 +1251,35 @@ class LocalPlanningRepository {
 
   Future<List<RealityObservation>> realityCheckToday() async {
     final snapshot = await loadToday();
-    return _engineFor(snapshot).realityCheck(_toDomainPlan(snapshot));
+    final engine = _engineFor(snapshot);
+    final plan = _toDomainPlan(snapshot);
+    return Isolate.run(() => engine.realityCheck(plan));
   }
 
   Future<ReweaveResult> reweaveToday({
     required domain.DisruptionType disruptionType,
+    int? unavailableMinutes,
   }) async {
+    if (unavailableMinutes != null &&
+        (unavailableMinutes < 0 || unavailableMinutes > 1440)) {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'Enter between 0 and 1440 unavailable minutes.',
+      );
+    }
     final snapshot = await loadToday();
-    return _engineFor(snapshot).reweave(
-      plan: _toDomainPlan(snapshot),
-      disruption: domain.Disruption(
-        id: _uuid.v4(),
-        type: disruptionType,
-        reportedAt: DateTime.now(),
-      ),
+    final engine = _engineFor(snapshot);
+    final plan = _toDomainPlan(snapshot);
+    final disruption = domain.Disruption(
+      id: _uuid.v4(),
+      type: disruptionType,
+      reportedAt: DateTime.now(),
+      duration: unavailableMinutes == null
+          ? null
+          : Duration(minutes: unavailableMinutes),
+    );
+    return Isolate.run(
+      () => engine.reweave(plan: plan, disruption: disruption),
     );
   }
 
@@ -945,6 +1291,78 @@ class LocalPlanningRepository {
         PlanningFailureCode.staleProposal,
         'The plan changed. Generate and review a new alternative.',
       );
+    }
+    final original = _toDomainPlan(snapshot);
+    final previewBlocks = {
+      for (final block in alternative.preview.blocks) block.id: block,
+    };
+    final originalTasks = original.tasksById;
+    final deferredIds = alternative.deferredTaskIds.toSet();
+    void invalidProposal() => throw const PlanningFailure(
+      PlanningFailureCode.constraintViolation,
+      'The proposal does not match the stored plan. Generate a new recovery preview.',
+    );
+    if (previewBlocks.length != snapshot.blocks.length ||
+        alternative.preview.blocks.length != snapshot.blocks.length ||
+        snapshot.blocks.any((block) => !previewBlocks.containsKey(block.id)) ||
+        alternative.preview.tasks.length != originalTasks.length ||
+        alternative.preview.tasks.map((task) => task.id).toSet().length !=
+            originalTasks.length ||
+        deferredIds.length != alternative.deferredTaskIds.length) {
+      invalidProposal();
+    }
+    for (final task in alternative.preview.tasks) {
+      final before = originalTasks[task.id];
+      if (before == null ||
+          task.title != before.title ||
+          task.estimatedDuration != before.estimatedDuration ||
+          task.actualDuration != before.actualDuration ||
+          task.priority != before.priority ||
+          task.deadline != before.deadline ||
+          task.canSplit != before.canSplit ||
+          task.minimumUsefulDuration != before.minimumUsefulDuration ||
+          jsonEncode(task.dependencyIds) != jsonEncode(before.dependencyIds) ||
+          task.status !=
+              (deferredIds.contains(task.id)
+                  ? domain.TaskStatus.deferred
+                  : before.status)) {
+        invalidProposal();
+      }
+    }
+    for (final id in deferredIds) {
+      final task = originalTasks[id];
+      if (task == null ||
+          task.status != domain.TaskStatus.planned ||
+          task.deadline != null ||
+          original.blocks.any(
+            (block) =>
+                block.type == domain.BlockType.fixed &&
+                block.taskIds.contains(id),
+          )) {
+        invalidProposal();
+      }
+    }
+    for (final before in original.blocks) {
+      final after = previewBlocks[before.id]!;
+      final expectedTasks =
+          before.taskIds.where((id) => !deferredIds.contains(id)).toList()
+            ..sort();
+      final proposedTasks = [...after.taskIds]..sort();
+      if (after.type != before.type ||
+          after.reservedBufferDuration != before.reservedBufferDuration ||
+          jsonEncode(expectedTasks) != jsonEncode(proposedTasks)) {
+        invalidProposal();
+      }
+    }
+    for (final change in alternative.changes.where(
+      (change) => change.after != null,
+    )) {
+      final after = previewBlocks[change.entityId];
+      if (after == null ||
+          after.window.start != change.after!.start ||
+          after.window.end != change.after!.end) {
+        invalidProposal();
+      }
     }
     for (final fixed in snapshot.blocks.where(
       (block) => block.blockType == 'fixed',
@@ -963,12 +1381,7 @@ class LocalPlanningRepository {
     }
     final hardIssues = _engineFor(snapshot)
         .realityCheck(alternative.preview)
-        .where(
-          (issue) =>
-              issue.type == RealityIssueType.overlap ||
-              issue.type == RealityIssueType.impossibleDeadline ||
-              issue.type == RealityIssueType.oversizedTask,
-        );
+        .where((issue) => issue.isHardConstraint);
     if (hardIssues.isNotEmpty || alternative.splitTaskIds.isNotEmpty) {
       throw const PlanningFailure(
         PlanningFailureCode.constraintViolation,
@@ -979,32 +1392,29 @@ class LocalPlanningRepository {
     final affectedTasks = snapshot.tasks
         .where((task) => taskIds.contains(task.id))
         .toList();
-    final movedBlockIds = alternative.changes
-        .where((change) => change.before != null && change.after != null)
-        .map((change) => change.entityId)
-        .toSet();
     final movedBlocks = snapshot.blocks
-        .where((block) => movedBlockIds.contains(block.id))
+        .where(
+          (block) =>
+              previewBlocks[block.id]!.window.start != block.startsAt ||
+              previewBlocks[block.id]!.window.end != block.endsAt,
+        )
         .toList();
     final now = DateTime.now();
     await _database.transaction(() async {
-      for (final change in alternative.changes.where(
-        (change) => change.before != null && change.after != null,
-      )) {
-        await (_database.update(
-          _database.timeBlocks,
-        )..where((row) => row.id.equals(change.entityId))).write(
+      for (final block in movedBlocks) {
+        final after = previewBlocks[block.id]!.window;
+        await _writeBlock(
+          block.id,
           TimeBlocksCompanion(
-            startsAt: Value(change.after!.start),
-            endsAt: Value(change.after!.end),
+            startsAt: Value(after.start),
+            endsAt: Value(after.end),
             updatedAt: Value(now),
           ),
         );
       }
       for (final task in affectedTasks) {
-        await (_database.update(
-          _database.tasks,
-        )..where((row) => row.id.equals(task.id))).write(
+        await _writeTask(
+          task.id,
           TasksCompanion(
             blockId: const Value(null),
             status: const Value('deferred'),
@@ -1258,9 +1668,8 @@ class LocalPlanningRepository {
       final existing = await (_database.select(
         _database.estimationRecords,
       )..where((row) => row.taskId.equals(task.id))).get();
-      await (_database.update(
-        _database.tasks,
-      )..where((row) => row.id.equals(task.id))).write(
+      await _writeTask(
+        task.id,
         TasksCompanion(
           actualMinutes: Value(actualMinutes),
           updatedAt: Value(now),
@@ -1301,13 +1710,19 @@ class LocalPlanningRepository {
     });
   }
 
-  Future<bool> undoLastRevision() async {
+  Future<bool> undoLastRevision({String? expectedRevisionId}) async {
     final snapshot = await loadToday();
     final revision = snapshot.revisions
         .where((revision) => !snapshot.undoneRevisionIds.contains(revision.id))
         .firstOrNull;
     if (revision == null) {
       return false;
+    }
+    if (expectedRevisionId != null && revision.id != expectedRevisionId) {
+      throw const PlanningFailure(
+        PlanningFailureCode.staleProposal,
+        'The plan changed again. Review revision history before undoing.',
+      );
     }
     final payload =
         jsonDecode(revision.reversibleChangeSetJson) as Map<String, Object?>;
@@ -1316,19 +1731,43 @@ class LocalPlanningRepository {
 
     await _database.transaction(() async {
       await _assertPlanVersion(snapshot.plan);
-      if (undo == 'delete_block') {
+      if (undo == 'restore_task_details') {
+        final task = payload['task']! as Map<String, Object?>;
+        final dependencies = (task['dependencyIds'] as List<Object?>? ?? [])
+            .cast<String>();
+        await _writeTask(
+          task['id']! as String,
+          TasksCompanion(
+            title: Value(task['title']! as String),
+            notes: Value(task['notes'] as String?),
+            estimatedMinutes: Value(task['estimatedMinutes']! as int),
+            priority: Value(task['priority']! as String),
+            category: Value(task['category'] as String?),
+            energyRequired: Value(task['energyRequired'] as String?),
+            cognitiveLoad: Value(task['cognitiveLoad'] as String?),
+            dependencyIdsJson: Value(jsonEncode(dependencies)),
+            deadline: Value(
+              task['deadline'] == null
+                  ? null
+                  : DateTime.parse(task['deadline']! as String),
+            ),
+            canSplit: Value(task['canSplit']! as bool),
+            minimumUsefulMinutes: Value(task['minimumUsefulMinutes']! as int),
+            status: Value(task['status']! as String),
+            deletedAt: const Value(null),
+          ),
+        );
+      } else if (undo == 'delete_block') {
         final blockId = payload['blockId'] as String;
-        await (_database.update(
-          _database.timeBlocks,
-        )..where((row) => row.id.equals(blockId))).write(
+        await _writeBlock(
+          blockId,
           TimeBlocksCompanion(deletedAt: Value(now), updatedAt: Value(now)),
         );
       } else if (undo == 'delete_blocks') {
         final blockIds = (payload['blockIds'] as List<Object?>).cast<String>();
         for (final blockId in blockIds) {
-          await (_database.update(
-            _database.timeBlocks,
-          )..where((row) => row.id.equals(blockId))).write(
+          await _writeBlock(
+            blockId,
             TimeBlocksCompanion(deletedAt: Value(now), updatedAt: Value(now)),
           );
         }
@@ -1337,9 +1776,8 @@ class LocalPlanningRepository {
             ? [payload['taskId']! as String]
             : (payload['taskIds']! as List<Object?>).cast<String>();
         for (final taskId in taskIds) {
-          await (_database.update(
-            _database.tasks,
-          )..where((row) => row.id.equals(taskId))).write(
+          await _writeTask(
+            taskId,
             TasksCompanion(
               status: const Value('deleted'),
               deletedAt: Value(now),
@@ -1349,9 +1787,8 @@ class LocalPlanningRepository {
         }
       } else if (undo == 'move_task_to_inbox') {
         final taskId = payload['taskId'] as String;
-        await (_database.update(
-          _database.tasks,
-        )..where((row) => row.id.equals(taskId))).write(
+        await _writeTask(
+          taskId,
           TasksCompanion(
             dayPlanId: const Value(null),
             blockId: const Value(null),
@@ -1361,9 +1798,8 @@ class LocalPlanningRepository {
         );
       } else if (undo == 'restore_block') {
         final block = payload['block'] as Map<String, Object?>;
-        await (_database.update(
-          _database.timeBlocks,
-        )..where((row) => row.id.equals(block['id']! as String))).write(
+        await _writeBlock(
+          block['id']! as String,
           TimeBlocksCompanion(
             deletedAt: const Value(null),
             updatedAt: Value(now),
@@ -1372,9 +1808,8 @@ class LocalPlanningRepository {
         final tasks = (payload['tasks'] as List<Object?>? ?? const [])
             .whereType<Map<String, Object?>>();
         for (final task in tasks) {
-          await (_database.update(
-            _database.tasks,
-          )..where((row) => row.id.equals(task['id']! as String))).write(
+          await _writeTask(
+            task['id']! as String,
             TasksCompanion(
               dayPlanId: Value(task['dayPlanId'] as String?),
               blockId: Value(task['blockId'] as String?),
@@ -1386,23 +1821,34 @@ class LocalPlanningRepository {
         }
       } else if (undo == 'update_block') {
         final block = payload['block'] as Map<String, Object?>;
-        await (_database.update(
-          _database.timeBlocks,
-        )..where((row) => row.id.equals(block['id']! as String))).write(
+        await _writeBlock(
+          block['id']! as String,
           TimeBlocksCompanion(
             title: Value(block['title']! as String),
             startsAt: Value(DateTime.parse(block['startsAt']! as String)),
             endsAt: Value(DateTime.parse(block['endsAt']! as String)),
             blockType: Value(block['blockType']! as String),
+            category: Value(block['category'] as String?),
+            travelBufferMinutes: Value(
+              block['travelBufferMinutes'] as int? ?? 0,
+            ),
+            preparationBufferMinutes: Value(
+              block['preparationBufferMinutes'] as int? ?? 0,
+            ),
+            transitionBufferMinutes: Value(
+              block['transitionBufferMinutes'] as int? ?? 0,
+            ),
+            recoveryBufferMinutes: Value(
+              block['recoveryBufferMinutes'] as int? ?? 0,
+            ),
             updatedAt: Value(now),
           ),
         );
       } else if (undo == 'move_task_to_block') {
         final taskId = payload['taskId'] as String;
         final blockId = payload['blockId'] as String?;
-        await (_database.update(
-          _database.tasks,
-        )..where((row) => row.id.equals(taskId))).write(
+        await _writeTask(
+          taskId,
           TasksCompanion(blockId: Value(blockId), updatedAt: Value(now)),
         );
       } else if (undo == 'reorder_blocks') {
@@ -1410,9 +1856,8 @@ class LocalPlanningRepository {
             .whereType<Map<String, Object?>>()
             .toList();
         for (final block in previousOrder) {
-          await (_database.update(
-            _database.timeBlocks,
-          )..where((row) => row.id.equals(block['id']! as String))).write(
+          await _writeBlock(
+            block['id']! as String,
             TimeBlocksCompanion(
               sortOrder: Value(block['sortOrder']! as int),
               updatedAt: Value(now),
@@ -1423,16 +1868,14 @@ class LocalPlanningRepository {
         final blockIds = (payload['blockIds'] as List<Object?>).cast<String>();
         final taskIds = (payload['taskIds'] as List<Object?>).cast<String>();
         for (final taskId in taskIds) {
-          await (_database.update(
-            _database.tasks,
-          )..where((row) => row.id.equals(taskId))).write(
+          await _writeTask(
+            taskId,
             TasksCompanion(deletedAt: Value(now), updatedAt: Value(now)),
           );
         }
         for (final blockId in blockIds) {
-          await (_database.update(
-            _database.timeBlocks,
-          )..where((row) => row.id.equals(blockId))).write(
+          await _writeBlock(
+            blockId,
             TimeBlocksCompanion(deletedAt: Value(now), updatedAt: Value(now)),
           );
         }
@@ -1443,9 +1886,8 @@ class LocalPlanningRepository {
             .whereType<Map<String, Object?>>()
             .toList();
         for (final task in tasks) {
-          await (_database.update(
-            _database.tasks,
-          )..where((row) => row.id.equals(task['id']! as String))).write(
+          await _writeTask(
+            task['id']! as String,
             TasksCompanion(
               dayPlanId: Value(task['dayPlanId'] as String?),
               blockId: Value(task['blockId'] as String?),
@@ -1461,9 +1903,8 @@ class LocalPlanningRepository {
                 .whereType<Map<String, Object?>>()
                 .toList();
         for (final block in blocks) {
-          await (_database.update(
-            _database.timeBlocks,
-          )..where((row) => row.id.equals(block['id']! as String))).write(
+          await _writeBlock(
+            block['id']! as String,
             TimeBlocksCompanion(
               startsAt: Value(DateTime.parse(block['startsAt']! as String)),
               endsAt: Value(DateTime.parse(block['endsAt']! as String)),
@@ -1567,7 +2008,7 @@ class LocalPlanningRepository {
     );
   }
 
-  Future<void> _recordRevision(
+  Future<String> _recordRevision(
     DayPlan plan,
     String reason,
     Map<String, Object?> reversibleChangeSet,
@@ -1575,11 +2016,12 @@ class LocalPlanningRepository {
     await _assertPlanVersion(plan);
     final now = DateTime.now();
     final nextRevision = plan.revision + 1;
+    final revisionId = _uuid.v4();
     await _database
         .into(_database.scheduleRevisions)
         .insert(
           ScheduleRevisionsCompanion.insert(
-            id: _uuid.v4(),
+            id: revisionId,
             dayPlanId: plan.id,
             revisionNumber: nextRevision,
             reason: reason,
@@ -1596,6 +2038,7 @@ class LocalPlanningRepository {
         updatedAt: Value(now),
       ),
     );
+    return revisionId;
   }
 
   Future<void> _assertPlanVersion(DayPlan expected) async {
@@ -1622,9 +2065,12 @@ class LocalPlanningRepository {
     List<int> buffers,
   ) {
     if (title.trim().isEmpty ||
+        title.length > 500 ||
         !end.isAfter(start) ||
         !['fixed', 'flexible', 'optional'].contains(type) ||
-        buffers.any((value) => value < 0)) {
+        buffers.any((value) => value < 0 || value > 1440) ||
+        buffers.fold<int>(0, (total, value) => total + value) >
+            end.difference(start).inMinutes) {
       throw const PlanningFailure(
         PlanningFailureCode.invalidInput,
         'Use a title, a positive duration and valid block settings.',
@@ -1715,6 +2161,8 @@ class LocalPlanningRepository {
       'title': task.title,
       'notes': task.notes,
       'energyRequired': task.energyRequired,
+      'cognitiveLoad': task.cognitiveLoad,
+      'dependencyIds': taskDependencyIds(task),
       'requestedDay': task.requestedDay,
       'requestedStartTime': task.requestedStartTime,
       'requestedEndTime': task.requestedEndTime,
@@ -1781,27 +2229,40 @@ class LocalPlanningRepository {
             ),
           )
           .toList(),
-      tasks: snapshot.tasks
-          .map(
-            (task) => domain.DayweftTask(
-              id: task.id,
-              title: task.title,
-              estimatedDuration: Duration(minutes: task.estimatedMinutes),
-              actualDuration: task.actualMinutes == null
-                  ? null
-                  : Duration(minutes: task.actualMinutes!),
-              priority: _domainPriority(task.priority),
-              category: task.category,
-              deadline: task.deadline,
-              notes: task.notes,
-              canSplit: task.canSplit,
-              minimumUsefulDuration: Duration(
-                minutes: task.minimumUsefulMinutes,
-              ),
-              status: _domainTaskStatus(task.status),
-            ),
-          )
-          .toList(),
+      tasks:
+          [
+                ...snapshot.tasks,
+                ...snapshot.inboxTasks.where(
+                  (task) => task.status == 'completed',
+                ),
+              ]
+              .map(
+                (task) => domain.DayweftTask(
+                  id: task.id,
+                  title: task.title,
+                  estimatedDuration: Duration(minutes: task.estimatedMinutes),
+                  actualDuration: task.actualMinutes == null
+                      ? null
+                      : Duration(minutes: task.actualMinutes!),
+                  priority: _domainPriority(task.priority),
+                  category: task.category,
+                  deadline: task.deadline,
+                  notes: task.notes,
+                  energyRequired: task.energyRequired == null
+                      ? null
+                      : domain.EnergyLevel.values.byName(task.energyRequired!),
+                  cognitiveLoad: task.cognitiveLoad == null
+                      ? null
+                      : domain.CognitiveLoad.values.byName(task.cognitiveLoad!),
+                  dependencyIds: taskDependencyIds(task),
+                  canSplit: task.canSplit,
+                  minimumUsefulDuration: Duration(
+                    minutes: task.minimumUsefulMinutes,
+                  ),
+                  status: _domainTaskStatus(task.status),
+                ),
+              )
+              .toList(),
       revision: snapshot.plan.revision,
     );
   }

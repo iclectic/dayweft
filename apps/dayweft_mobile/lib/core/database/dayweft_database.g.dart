@@ -2736,6 +2736,30 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _cognitiveLoadMeta = const VerificationMeta(
+    'cognitiveLoad',
+  );
+  @override
+  late final GeneratedColumn<String> cognitiveLoad = GeneratedColumn<String>(
+    'cognitive_load',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dependencyIdsJsonMeta = const VerificationMeta(
+    'dependencyIdsJson',
+  );
+  @override
+  late final GeneratedColumn<String> dependencyIdsJson =
+      GeneratedColumn<String>(
+        'dependency_ids_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      );
   static const VerificationMeta _requestedDayMeta = const VerificationMeta(
     'requestedDay',
   );
@@ -2969,6 +2993,8 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     title,
     notes,
     energyRequired,
+    cognitiveLoad,
+    dependencyIdsJson,
     requestedDay,
     requestedStartTime,
     requestedEndTime,
@@ -3039,6 +3065,24 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         energyRequired.isAcceptableOrUnknown(
           data['energy_required']!,
           _energyRequiredMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cognitive_load')) {
+      context.handle(
+        _cognitiveLoadMeta,
+        cognitiveLoad.isAcceptableOrUnknown(
+          data['cognitive_load']!,
+          _cognitiveLoadMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dependency_ids_json')) {
+      context.handle(
+        _dependencyIdsJsonMeta,
+        dependencyIdsJson.isAcceptableOrUnknown(
+          data['dependency_ids_json']!,
+          _dependencyIdsJsonMeta,
         ),
       );
     }
@@ -3228,6 +3272,14 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         DriftSqlType.string,
         data['${effectivePrefix}energy_required'],
       ),
+      cognitiveLoad: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cognitive_load'],
+      ),
+      dependencyIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dependency_ids_json'],
+      )!,
       requestedDay: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}requested_day'],
@@ -3329,6 +3381,8 @@ class Task extends DataClass implements Insertable<Task> {
   final String title;
   final String? notes;
   final String? energyRequired;
+  final String? cognitiveLoad;
+  final String dependencyIdsJson;
   final String? requestedDay;
   final String? requestedStartTime;
   final String? requestedEndTime;
@@ -3356,6 +3410,8 @@ class Task extends DataClass implements Insertable<Task> {
     required this.title,
     this.notes,
     this.energyRequired,
+    this.cognitiveLoad,
+    required this.dependencyIdsJson,
     this.requestedDay,
     this.requestedStartTime,
     this.requestedEndTime,
@@ -3394,6 +3450,10 @@ class Task extends DataClass implements Insertable<Task> {
     if (!nullToAbsent || energyRequired != null) {
       map['energy_required'] = Variable<String>(energyRequired);
     }
+    if (!nullToAbsent || cognitiveLoad != null) {
+      map['cognitive_load'] = Variable<String>(cognitiveLoad);
+    }
+    map['dependency_ids_json'] = Variable<String>(dependencyIdsJson);
     if (!nullToAbsent || requestedDay != null) {
       map['requested_day'] = Variable<String>(requestedDay);
     }
@@ -3455,6 +3515,10 @@ class Task extends DataClass implements Insertable<Task> {
       energyRequired: energyRequired == null && nullToAbsent
           ? const Value.absent()
           : Value(energyRequired),
+      cognitiveLoad: cognitiveLoad == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cognitiveLoad),
+      dependencyIdsJson: Value(dependencyIdsJson),
       requestedDay: requestedDay == null && nullToAbsent
           ? const Value.absent()
           : Value(requestedDay),
@@ -3508,6 +3572,8 @@ class Task extends DataClass implements Insertable<Task> {
       title: serializer.fromJson<String>(json['title']),
       notes: serializer.fromJson<String?>(json['notes']),
       energyRequired: serializer.fromJson<String?>(json['energyRequired']),
+      cognitiveLoad: serializer.fromJson<String?>(json['cognitiveLoad']),
+      dependencyIdsJson: serializer.fromJson<String>(json['dependencyIdsJson']),
       requestedDay: serializer.fromJson<String?>(json['requestedDay']),
       requestedStartTime: serializer.fromJson<String?>(
         json['requestedStartTime'],
@@ -3546,6 +3612,8 @@ class Task extends DataClass implements Insertable<Task> {
       'title': serializer.toJson<String>(title),
       'notes': serializer.toJson<String?>(notes),
       'energyRequired': serializer.toJson<String?>(energyRequired),
+      'cognitiveLoad': serializer.toJson<String?>(cognitiveLoad),
+      'dependencyIdsJson': serializer.toJson<String>(dependencyIdsJson),
       'requestedDay': serializer.toJson<String?>(requestedDay),
       'requestedStartTime': serializer.toJson<String?>(requestedStartTime),
       'requestedEndTime': serializer.toJson<String?>(requestedEndTime),
@@ -3578,6 +3646,8 @@ class Task extends DataClass implements Insertable<Task> {
     String? title,
     Value<String?> notes = const Value.absent(),
     Value<String?> energyRequired = const Value.absent(),
+    Value<String?> cognitiveLoad = const Value.absent(),
+    String? dependencyIdsJson,
     Value<String?> requestedDay = const Value.absent(),
     Value<String?> requestedStartTime = const Value.absent(),
     Value<String?> requestedEndTime = const Value.absent(),
@@ -3607,6 +3677,10 @@ class Task extends DataClass implements Insertable<Task> {
     energyRequired: energyRequired.present
         ? energyRequired.value
         : this.energyRequired,
+    cognitiveLoad: cognitiveLoad.present
+        ? cognitiveLoad.value
+        : this.cognitiveLoad,
+    dependencyIdsJson: dependencyIdsJson ?? this.dependencyIdsJson,
     requestedDay: requestedDay.present ? requestedDay.value : this.requestedDay,
     requestedStartTime: requestedStartTime.present
         ? requestedStartTime.value
@@ -3646,6 +3720,12 @@ class Task extends DataClass implements Insertable<Task> {
       energyRequired: data.energyRequired.present
           ? data.energyRequired.value
           : this.energyRequired,
+      cognitiveLoad: data.cognitiveLoad.present
+          ? data.cognitiveLoad.value
+          : this.cognitiveLoad,
+      dependencyIdsJson: data.dependencyIdsJson.present
+          ? data.dependencyIdsJson.value
+          : this.dependencyIdsJson,
       requestedDay: data.requestedDay.present
           ? data.requestedDay.value
           : this.requestedDay,
@@ -3696,6 +3776,8 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('title: $title, ')
           ..write('notes: $notes, ')
           ..write('energyRequired: $energyRequired, ')
+          ..write('cognitiveLoad: $cognitiveLoad, ')
+          ..write('dependencyIdsJson: $dependencyIdsJson, ')
           ..write('requestedDay: $requestedDay, ')
           ..write('requestedStartTime: $requestedStartTime, ')
           ..write('requestedEndTime: $requestedEndTime, ')
@@ -3728,6 +3810,8 @@ class Task extends DataClass implements Insertable<Task> {
     title,
     notes,
     energyRequired,
+    cognitiveLoad,
+    dependencyIdsJson,
     requestedDay,
     requestedStartTime,
     requestedEndTime,
@@ -3759,6 +3843,8 @@ class Task extends DataClass implements Insertable<Task> {
           other.title == this.title &&
           other.notes == this.notes &&
           other.energyRequired == this.energyRequired &&
+          other.cognitiveLoad == this.cognitiveLoad &&
+          other.dependencyIdsJson == this.dependencyIdsJson &&
           other.requestedDay == this.requestedDay &&
           other.requestedStartTime == this.requestedStartTime &&
           other.requestedEndTime == this.requestedEndTime &&
@@ -3788,6 +3874,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String> title;
   final Value<String?> notes;
   final Value<String?> energyRequired;
+  final Value<String?> cognitiveLoad;
+  final Value<String> dependencyIdsJson;
   final Value<String?> requestedDay;
   final Value<String?> requestedStartTime;
   final Value<String?> requestedEndTime;
@@ -3816,6 +3904,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.title = const Value.absent(),
     this.notes = const Value.absent(),
     this.energyRequired = const Value.absent(),
+    this.cognitiveLoad = const Value.absent(),
+    this.dependencyIdsJson = const Value.absent(),
     this.requestedDay = const Value.absent(),
     this.requestedStartTime = const Value.absent(),
     this.requestedEndTime = const Value.absent(),
@@ -3845,6 +3935,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     required String title,
     this.notes = const Value.absent(),
     this.energyRequired = const Value.absent(),
+    this.cognitiveLoad = const Value.absent(),
+    this.dependencyIdsJson = const Value.absent(),
     this.requestedDay = const Value.absent(),
     this.requestedStartTime = const Value.absent(),
     this.requestedEndTime = const Value.absent(),
@@ -3882,6 +3974,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? title,
     Expression<String>? notes,
     Expression<String>? energyRequired,
+    Expression<String>? cognitiveLoad,
+    Expression<String>? dependencyIdsJson,
     Expression<String>? requestedDay,
     Expression<String>? requestedStartTime,
     Expression<String>? requestedEndTime,
@@ -3911,6 +4005,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (title != null) 'title': title,
       if (notes != null) 'notes': notes,
       if (energyRequired != null) 'energy_required': energyRequired,
+      if (cognitiveLoad != null) 'cognitive_load': cognitiveLoad,
+      if (dependencyIdsJson != null) 'dependency_ids_json': dependencyIdsJson,
       if (requestedDay != null) 'requested_day': requestedDay,
       if (requestedStartTime != null)
         'requested_start_time': requestedStartTime,
@@ -3944,6 +4040,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<String>? title,
     Value<String?>? notes,
     Value<String?>? energyRequired,
+    Value<String?>? cognitiveLoad,
+    Value<String>? dependencyIdsJson,
     Value<String?>? requestedDay,
     Value<String?>? requestedStartTime,
     Value<String?>? requestedEndTime,
@@ -3973,6 +4071,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       title: title ?? this.title,
       notes: notes ?? this.notes,
       energyRequired: energyRequired ?? this.energyRequired,
+      cognitiveLoad: cognitiveLoad ?? this.cognitiveLoad,
+      dependencyIdsJson: dependencyIdsJson ?? this.dependencyIdsJson,
       requestedDay: requestedDay ?? this.requestedDay,
       requestedStartTime: requestedStartTime ?? this.requestedStartTime,
       requestedEndTime: requestedEndTime ?? this.requestedEndTime,
@@ -4017,6 +4117,12 @@ class TasksCompanion extends UpdateCompanion<Task> {
     }
     if (energyRequired.present) {
       map['energy_required'] = Variable<String>(energyRequired.value);
+    }
+    if (cognitiveLoad.present) {
+      map['cognitive_load'] = Variable<String>(cognitiveLoad.value);
+    }
+    if (dependencyIdsJson.present) {
+      map['dependency_ids_json'] = Variable<String>(dependencyIdsJson.value);
     }
     if (requestedDay.present) {
       map['requested_day'] = Variable<String>(requestedDay.value);
@@ -4095,6 +4201,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('title: $title, ')
           ..write('notes: $notes, ')
           ..write('energyRequired: $energyRequired, ')
+          ..write('cognitiveLoad: $cognitiveLoad, ')
+          ..write('dependencyIdsJson: $dependencyIdsJson, ')
           ..write('requestedDay: $requestedDay, ')
           ..write('requestedStartTime: $requestedStartTime, ')
           ..write('requestedEndTime: $requestedEndTime, ')
@@ -9734,6 +9842,8 @@ typedef $$TasksTableCreateCompanionBuilder =
       required String title,
       Value<String?> notes,
       Value<String?> energyRequired,
+      Value<String?> cognitiveLoad,
+      Value<String> dependencyIdsJson,
       Value<String?> requestedDay,
       Value<String?> requestedStartTime,
       Value<String?> requestedEndTime,
@@ -9764,6 +9874,8 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String?> notes,
       Value<String?> energyRequired,
+      Value<String?> cognitiveLoad,
+      Value<String> dependencyIdsJson,
       Value<String?> requestedDay,
       Value<String?> requestedStartTime,
       Value<String?> requestedEndTime,
@@ -9892,6 +10004,16 @@ class $$TasksTableFilterComposer
 
   ColumnFilters<String> get energyRequired => $composableBuilder(
     column: $table.energyRequired,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cognitiveLoad => $composableBuilder(
+    column: $table.cognitiveLoad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dependencyIdsJson => $composableBuilder(
+    column: $table.dependencyIdsJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10122,6 +10244,16 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get cognitiveLoad => $composableBuilder(
+    column: $table.cognitiveLoad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dependencyIdsJson => $composableBuilder(
+    column: $table.dependencyIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get requestedDay => $composableBuilder(
     column: $table.requestedDay,
     builder: (column) => ColumnOrderings(column),
@@ -10289,6 +10421,16 @@ class $$TasksTableAnnotationComposer
 
   GeneratedColumn<String> get energyRequired => $composableBuilder(
     column: $table.energyRequired,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cognitiveLoad => $composableBuilder(
+    column: $table.cognitiveLoad,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get dependencyIdsJson => $composableBuilder(
+    column: $table.dependencyIdsJson,
     builder: (column) => column,
   );
 
@@ -10507,6 +10649,8 @@ class $$TasksTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> energyRequired = const Value.absent(),
+                Value<String?> cognitiveLoad = const Value.absent(),
+                Value<String> dependencyIdsJson = const Value.absent(),
                 Value<String?> requestedDay = const Value.absent(),
                 Value<String?> requestedStartTime = const Value.absent(),
                 Value<String?> requestedEndTime = const Value.absent(),
@@ -10535,6 +10679,8 @@ class $$TasksTableTableManager
                 title: title,
                 notes: notes,
                 energyRequired: energyRequired,
+                cognitiveLoad: cognitiveLoad,
+                dependencyIdsJson: dependencyIdsJson,
                 requestedDay: requestedDay,
                 requestedStartTime: requestedStartTime,
                 requestedEndTime: requestedEndTime,
@@ -10565,6 +10711,8 @@ class $$TasksTableTableManager
                 required String title,
                 Value<String?> notes = const Value.absent(),
                 Value<String?> energyRequired = const Value.absent(),
+                Value<String?> cognitiveLoad = const Value.absent(),
+                Value<String> dependencyIdsJson = const Value.absent(),
                 Value<String?> requestedDay = const Value.absent(),
                 Value<String?> requestedStartTime = const Value.absent(),
                 Value<String?> requestedEndTime = const Value.absent(),
@@ -10593,6 +10741,8 @@ class $$TasksTableTableManager
                 title: title,
                 notes: notes,
                 energyRequired: energyRequired,
+                cognitiveLoad: cognitiveLoad,
+                dependencyIdsJson: dependencyIdsJson,
                 requestedDay: requestedDay,
                 requestedStartTime: requestedStartTime,
                 requestedEndTime: requestedEndTime,

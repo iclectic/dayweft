@@ -82,4 +82,8 @@ Share links must be scoped by resource, token hash, expiry, revocation state and
 
 ## Migration Rules
 
+Current schema: v10. The v9-to-v10 upgrade adds nullable `tasks.cognitive_load` and non-null `tasks.dependency_ids_json` with an empty-list default. Application validation checks active predecessor identities and cycles. Local export/import preserves these fields and remaps predecessor IDs for imported copies. Task/block edits use local-version preconditions and increment versions on writes and undo.
+
+Tests cover preserved records through v5, v8 and v9 upgrade fixtures. This migration does not delete or reinterpret existing rows. Rollback should use a forward-compatible repair/release; do not lower `user_version` on a user's database or discard their database to roll back the app.
+
 Start database migrations in phase 2. Every schema change gets migration tests, downgrade/export compatibility notes where practical and fixtures for existing local data.
