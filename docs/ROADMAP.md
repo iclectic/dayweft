@@ -12,10 +12,10 @@ Status vocabulary: NOT STARTED, IN PROGRESS, VERIFIED, BLOCKED. Evidence disting
 | 4 Onboarding | Skippable/resumable complete choices, safe opt-in samples | IN PROGRESS | Draft restart and first-plan journey |
 | 5 Timeline/tasks | Dates, current time, complete constraints, no-loss durable revisions | IN PROGRESS | Cross-date persistence/edit/undo and window/allocation tests |
 | 6 Capture | Offline reviewed atomic capture, Inbox tools and native entry | IN PROGRESS | External share/dedup/restart/permission tests |
-| 7 Templates | Starters/custom editing, selected safe application and recurrence | IN PROGRESS | Conflict/dedup/stale/undo tests before recurrence |
+| 7 Templates | Starters/custom editing, selected safe application and recurrence | IN PROGRESS | Custom library verified in local automated tests; implement recurrence/exceptions |
 | 8 Engine | All hard constraints and persisted splits, deterministic alternatives | IN PROGRESS | Independent invariants/oracle and temporal test matrix |
 | 9 Reweave | Actual disruption effects, before/after and durable decisions | IN PROGRESS | All disruption inputs and no-mutation cancellation |
-| 10 Focus | Durable measured countdown/count-up with lifecycle/platform evidence | IN PROGRESS | Persistent state machine then Android lifecycle testing |
+| 10 Focus | Durable measured countdown/count-up with lifecycle/platform evidence | IN PROGRESS | Native emulator probes pass; full UI, hardware, timezone/clock and notifications pending |
 | 11 Rhythm | Eligible real measurements, cohorts/trends/deletion/controls | IN PROGRESS | Focus linkage and reproducible reflection summaries |
 | 12 Calendar | Real least-privilege read integration and reconciliation | NOT STARTED | Native adapter + provider device tests |
 | 13 Notifications/platform | Optional actual reminders, native capture/back/shortcuts | NOT STARTED | Delivery/cancellation/denied/timezone checks |
@@ -52,7 +52,7 @@ Status vocabulary: NOT STARTED, IN PROGRESS, VERIFIED, BLOCKED. Evidence disting
 - Exact next implementation task: add injectable clock/environment configuration and verification/release scripts, then date-isolated planning commands and tests.
 - Do not modify: existing user history, generated Dart by hand, production accounts/deployments, release keys or other repositories.
 
-## Current checkpoint — 27 October 2026
+## Checkpoint — 27 October 2026
 
 - Last completed slices: audit records, selected-date planning/history, five reconciled starter templates, strict previewed day imports, durable Focus state and Android release guards. These are verified slices, not completed 1.0 phases.
 - Changed files: README/CHANGELOG and audit/development/security/release docs; clock/configuration/date selection; repository/controller/import/templates/Focus; domain template logic; schema v11/generated code; migrations/regressions; Android tooling/manifest/native time channel; locks and scripts.
@@ -64,3 +64,17 @@ Status vocabulary: NOT STARTED, IN PROGRESS, VERIFIED, BLOCKED. Evidence disting
 - Evidence: [verification record](audit/verification-2026-10-27.md), [security checks](security/verification-report.md), [manual gates](release/manual-verification.md).
 
 The earlier execution queue records the original sequence. Its first five slices now have implementations and automated evidence; remaining acceptance criteria are still open. Preserve existing user data and forward migrations when resuming.
+
+## Current checkpoint — 29 October 2026
+
+- Last completed slice: Phase 7 custom-template library, plus the preceding date/import/template workflow regressions and native Focus probes. No whole 1.0 phase or release is declared complete.
+- Completed: local create/edit/rename/duplicate; reviewed save-from-day; block time/type/category and four-buffer editing; confirmation and version-checked deletion undo; stable block identities; edited/deleted source preview rejection; existing-day protection. Schema v12 adds only `saved_templates`; real-row v11 upgrade and file-reopen tests pass.
+- Changed files: template repository/controller/editor/picker, planning template resolution/application, domain template models/validation/reconciliation, database schema/regenerated Drift output, migration/repository/widget/golden tests, native Focus integration test/driver and SDK dev-dependency lock; README/CHANGELOG, audit/data/testing/dependency/security/release records and this ledger.
+- Tests actually run/results: `bash scripts/verify.sh` passed locked resolution, generation drift, formatting, all four analyses and 110 mobile + 21 domain + 15 engine + 2 design tests (148 total). Coverage: mobile domain/application 363/375 (96.8%), domain 221/247 (89.5%), engine 403/447 (90.2%). Normal `flutter build apk --debug` passed. Two custom-editor light/dark goldens were generated, rerun and visually inspected; the 320px dark 200% text buffer-edit/validation flow and automated 48px target check pass.
+- Android evidence: isolated headless ARM64 Android 36 emulator, real MethodChannel and file-backed SQLite. Roundtrip/pause/reopen, actual force-stop recovery, actual reboot uncertainty and a second background/screen-off/force-stop recovery passed. These are native clock/repository probes, not full Focus UI, real hardware, TalkBack or notification evidence. [Exact commands and observations](audit/verification-2026-10-29.md).
+- Security checks: Gitleaks v8.30.1 worktree scan found no leaks; OSV returned no advisory matches for the three newly added public test-only dependency versions. Runtime dependency versions did not change. No remote service, permission or background service was introduced.
+- Outstanding defects: legacy Kotlin-plugin build warning; CI still needs pinned SDK/real scanner integration; calendar/public-share controls remain scaffolds. No new known blocking defect in this slice remains after sequential main-thread review and regression fixes.
+- Unfinished requirements: recurrence/exceptions and occurrence deduplication; hard task windows, persisted splits, full-device backups (including custom templates), onboarding draft recovery, richer insights/settings/localisation, native notifications/calendar/capture, optional sync/account deletion, hosted sharing, biometrics and release/device/performance/accessibility gates.
+- Human action required: final application identity/upload signing, cloud/host ownership and credentials, privacy/support publication and review, named-hardware exercises, actual Play tracks/tester participation/approval. Signing and deployment remain blocked externally.
+- Exact next implementation task: persist recurring-template rules and per-date exceptions; preview a selected occurrence with stable occurrence identities, stale guards and atomic application/undo; add civil weekday/overnight/duplicate tests and real-row migration tests before enabling recurrence in the UI. Then continue hard permitted-window modelling and persisted split allocations.
+- Do not modify: existing user data, generated Dart manually, provisional identity without owner confirmation, upload keys, production accounts/deployments or unrelated repositories. Keep local-only/offline use working.

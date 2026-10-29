@@ -5,10 +5,12 @@ class DayTemplate {
     required this.id,
     required this.name,
     required this.blocks,
+    this.version,
   });
   final String id;
   final String name;
   final List<TemplateBlock> blocks;
+  final int? version;
 }
 
 class TemplateBlock {
@@ -18,12 +20,71 @@ class TemplateBlock {
     required this.endTime,
     required this.blockType,
     required this.category,
+    this.id,
+    this.travelBufferMinutes = 0,
+    this.preparationBufferMinutes = 0,
+    this.transitionBufferMinutes = 0,
+    this.recoveryBufferMinutes = 0,
   });
   final String title;
   final String startTime;
   final String endTime;
   final String blockType;
   final String category;
+  final String? id;
+  final int travelBufferMinutes;
+  final int preparationBufferMinutes;
+  final int transitionBufferMinutes;
+  final int recoveryBufferMinutes;
+}
+
+int _clockMinute(String text) {
+  final parts = text.split(':').map(int.parse).toList();
+  return parts[0] * 60 + parts[1];
+}
+
+String? templateDefinitionIssue(DayTemplate template) {
+  if (template.id.isEmpty ||
+      template.id.length > 200 ||
+      template.name.trim().isEmpty ||
+      template.name.length > 80 ||
+      template.blocks.isEmpty ||
+      template.blocks.length > 100) {
+    return 'Use a template name of 1–80 characters and between 1 and 100 blocks.';
+  }
+  final identities = <String>{};
+  final clock = RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$');
+  for (final block in template.blocks) {
+    if (block.title.trim().isEmpty ||
+        block.title.length > 500 ||
+        block.category.length > 80 ||
+        !clock.hasMatch(block.startTime) ||
+        !clock.hasMatch(block.endTime) ||
+        block.startTime == block.endTime ||
+        !BlockType.values.any((type) => type.name == block.blockType)) {
+      return 'Each block needs a title, valid times, a category up to 80 characters and a valid type.';
+    }
+    if (block.id != null &&
+        (block.id!.isEmpty ||
+            block.id!.length > 200 ||
+            !identities.add(block.id!))) {
+      return 'Every template block must have a distinct identity.';
+    }
+    final buffers = [
+      block.travelBufferMinutes,
+      block.preparationBufferMinutes,
+      block.transitionBufferMinutes,
+      block.recoveryBufferMinutes,
+    ];
+    final duration =
+        (_clockMinute(block.endTime) - _clockMinute(block.startTime) + 1440) %
+        1440;
+    if (buffers.any((value) => value < 0 || value > 1440) ||
+        buffers.fold<int>(0, (total, value) => total + value) > duration) {
+      return 'Reserved buffers must fit inside each template block.';
+    }
+  }
+  return null;
 }
 
 class TemplateReservation {
@@ -77,39 +138,24 @@ TemplatePreview reconcileTemplate({
   required List<TemplateReservation> existing,
   Duration transition = Duration.zero,
 }) {
-  if (template.id.isEmpty ||
-      template.blocks.isEmpty ||
-      template.blocks.length > 100 ||
+  final issue = templateDefinitionIssue(template);
+  if (issue != null ||
       workingWindow.duration <= Duration.zero ||
       transition.isNegative) {
-    throw ArgumentError('Use a non-empty template and a valid working window.');
-  }
-  int minute(String text) {
-    if (!RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$').hasMatch(text)) {
-      throw ArgumentError('Template times must use HH:mm.');
-    }
-    final parts = text.split(':').map(int.parse).toList();
-    return parts[0] * 60 + parts[1];
+    throw ArgumentError(
+      issue ?? 'Use a valid working window and transition buffer.',
+    );
   }
 
-  final anchor = minute(template.blocks.first.startTime);
+  final anchor = _clockMinute(template.blocks.first.startTime);
   final occupied = [...existing.map((value) => value.window)];
   final placements = <TemplatePlacement>[];
   final omissions = <TemplateOmission>[];
   for (var index = 0; index < template.blocks.length; index++) {
     final block = template.blocks[index];
-    final startMinute = minute(block.startTime);
-    final endMinute = minute(block.endTime);
-    if (block.title.trim().isEmpty ||
-        block.title.length > 500 ||
-        block.category.length > 80 ||
-        !BlockType.values.any((type) => type.name == block.blockType) ||
-        startMinute == endMinute) {
-      throw ArgumentError(
-        'Each template block needs a title, type and positive duration.',
-      );
-    }
-    final sourceId = 'template:${template.id}:$index';
+    final startMinute = _clockMinute(block.startTime);
+    final endMinute = _clockMinute(block.endTime);
+    final sourceId = 'template:${template.id}:${block.id ?? index}';
     if (existing.any(
       (value) =>
           value.sourceId == sourceId ||

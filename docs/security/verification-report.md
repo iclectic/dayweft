@@ -11,3 +11,11 @@
 - The Android Focus time channel exposes only wall-clock/elapsed-time/boot-reference values. No new permission, background service or sensitive logging was added.
 
 Remaining work: full native/transitive licence review, release-binary 16 KB verification, complete privacy deletion, biometric/session controls, real native permission testing, and adversarial auth/sync/sharing validation once implemented. Existing calendar/share controls are still scaffolds; no hosted revocation or secure public sharing is claimed. CI still needs integration of the real scanner and an explicit SDK pin.
+
+## 29 October continuation
+
+- Re-fetched pinned Gitleaks v8.30.1; its archive SHA-256 matched the previously verified digest above. Ran `gitleaks dir . --redact=100 --no-banner --report-format json --report-path /private/tmp/dayweft-2026-10-29-gitleaks.json`: no leaks found. This is a fresh worktree scan, not a new full-history claim.
+- OSV batch lookup of the three newly added test-only public versions (`process` 5.0.6, `sync_http` 0.3.1, `webdriver` 3.2.0) returned three empty results. Runtime versions did not change; the prior 165-version result remains dated 27 October.
+- Custom templates are stored locally and validate name, block count, types, clock times, distinct identities and internal buffers. Transactional version checks protect edits/deletion/restore and application previews. Malformed stored data produces a safe error rather than a database reset. Saving from a day copies block names/categories/times/buffers only; tasks, notes and source provenance are excluded. Names remain private planning data and are not logged.
+- Native probes use a separate fixture database and contain only labelled test content and numeric timing markers. No permissions, foreground service, telemetry, new remote initialiser or production backend were added. The added SDK integration tooling is development-only.
+- No new known critical/high security issue was identified in this slice. This does not close the release security/privacy gates or certify unimplemented backend/native features.

@@ -93,6 +93,86 @@ void main() {
   });
 
   test(
+    'stable block identities survive renaming or removing another block',
+    () {
+      const block = TemplateBlock(
+        id: 'stable',
+        title: 'Renamed work',
+        startTime: '09:00',
+        endTime: '10:00',
+        blockType: 'flexible',
+        category: 'work',
+        preparationBufferMinutes: 10,
+      );
+      const revised = DayTemplate(
+        id: 'custom',
+        name: 'New name',
+        blocks: [block],
+        version: 2,
+      );
+      final first = preview(value: revised);
+      expect(first.placements.single.sourceId, 'template:custom:stable');
+      expect(first.placements.single.block.preparationBufferMinutes, 10);
+      final duplicate = preview(
+        value: revised,
+        existing: [
+          TemplateReservation(
+            sourceId: 'template:custom:stable',
+            window: first.placements.single.window,
+          ),
+        ],
+      );
+      expect(duplicate.placements, isEmpty);
+      expect(duplicate.omissions.single.reason, 'Already applied to this day.');
+    },
+  );
+
+  test(
+    'duplicate identities and buffers larger than the block are invalid',
+    () {
+      const repeated = TemplateBlock(
+        id: 'same',
+        title: 'Work',
+        startTime: '09:00',
+        endTime: '10:00',
+        blockType: 'fixed',
+        category: 'work',
+      );
+      expect(
+        templateDefinitionIssue(
+          const DayTemplate(
+            id: 'x',
+            name: 'Work',
+            blocks: [repeated, repeated],
+          ),
+        ),
+        contains('distinct identity'),
+      );
+      for (final minutes in [-1, 61]) {
+        expect(
+          templateDefinitionIssue(
+            DayTemplate(
+              id: 'x',
+              name: 'Work',
+              blocks: [
+                TemplateBlock(
+                  title: 'Work',
+                  startTime: '09:00',
+                  endTime: '10:00',
+                  blockType: 'fixed',
+                  category: 'work',
+                  transitionBufferMinutes: minutes,
+                ),
+              ],
+            ),
+          ),
+          contains('fit inside'),
+        );
+      }
+    },
+  );
+
+  test(
     'invalid templates reject rather than create zero duration or bad types',
     () {
       for (final block in [

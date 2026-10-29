@@ -1,15 +1,15 @@
 # Release blockers
 
-Dayweft 1.0 is **not ready for submission**. Baseline: 26 October 2026, `33b5103`.
+Dayweft 1.0 is **not ready for submission**. Baseline: 26 October 2026, `33b5103`; this list reflects the 29 October local continuation. See the [verification record](verification-2026-10-29.md).
 
 ## Engineering work
 
-- Complete local planning across dates, hard permitted windows, persisted splits, templates/recurrence, full backup/import and durable focus.
+- Complete hard permitted windows, persisted splits, recurrence/exceptions, full-device backups and the remaining Focus UI/hardware/notification lifecycle gates. Date-scoped plans, custom templates and durable Focus already have code and automated evidence.
 - Implement native calendar import/reconciliation, notification scheduling/cancellation and external capture.
 - Implement and security-test optional auth/sync/account deletion and real revocable public sharing.
 - Complete functional settings, privacy deletion, themes, localisation and accessible layouts.
-- Replace debug release signing, review Android identity/SDK/permissions/backups, verify native 16 KB compatibility and release binaries.
-- Add reproducible verification, real secret/advisory scanning, generation-drift checks and complete quality evidence.
+- Confirm Android identity, configure owner upload signing, finish permission/assets review and verify native 16 KB compatibility in release binaries. Missing signing now fails closed; debug release signing has been removed.
+- Finish CI pin/scanner integration and complete quality evidence. Local reproducible verification, generation drift and real secret scanning are implemented/executed; they do not establish CI or release readiness.
 
 ## External inputs and validation
 

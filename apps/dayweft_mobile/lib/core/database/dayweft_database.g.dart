@@ -8604,6 +8604,520 @@ class CalendarConnectionsCompanion extends UpdateCompanion<CalendarConnection> {
   }
 }
 
+class $SavedTemplatesTable extends SavedTemplates
+    with TableInfo<$SavedTemplatesTable, SavedTemplate> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SavedTemplatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _blocksJsonMeta = const VerificationMeta(
+    'blocksJson',
+  );
+  @override
+  late final GeneratedColumn<String> blocksJson = GeneratedColumn<String>(
+    'blocks_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _formatVersionMeta = const VerificationMeta(
+    'formatVersion',
+  );
+  @override
+  late final GeneratedColumn<int> formatVersion = GeneratedColumn<int>(
+    'format_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    blocksJson,
+    formatVersion,
+    version,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'saved_templates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SavedTemplate> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('blocks_json')) {
+      context.handle(
+        _blocksJsonMeta,
+        blocksJson.isAcceptableOrUnknown(data['blocks_json']!, _blocksJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_blocksJsonMeta);
+    }
+    if (data.containsKey('format_version')) {
+      context.handle(
+        _formatVersionMeta,
+        formatVersion.isAcceptableOrUnknown(
+          data['format_version']!,
+          _formatVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SavedTemplate map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SavedTemplate(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      blocksJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}blocks_json'],
+      )!,
+      formatVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}format_version'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $SavedTemplatesTable createAlias(String alias) {
+    return $SavedTemplatesTable(attachedDatabase, alias);
+  }
+}
+
+class SavedTemplate extends DataClass implements Insertable<SavedTemplate> {
+  final String id;
+  final String name;
+  final String blocksJson;
+  final int formatVersion;
+  final int version;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const SavedTemplate({
+    required this.id,
+    required this.name,
+    required this.blocksJson,
+    required this.formatVersion,
+    required this.version,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['blocks_json'] = Variable<String>(blocksJson);
+    map['format_version'] = Variable<int>(formatVersion);
+    map['version'] = Variable<int>(version);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  SavedTemplatesCompanion toCompanion(bool nullToAbsent) {
+    return SavedTemplatesCompanion(
+      id: Value(id),
+      name: Value(name),
+      blocksJson: Value(blocksJson),
+      formatVersion: Value(formatVersion),
+      version: Value(version),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory SavedTemplate.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SavedTemplate(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      blocksJson: serializer.fromJson<String>(json['blocksJson']),
+      formatVersion: serializer.fromJson<int>(json['formatVersion']),
+      version: serializer.fromJson<int>(json['version']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'blocksJson': serializer.toJson<String>(blocksJson),
+      'formatVersion': serializer.toJson<int>(formatVersion),
+      'version': serializer.toJson<int>(version),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  SavedTemplate copyWith({
+    String? id,
+    String? name,
+    String? blocksJson,
+    int? formatVersion,
+    int? version,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => SavedTemplate(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    blocksJson: blocksJson ?? this.blocksJson,
+    formatVersion: formatVersion ?? this.formatVersion,
+    version: version ?? this.version,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  SavedTemplate copyWithCompanion(SavedTemplatesCompanion data) {
+    return SavedTemplate(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      blocksJson: data.blocksJson.present
+          ? data.blocksJson.value
+          : this.blocksJson,
+      formatVersion: data.formatVersion.present
+          ? data.formatVersion.value
+          : this.formatVersion,
+      version: data.version.present ? data.version.value : this.version,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedTemplate(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('blocksJson: $blocksJson, ')
+          ..write('formatVersion: $formatVersion, ')
+          ..write('version: $version, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    blocksJson,
+    formatVersion,
+    version,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SavedTemplate &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.blocksJson == this.blocksJson &&
+          other.formatVersion == this.formatVersion &&
+          other.version == this.version &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class SavedTemplatesCompanion extends UpdateCompanion<SavedTemplate> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> blocksJson;
+  final Value<int> formatVersion;
+  final Value<int> version;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const SavedTemplatesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.blocksJson = const Value.absent(),
+    this.formatVersion = const Value.absent(),
+    this.version = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SavedTemplatesCompanion.insert({
+    required String id,
+    required String name,
+    required String blocksJson,
+    this.formatVersion = const Value.absent(),
+    this.version = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       blocksJson = Value(blocksJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<SavedTemplate> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? blocksJson,
+    Expression<int>? formatVersion,
+    Expression<int>? version,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (blocksJson != null) 'blocks_json': blocksJson,
+      if (formatVersion != null) 'format_version': formatVersion,
+      if (version != null) 'version': version,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SavedTemplatesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? blocksJson,
+    Value<int>? formatVersion,
+    Value<int>? version,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return SavedTemplatesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      blocksJson: blocksJson ?? this.blocksJson,
+      formatVersion: formatVersion ?? this.formatVersion,
+      version: version ?? this.version,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (blocksJson.present) {
+      map['blocks_json'] = Variable<String>(blocksJson.value);
+    }
+    if (formatVersion.present) {
+      map['format_version'] = Variable<int>(formatVersion.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedTemplatesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('blocksJson: $blocksJson, ')
+          ..write('formatVersion: $formatVersion, ')
+          ..write('version: $version, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DayweftDatabase extends GeneratedDatabase {
   _$DayweftDatabase(QueryExecutor e) : super(e);
   $DayweftDatabaseManager get managers => $DayweftDatabaseManager(this);
@@ -8626,6 +9140,7 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
   late final $ShareLinksTable shareLinks = $ShareLinksTable(this);
   late final $CalendarConnectionsTable calendarConnections =
       $CalendarConnectionsTable(this);
+  late final $SavedTemplatesTable savedTemplates = $SavedTemplatesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8644,6 +9159,7 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
     focusSessionStates,
     shareLinks,
     calendarConnections,
+    savedTemplates,
   ];
 }
 
@@ -14576,6 +15092,282 @@ typedef $$CalendarConnectionsTableProcessedTableManager =
       CalendarConnection,
       PrefetchHooks Function()
     >;
+typedef $$SavedTemplatesTableCreateCompanionBuilder =
+    SavedTemplatesCompanion Function({
+      required String id,
+      required String name,
+      required String blocksJson,
+      Value<int> formatVersion,
+      Value<int> version,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$SavedTemplatesTableUpdateCompanionBuilder =
+    SavedTemplatesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> blocksJson,
+      Value<int> formatVersion,
+      Value<int> version,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$SavedTemplatesTableFilterComposer
+    extends Composer<_$DayweftDatabase, $SavedTemplatesTable> {
+  $$SavedTemplatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get blocksJson => $composableBuilder(
+    column: $table.blocksJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get formatVersion => $composableBuilder(
+    column: $table.formatVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SavedTemplatesTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $SavedTemplatesTable> {
+  $$SavedTemplatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get blocksJson => $composableBuilder(
+    column: $table.blocksJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get formatVersion => $composableBuilder(
+    column: $table.formatVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SavedTemplatesTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $SavedTemplatesTable> {
+  $$SavedTemplatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get blocksJson => $composableBuilder(
+    column: $table.blocksJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get formatVersion => $composableBuilder(
+    column: $table.formatVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$SavedTemplatesTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $SavedTemplatesTable,
+          SavedTemplate,
+          $$SavedTemplatesTableFilterComposer,
+          $$SavedTemplatesTableOrderingComposer,
+          $$SavedTemplatesTableAnnotationComposer,
+          $$SavedTemplatesTableCreateCompanionBuilder,
+          $$SavedTemplatesTableUpdateCompanionBuilder,
+          (
+            SavedTemplate,
+            BaseReferences<
+              _$DayweftDatabase,
+              $SavedTemplatesTable,
+              SavedTemplate
+            >,
+          ),
+          SavedTemplate,
+          PrefetchHooks Function()
+        > {
+  $$SavedTemplatesTableTableManager(
+    _$DayweftDatabase db,
+    $SavedTemplatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SavedTemplatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SavedTemplatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SavedTemplatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> blocksJson = const Value.absent(),
+                Value<int> formatVersion = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SavedTemplatesCompanion(
+                id: id,
+                name: name,
+                blocksJson: blocksJson,
+                formatVersion: formatVersion,
+                version: version,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String blocksJson,
+                Value<int> formatVersion = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SavedTemplatesCompanion.insert(
+                id: id,
+                name: name,
+                blocksJson: blocksJson,
+                formatVersion: formatVersion,
+                version: version,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SavedTemplatesTable, SavedTemplate>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $SavedTemplatesTable,
+                    SavedTemplate
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SavedTemplatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $SavedTemplatesTable,
+      SavedTemplate,
+      $$SavedTemplatesTableFilterComposer,
+      $$SavedTemplatesTableOrderingComposer,
+      $$SavedTemplatesTableAnnotationComposer,
+      $$SavedTemplatesTableCreateCompanionBuilder,
+      $$SavedTemplatesTableUpdateCompanionBuilder,
+      (
+        SavedTemplate,
+        BaseReferences<_$DayweftDatabase, $SavedTemplatesTable, SavedTemplate>,
+      ),
+      SavedTemplate,
+      PrefetchHooks Function()
+    >;
 
 class $DayweftDatabaseManager {
   final _$DayweftDatabase _db;
@@ -14606,4 +15398,6 @@ class $DayweftDatabaseManager {
       $$ShareLinksTableTableManager(_db, _db.shareLinks);
   $$CalendarConnectionsTableTableManager get calendarConnections =>
       $$CalendarConnectionsTableTableManager(_db, _db.calendarConnections);
+  $$SavedTemplatesTableTableManager get savedTemplates =>
+      $$SavedTemplatesTableTableManager(_db, _db.savedTemplates);
 }

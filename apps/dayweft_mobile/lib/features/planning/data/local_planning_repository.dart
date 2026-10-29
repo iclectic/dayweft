@@ -7,6 +7,7 @@ import 'package:dayweft_mobile/core/database/dayweft_database.dart';
 import 'package:dayweft_mobile/core/errors/planning_failure.dart';
 import 'package:dayweft_mobile/features/data_management/domain/day_import.dart';
 import 'package:dayweft_mobile/features/onboarding/domain/onboarding_preferences.dart';
+import 'package:dayweft_mobile/features/templates/data/custom_template_repository.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
@@ -1016,7 +1017,24 @@ class LocalPlanningRepository {
 
   Future<domain.TemplatePreview> previewTemplate(
     domain.DayTemplate template,
-  ) async => _templatePreview(await loadSelectedDay(), template);
+  ) async => _templatePreview(
+    await loadSelectedDay(),
+    await _resolveTemplate(template),
+  );
+
+  Future<domain.DayTemplate> _resolveTemplate(
+    domain.DayTemplate template,
+  ) async {
+    if (!template.id.startsWith('user:')) return template;
+    final stored = await CustomTemplateRepository(_database).get(template.id);
+    if (stored.version != template.version) {
+      throw const PlanningFailure(
+        PlanningFailureCode.staleProposal,
+        'This template changed. Open a fresh preview before applying it.',
+      );
+    }
+    return stored;
+  }
 
   domain.TemplatePreview _templatePreview(
     LocalDaySnapshot snapshot,
@@ -1057,7 +1075,10 @@ class LocalPlanningRepository {
   }) async {
     await _database.transaction(() async {
       final snapshot = await loadSelectedDay();
-      final current = _templatePreview(snapshot, preview.template);
+      final current = _templatePreview(
+        snapshot,
+        await _resolveTemplate(preview.template),
+      );
       if (current.planId != preview.planId ||
           current.baseRevision != preview.baseRevision ||
           _templateSignature(current) != _templateSignature(preview)) {
@@ -1097,6 +1118,16 @@ class LocalPlanningRepository {
                 blockType: placement.block.blockType,
                 category: Value(placement.block.category),
                 sourceId: Value(placement.sourceId),
+                travelBufferMinutes: Value(placement.block.travelBufferMinutes),
+                preparationBufferMinutes: Value(
+                  placement.block.preparationBufferMinutes,
+                ),
+                transitionBufferMinutes: Value(
+                  placement.block.transitionBufferMinutes,
+                ),
+                recoveryBufferMinutes: Value(
+                  placement.block.recoveryBufferMinutes,
+                ),
                 sortOrder: snapshot.blocks.length + blockIds.length - 1,
                 syncState: SyncState.localOnly,
                 createdAt: now,
@@ -1120,6 +1151,12 @@ class LocalPlanningRepository {
         'type': item.block.blockType,
         'category': item.block.category,
         'sourceId': item.sourceId,
+        'buffers': [
+          item.block.travelBufferMinutes,
+          item.block.preparationBufferMinutes,
+          item.block.transitionBufferMinutes,
+          item.block.recoveryBufferMinutes,
+        ],
         'start': item.window.start.toIso8601String(),
         'end': item.window.end.toIso8601String(),
       },

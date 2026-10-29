@@ -7,12 +7,60 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'database schema starts at version 11 and creates core tables',
+    'version 11 migration preserves focus state and creates an empty template library',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v11-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 10, 29);
+      await old
+          .into(old.focusSessions)
+          .insert(
+            FocusSessionsCompanion.insert(
+              id: 'keep-focus',
+              title: 'Existing session',
+              startedAt: now,
+              plannedMinutes: 25,
+              status: 'paused',
+              createdAt: now,
+            ),
+          );
+      await old
+          .into(old.focusSessionStates)
+          .insert(
+            FocusSessionStatesCompanion.insert(
+              sessionId: 'keep-focus',
+              mode: 'countUp',
+              elapsedMilliseconds: const Value(65000),
+              version: const Value(3),
+            ),
+          );
+      await old.customStatement('DROP TABLE saved_templates');
+      await old.customStatement('PRAGMA user_version = 11');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      expect(
+        (await upgraded.select(upgraded.focusSessions).getSingle()).title,
+        'Existing session',
+      );
+      final timing = await upgraded
+          .select(upgraded.focusSessionStates)
+          .getSingle();
+      expect(timing.elapsedMilliseconds, 65000);
+      expect(timing.version, 3);
+      expect(await upgraded.select(upgraded.savedTemplates).get(), isEmpty);
+    },
+  );
+
+  test(
+    'database schema starts at version 12 and creates core tables',
     () async {
       final database = DayweftDatabase.forTesting(NativeDatabase.memory());
       addTearDown(database.close);
 
-      expect(database.schemaVersion, 11);
+      expect(database.schemaVersion, 12);
 
       final tables = await database
           .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -80,7 +128,7 @@ void main() {
     final version = await database
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 11);
+    expect(version.read<int>('user_version'), 12);
     final legacy = await database
         .select(database.estimationRecords)
         .getSingle();
@@ -123,6 +171,7 @@ void main() {
       await previous.customStatement('ALTER TABLE tasks DROP COLUMN $column');
     }
     await previous.customStatement('DROP TABLE focus_session_states');
+    await previous.customStatement('DROP TABLE saved_templates');
     await previous.customStatement('PRAGMA user_version = 8');
     await previous.close();
     final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -174,6 +223,7 @@ void main() {
         'ALTER TABLE tasks DROP COLUMN dependency_ids_json',
       );
       await previous.customStatement('DROP TABLE focus_session_states');
+      await previous.customStatement('DROP TABLE saved_templates');
       await previous.customStatement('PRAGMA user_version = 9');
       await previous.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -210,6 +260,7 @@ void main() {
             ),
           );
       await previous.customStatement('DROP TABLE focus_session_states');
+      await previous.customStatement('DROP TABLE saved_templates');
       await previous.customStatement('PRAGMA user_version = 10');
       await previous.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -218,7 +269,7 @@ void main() {
       expect(session.actualMinutes, 10);
       expect(session.title, 'Keep my record');
       expect(await upgraded.select(upgraded.focusSessionStates).get(), isEmpty);
-      expect(upgraded.schemaVersion, 11);
+      expect(upgraded.schemaVersion, 12);
     },
   );
 }

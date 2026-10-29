@@ -248,6 +248,19 @@ class CalendarConnections extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class SavedTemplates extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get blocksJson => text()();
+  IntColumn get formatVersion => integer().withDefault(const Constant(1))();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: <Type>[
     DayPlans,
@@ -263,6 +276,7 @@ class CalendarConnections extends Table {
     FocusSessionStates,
     ShareLinks,
     CalendarConnections,
+    SavedTemplates,
   ],
 )
 class DayweftDatabase extends _$DayweftDatabase {
@@ -271,7 +285,7 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration {
@@ -359,6 +373,9 @@ class DayweftDatabase extends _$DayweftDatabase {
         if (from < 11) {
           await migrator.createTable(focusSessionStates);
           await _focusIndex();
+        }
+        if (from < 12) {
+          await migrator.createTable(savedTemplates);
         }
       },
     );

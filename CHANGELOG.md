@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add a persisted custom-template library with block editing, rename/duplicate, reviewed save-from-day, confirmation and deletion undo.
+- Retain stable template block identities and all four buffers; reject previews after source-template edits/deletion and preserve existing commitments.
+- Migrate SQLite to v12 by adding the template table without changing existing plans, tasks or Focus evidence.
+- Add real repository/controller/widget regressions for dates, template selection, stale editors, imports and template storage; add light/dark editor goldens and staged native Android Focus probes.
+
 - Add date-scoped planning/history, shared Inbox, current-time text and injectable clocks.
 - Add five reconciled starter templates with selected-block confirmation, duplicate/stale guards and durable undo.
 - Validate and preview day imports; preserve original dates/dependencies and reject repeated or malformed imports atomically.

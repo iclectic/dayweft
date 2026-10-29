@@ -6,7 +6,7 @@ Dayweft is a privacy-first adaptive day planner for iOS and Android. It helps pe
 
 ## Implemented
 
-- Planning documentation for the greenfield Flutter product.
+- Product requirements, architecture decisions and a resumable engineering roadmap for the existing Flutter application.
 - Flutter monorepo scaffold:
   - `apps/dayweft_mobile`
   - `packages/adaptive_day_engine`
@@ -23,6 +23,7 @@ Dayweft is a privacy-first adaptive day planner for iOS and Android. It helps pe
 - Block category/buffer editing, overnight end times, and before/after details for new task/block edit revisions.
 - Inbox local MVP: quick capture and Brain Dump review dates, preferred/approximate times, duration, priority, energy and category locally. Confirmed fields are persisted; a captured batch can be undone.
 - Five starter templates with selected-block previews fitted around commitments and working hours; duplicate/stale-preview guards and atomic undo.
+- Local custom templates: create/edit/rename, duplicate, save a reviewed day's blocks, and confirm deletion with undo. Stable block identities retain duplicate protection after edits; buffers persist and changed/deleted templates invalidate old previews. Task details and notes are not copied.
 - Validated single-day JSON import with preview, original-date preservation, repeat-import protection and batch undo. This is not a complete device backup.
 - Engine-backed Reality Check observations in Today Timeline.
 - Reweave My Day entry point with Running Late, Meeting Overran, Task Took Longer, New Urgent Task, Energy Changed, Need A Break, Missed Part Of Day and Custom Disruption options.
@@ -31,7 +32,7 @@ Dayweft is a privacy-first adaptive day planner for iOS and Android. It helps pe
 - Confirmed Reweave deferrals and flexible-block moves are recorded as reversible local revisions.
 - Settings controls for local break, contingency and transition preferences.
 - Your Rhythm local evidence summary with manual actual-time entry, a 12-measurement threshold for overall median estimate/actual comparisons, observed spread, record exclusion/deletion and opt-in energy check-ins. Task completion does not fabricate an actual duration.
-- Durable Quiet Focus countdown/count-up sessions with custom duration, pause/resume/restart, interruptions, retained abandoned sessions and optional measured task completion with undo. Android monotonic timing is implemented; device lifecycle checks and notification delivery remain pending.
+- Durable Quiet Focus countdown/count-up sessions with custom duration, pause/resume/restart, interruptions, retained abandoned sessions and optional measured task completion with undo. Android monotonic timing has emulator evidence for database reopen, process death and reboot uncertainty; hardware lifecycle checks and notification delivery remain pending.
 - Local availability-share draft records with expiry/revocation metadata. Public links and cryptographic token hashing are not implemented.
 - Calendar permission-state scaffold. Device permissions and calendar import are not implemented.
 - Store-readiness documentation for metadata, permissions, privacy copy, screenshots and release gates.
@@ -40,7 +41,7 @@ Dayweft is a privacy-first adaptive day planner for iOS and Android. It helps pe
 
 ## Planned
 
-Custom/recurring templates, complete device backups and advanced product functionality remain planned. The current app is a local planning MVP with an initial deterministic adaptive-planning slice, not a complete adaptive planner.
+Recurring templates, complete device backups and advanced product functionality remain planned. Custom templates are local block patterns, with previews that explain omissions; they do not yet implement recurrence or automatically materialise future days. The current app is a local planning MVP with an initial deterministic adaptive-planning slice, not a complete adaptive planner.
 
 Planned areas include richer permitted-window editing, persisted split fragments, full platform calendar import, notification delivery, optional Supabase sync, public sharing endpoints, biometric lock, screenshot production, signing setup and app-store submission.
 
@@ -48,7 +49,7 @@ The full feature and release requirements are unfinished. See [implementation st
 
 ## Development
 
-Flutter 3.47.8 is pinned in `.flutter-version`. Run `bash scripts/verify.sh` from the root. See [development](docs/DEVELOPMENT.md), [roadmap](docs/ROADMAP.md) and [current verification](docs/audit/verification-2026-10-27.md). Android release builds require an owner-provided upload key and never fall back to debug signing.
+Flutter 3.47.8 is pinned in `.flutter-version`. Run `bash scripts/verify.sh` from the root. See [development](docs/DEVELOPMENT.md), [roadmap](docs/ROADMAP.md) and [current verification](docs/audit/verification-2026-10-29.md). Android release builds require an owner-provided upload key and never fall back to debug signing.
 
 ```sh
 flutter pub get --directory apps/dayweft_mobile
