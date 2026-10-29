@@ -223,6 +223,20 @@ class ShareLinks extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class FocusSessionStates extends Table {
+  TextColumn get sessionId => text().references(FocusSessions, #id)();
+  TextColumn get mode => text()();
+  IntColumn get elapsedMilliseconds =>
+      integer().withDefault(const Constant(0))();
+  IntColumn get anchorMilliseconds => integer().nullable()();
+  TextColumn get bootToken => text().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  IntColumn get estimateAtStart => integer().nullable()();
+  BoolColumn get active => boolean().withDefault(const Constant(true))();
+  @override
+  Set<Column<Object>> get primaryKey => {sessionId};
+}
+
 class CalendarConnections extends Table {
   TextColumn get id => text()();
   TextColumn get platform => text()();
@@ -246,6 +260,7 @@ class CalendarConnections extends Table {
     EstimationRecords,
     EnergyCheckIns,
     FocusSessions,
+    FocusSessionStates,
     ShareLinks,
     CalendarConnections,
   ],
@@ -256,12 +271,15 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
-      onCreate: (migrator) => migrator.createAll(),
+      onCreate: (migrator) async {
+        await migrator.createAll();
+        await _focusIndex();
+      },
       onUpgrade: (migrator, from, to) async {
         if (from < 2) {
           await migrator.createTable(userPreferences);
@@ -338,9 +356,17 @@ class DayweftDatabase extends _$DayweftDatabase {
           await migrator.addColumn(tasks, tasks.cognitiveLoad);
           await migrator.addColumn(tasks, tasks.dependencyIdsJson);
         }
+        if (from < 11) {
+          await migrator.createTable(focusSessionStates);
+          await _focusIndex();
+        }
       },
     );
   }
+
+  Future<void> _focusIndex() => customStatement(
+    'CREATE UNIQUE INDEX focus_one_active ON focus_session_states (active) WHERE active = 1',
+  );
 }
 
 LazyDatabase _openConnection() {

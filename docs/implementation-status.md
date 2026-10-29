@@ -1,5 +1,7 @@
 # Calm Time implementation status
 
+Current product identity is **Dayweft**. The historical sections below retain earlier decisions and results; the 27 October continuation checkpoint at the end supersedes outdated gap/count statements. See [ROADMAP](ROADMAP.md) for the active execution ledger.
+
 Initially checked on 24 October 2026; updated on 26 October 2026. This ledger distinguishes working local behaviours from partial surfaces and missing integrations. The baseline table below records the starting gaps; the completed changes section records subsequent progress. The historical phase summaries are not proof that a requirement is complete. The Step 1 pack's consequential redesign proposals remain provisional; the user authorised continuation on the existing architecture and branch.
 
 ## Baseline validation
@@ -60,3 +62,15 @@ Initially checked on 24 October 2026; updated on 26 October 2026. This ledger di
 Continue in the supplied vertical-slice order, hardening existing local behaviour rather than re-scaffolding. Each slice requires persistence, meaningful tests, offline/error/accessibility states and documentation. No work is complete merely because a route, table, dependency or document exists.
 
 Unconfigured Supabase resources, verified public domain, developer accounts/signing and reference-source access are external inputs. Implement and validate everything independent of those inputs; record exact remaining deployment/device gates instead of claiming production readiness.
+
+## Dayweft continuation checkpoint — 27 October 2026
+
+- Last completed slices: baseline audit documents; date-scoped local planning; five safe starter-template previews/application; strict previewed single-day import; durable local Focus state and measured task completion; Android build/signing guards. Whole directive phases remain IN PROGRESS.
+- Changed files: `AGENTS.md`, `.flutter-version`, `.gitleaks.toml`, `scripts/`, `docs/audit/`, `docs/ROADMAP.md`, development/dependency/release/security records, README/CHANGELOG, mobile clock/configuration/database/controller/repository, template/import/focus/date presentation and regression tests, domain template reconciliation, package locks and Android configuration/native clock adapter. Generated Drift code was regenerated, not edited by hand.
+- Tests actually run: `bash scripts/verify.sh` passed locked resolution, generation-drift, formatting, analysis and all four suites: mobile 81, domain 19, engine 15, design system 2. Coverage: mobile domain/application 94.7%, domain 88.6%, engine 90.2%. `flutter build apk --debug` passed. The release script correctly refused an unconfigured upload key. Gitleaks worktree/history scans and OSV checks of 165 locked package versions found no matches.
+- SQLite schema is v11. Upgrade fixtures preserve existing rows through v5, v8, v9 and v10. Durable Focus stores monotonic anchors and excludes unknown reboot time; iOS/other fallback references require review across process restart. No real device lifecycle result is claimed.
+- Outstanding defects/limits: application still uses legacy Kotlin plugin compatibility; CI pin/real-scan integration is pending; native calendar and sharing controls remain scaffolds. Existing test helpers can emit Drift's multiple-database warning when intentionally opening independent databases; production uses one provider-owned connection.
+- Unfinished requirements: custom/recurring templates, hard task windows and persisted split allocations, complete backups, onboarding draft recovery, richer insights/settings/localisation, native notifications/calendar/capture, optional auth/sync/account deletion, secured hosted sharing, biometric lock and release assets/device/performance/accessibility checks.
+- Human action required: confirm Android ID, configure protected upload signing, provide live cloud/HTTPS host and policy/support details, perform named-device exercises and owner-controlled Play testing/approval. No production-ready, signed-release or published status is claimed.
+- Exact next task: add widget/integration coverage for date selection, template-selection/error paths and import confirmation; exercise the Android Focus native clock through lock/background/kill/reboot, then continue permitted-window and custom-template persistence.
+- Review/verification detail: [executed evidence](audit/verification-2026-10-27.md). Do not reset user data, edit generated files manually or activate production services as a shortcut.

@@ -7226,6 +7226,543 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
   }
 }
 
+class $FocusSessionStatesTable extends FocusSessionStates
+    with TableInfo<$FocusSessionStatesTable, FocusSessionState> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FocusSessionStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES focus_sessions (id)',
+    ),
+  );
+  static const VerificationMeta _modeMeta = const VerificationMeta('mode');
+  @override
+  late final GeneratedColumn<String> mode = GeneratedColumn<String>(
+    'mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _elapsedMillisecondsMeta =
+      const VerificationMeta('elapsedMilliseconds');
+  @override
+  late final GeneratedColumn<int> elapsedMilliseconds = GeneratedColumn<int>(
+    'elapsed_milliseconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _anchorMillisecondsMeta =
+      const VerificationMeta('anchorMilliseconds');
+  @override
+  late final GeneratedColumn<int> anchorMilliseconds = GeneratedColumn<int>(
+    'anchor_milliseconds',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bootTokenMeta = const VerificationMeta(
+    'bootToken',
+  );
+  @override
+  late final GeneratedColumn<String> bootToken = GeneratedColumn<String>(
+    'boot_token',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _estimateAtStartMeta = const VerificationMeta(
+    'estimateAtStart',
+  );
+  @override
+  late final GeneratedColumn<int> estimateAtStart = GeneratedColumn<int>(
+    'estimate_at_start',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    sessionId,
+    mode,
+    elapsedMilliseconds,
+    anchorMilliseconds,
+    bootToken,
+    version,
+    estimateAtStart,
+    active,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'focus_session_states';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FocusSessionState> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('mode')) {
+      context.handle(
+        _modeMeta,
+        mode.isAcceptableOrUnknown(data['mode']!, _modeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modeMeta);
+    }
+    if (data.containsKey('elapsed_milliseconds')) {
+      context.handle(
+        _elapsedMillisecondsMeta,
+        elapsedMilliseconds.isAcceptableOrUnknown(
+          data['elapsed_milliseconds']!,
+          _elapsedMillisecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('anchor_milliseconds')) {
+      context.handle(
+        _anchorMillisecondsMeta,
+        anchorMilliseconds.isAcceptableOrUnknown(
+          data['anchor_milliseconds']!,
+          _anchorMillisecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('boot_token')) {
+      context.handle(
+        _bootTokenMeta,
+        bootToken.isAcceptableOrUnknown(data['boot_token']!, _bootTokenMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('estimate_at_start')) {
+      context.handle(
+        _estimateAtStartMeta,
+        estimateAtStart.isAcceptableOrUnknown(
+          data['estimate_at_start']!,
+          _estimateAtStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {sessionId};
+  @override
+  FocusSessionState map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FocusSessionState(
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      )!,
+      mode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mode'],
+      )!,
+      elapsedMilliseconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}elapsed_milliseconds'],
+      )!,
+      anchorMilliseconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anchor_milliseconds'],
+      ),
+      bootToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}boot_token'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      estimateAtStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}estimate_at_start'],
+      ),
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+    );
+  }
+
+  @override
+  $FocusSessionStatesTable createAlias(String alias) {
+    return $FocusSessionStatesTable(attachedDatabase, alias);
+  }
+}
+
+class FocusSessionState extends DataClass
+    implements Insertable<FocusSessionState> {
+  final String sessionId;
+  final String mode;
+  final int elapsedMilliseconds;
+  final int? anchorMilliseconds;
+  final String? bootToken;
+  final int version;
+  final int? estimateAtStart;
+  final bool active;
+  const FocusSessionState({
+    required this.sessionId,
+    required this.mode,
+    required this.elapsedMilliseconds,
+    this.anchorMilliseconds,
+    this.bootToken,
+    required this.version,
+    this.estimateAtStart,
+    required this.active,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['session_id'] = Variable<String>(sessionId);
+    map['mode'] = Variable<String>(mode);
+    map['elapsed_milliseconds'] = Variable<int>(elapsedMilliseconds);
+    if (!nullToAbsent || anchorMilliseconds != null) {
+      map['anchor_milliseconds'] = Variable<int>(anchorMilliseconds);
+    }
+    if (!nullToAbsent || bootToken != null) {
+      map['boot_token'] = Variable<String>(bootToken);
+    }
+    map['version'] = Variable<int>(version);
+    if (!nullToAbsent || estimateAtStart != null) {
+      map['estimate_at_start'] = Variable<int>(estimateAtStart);
+    }
+    map['active'] = Variable<bool>(active);
+    return map;
+  }
+
+  FocusSessionStatesCompanion toCompanion(bool nullToAbsent) {
+    return FocusSessionStatesCompanion(
+      sessionId: Value(sessionId),
+      mode: Value(mode),
+      elapsedMilliseconds: Value(elapsedMilliseconds),
+      anchorMilliseconds: anchorMilliseconds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anchorMilliseconds),
+      bootToken: bootToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bootToken),
+      version: Value(version),
+      estimateAtStart: estimateAtStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(estimateAtStart),
+      active: Value(active),
+    );
+  }
+
+  factory FocusSessionState.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FocusSessionState(
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      mode: serializer.fromJson<String>(json['mode']),
+      elapsedMilliseconds: serializer.fromJson<int>(
+        json['elapsedMilliseconds'],
+      ),
+      anchorMilliseconds: serializer.fromJson<int?>(json['anchorMilliseconds']),
+      bootToken: serializer.fromJson<String?>(json['bootToken']),
+      version: serializer.fromJson<int>(json['version']),
+      estimateAtStart: serializer.fromJson<int?>(json['estimateAtStart']),
+      active: serializer.fromJson<bool>(json['active']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'sessionId': serializer.toJson<String>(sessionId),
+      'mode': serializer.toJson<String>(mode),
+      'elapsedMilliseconds': serializer.toJson<int>(elapsedMilliseconds),
+      'anchorMilliseconds': serializer.toJson<int?>(anchorMilliseconds),
+      'bootToken': serializer.toJson<String?>(bootToken),
+      'version': serializer.toJson<int>(version),
+      'estimateAtStart': serializer.toJson<int?>(estimateAtStart),
+      'active': serializer.toJson<bool>(active),
+    };
+  }
+
+  FocusSessionState copyWith({
+    String? sessionId,
+    String? mode,
+    int? elapsedMilliseconds,
+    Value<int?> anchorMilliseconds = const Value.absent(),
+    Value<String?> bootToken = const Value.absent(),
+    int? version,
+    Value<int?> estimateAtStart = const Value.absent(),
+    bool? active,
+  }) => FocusSessionState(
+    sessionId: sessionId ?? this.sessionId,
+    mode: mode ?? this.mode,
+    elapsedMilliseconds: elapsedMilliseconds ?? this.elapsedMilliseconds,
+    anchorMilliseconds: anchorMilliseconds.present
+        ? anchorMilliseconds.value
+        : this.anchorMilliseconds,
+    bootToken: bootToken.present ? bootToken.value : this.bootToken,
+    version: version ?? this.version,
+    estimateAtStart: estimateAtStart.present
+        ? estimateAtStart.value
+        : this.estimateAtStart,
+    active: active ?? this.active,
+  );
+  FocusSessionState copyWithCompanion(FocusSessionStatesCompanion data) {
+    return FocusSessionState(
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      mode: data.mode.present ? data.mode.value : this.mode,
+      elapsedMilliseconds: data.elapsedMilliseconds.present
+          ? data.elapsedMilliseconds.value
+          : this.elapsedMilliseconds,
+      anchorMilliseconds: data.anchorMilliseconds.present
+          ? data.anchorMilliseconds.value
+          : this.anchorMilliseconds,
+      bootToken: data.bootToken.present ? data.bootToken.value : this.bootToken,
+      version: data.version.present ? data.version.value : this.version,
+      estimateAtStart: data.estimateAtStart.present
+          ? data.estimateAtStart.value
+          : this.estimateAtStart,
+      active: data.active.present ? data.active.value : this.active,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusSessionState(')
+          ..write('sessionId: $sessionId, ')
+          ..write('mode: $mode, ')
+          ..write('elapsedMilliseconds: $elapsedMilliseconds, ')
+          ..write('anchorMilliseconds: $anchorMilliseconds, ')
+          ..write('bootToken: $bootToken, ')
+          ..write('version: $version, ')
+          ..write('estimateAtStart: $estimateAtStart, ')
+          ..write('active: $active')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    sessionId,
+    mode,
+    elapsedMilliseconds,
+    anchorMilliseconds,
+    bootToken,
+    version,
+    estimateAtStart,
+    active,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FocusSessionState &&
+          other.sessionId == this.sessionId &&
+          other.mode == this.mode &&
+          other.elapsedMilliseconds == this.elapsedMilliseconds &&
+          other.anchorMilliseconds == this.anchorMilliseconds &&
+          other.bootToken == this.bootToken &&
+          other.version == this.version &&
+          other.estimateAtStart == this.estimateAtStart &&
+          other.active == this.active);
+}
+
+class FocusSessionStatesCompanion extends UpdateCompanion<FocusSessionState> {
+  final Value<String> sessionId;
+  final Value<String> mode;
+  final Value<int> elapsedMilliseconds;
+  final Value<int?> anchorMilliseconds;
+  final Value<String?> bootToken;
+  final Value<int> version;
+  final Value<int?> estimateAtStart;
+  final Value<bool> active;
+  final Value<int> rowid;
+  const FocusSessionStatesCompanion({
+    this.sessionId = const Value.absent(),
+    this.mode = const Value.absent(),
+    this.elapsedMilliseconds = const Value.absent(),
+    this.anchorMilliseconds = const Value.absent(),
+    this.bootToken = const Value.absent(),
+    this.version = const Value.absent(),
+    this.estimateAtStart = const Value.absent(),
+    this.active = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FocusSessionStatesCompanion.insert({
+    required String sessionId,
+    required String mode,
+    this.elapsedMilliseconds = const Value.absent(),
+    this.anchorMilliseconds = const Value.absent(),
+    this.bootToken = const Value.absent(),
+    this.version = const Value.absent(),
+    this.estimateAtStart = const Value.absent(),
+    this.active = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : sessionId = Value(sessionId),
+       mode = Value(mode);
+  static Insertable<FocusSessionState> custom({
+    Expression<String>? sessionId,
+    Expression<String>? mode,
+    Expression<int>? elapsedMilliseconds,
+    Expression<int>? anchorMilliseconds,
+    Expression<String>? bootToken,
+    Expression<int>? version,
+    Expression<int>? estimateAtStart,
+    Expression<bool>? active,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (sessionId != null) 'session_id': sessionId,
+      if (mode != null) 'mode': mode,
+      if (elapsedMilliseconds != null)
+        'elapsed_milliseconds': elapsedMilliseconds,
+      if (anchorMilliseconds != null) 'anchor_milliseconds': anchorMilliseconds,
+      if (bootToken != null) 'boot_token': bootToken,
+      if (version != null) 'version': version,
+      if (estimateAtStart != null) 'estimate_at_start': estimateAtStart,
+      if (active != null) 'active': active,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FocusSessionStatesCompanion copyWith({
+    Value<String>? sessionId,
+    Value<String>? mode,
+    Value<int>? elapsedMilliseconds,
+    Value<int?>? anchorMilliseconds,
+    Value<String?>? bootToken,
+    Value<int>? version,
+    Value<int?>? estimateAtStart,
+    Value<bool>? active,
+    Value<int>? rowid,
+  }) {
+    return FocusSessionStatesCompanion(
+      sessionId: sessionId ?? this.sessionId,
+      mode: mode ?? this.mode,
+      elapsedMilliseconds: elapsedMilliseconds ?? this.elapsedMilliseconds,
+      anchorMilliseconds: anchorMilliseconds ?? this.anchorMilliseconds,
+      bootToken: bootToken ?? this.bootToken,
+      version: version ?? this.version,
+      estimateAtStart: estimateAtStart ?? this.estimateAtStart,
+      active: active ?? this.active,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (mode.present) {
+      map['mode'] = Variable<String>(mode.value);
+    }
+    if (elapsedMilliseconds.present) {
+      map['elapsed_milliseconds'] = Variable<int>(elapsedMilliseconds.value);
+    }
+    if (anchorMilliseconds.present) {
+      map['anchor_milliseconds'] = Variable<int>(anchorMilliseconds.value);
+    }
+    if (bootToken.present) {
+      map['boot_token'] = Variable<String>(bootToken.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (estimateAtStart.present) {
+      map['estimate_at_start'] = Variable<int>(estimateAtStart.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusSessionStatesCompanion(')
+          ..write('sessionId: $sessionId, ')
+          ..write('mode: $mode, ')
+          ..write('elapsedMilliseconds: $elapsedMilliseconds, ')
+          ..write('anchorMilliseconds: $anchorMilliseconds, ')
+          ..write('bootToken: $bootToken, ')
+          ..write('version: $version, ')
+          ..write('estimateAtStart: $estimateAtStart, ')
+          ..write('active: $active, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ShareLinksTable extends ShareLinks
     with TableInfo<$ShareLinksTable, ShareLink> {
   @override
@@ -8084,6 +8621,8 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
       $EstimationRecordsTable(this);
   late final $EnergyCheckInsTable energyCheckIns = $EnergyCheckInsTable(this);
   late final $FocusSessionsTable focusSessions = $FocusSessionsTable(this);
+  late final $FocusSessionStatesTable focusSessionStates =
+      $FocusSessionStatesTable(this);
   late final $ShareLinksTable shareLinks = $ShareLinksTable(this);
   late final $CalendarConnectionsTable calendarConnections =
       $CalendarConnectionsTable(this);
@@ -8102,6 +8641,7 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
     estimationRecords,
     energyCheckIns,
     focusSessions,
+    focusSessionStates,
     shareLinks,
     calendarConnections,
   ];
@@ -8600,7 +9140,7 @@ class $$DayPlansTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DayPlansTable, DayPlan>(table),
                   $$DayPlansTableReferences(db, table, e),
                 ),
               )
@@ -8622,10 +9162,11 @@ class $$DayPlansTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (timeBlocksRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           DayPlan,
                           $DayPlansTable,
-                          TimeBlock
+                          TimeBlock,
+                          $TimeBlocksTable
                         >(
                           currentTable: table,
                           referencedTable: $$DayPlansTableReferences
@@ -8636,17 +9177,16 @@ class $$DayPlansTableTableManager
                                 table,
                                 p0,
                               ).timeBlocksRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.dayPlanId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
                           typedResults: items,
                         ),
                       if (tasksRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           DayPlan,
                           $DayPlansTable,
-                          Task
+                          Task,
+                          $TasksTable
                         >(
                           currentTable: table,
                           referencedTable: $$DayPlansTableReferences
@@ -8657,17 +9197,16 @@ class $$DayPlansTableTableManager
                                 table,
                                 p0,
                               ).tasksRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.dayPlanId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
                           typedResults: items,
                         ),
                       if (scheduleRevisionsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           DayPlan,
                           $DayPlansTable,
-                          ScheduleRevision
+                          ScheduleRevision,
+                          $ScheduleRevisionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$DayPlansTableReferences
@@ -8678,10 +9217,8 @@ class $$DayPlansTableTableManager
                                 table,
                                 p0,
                               ).scheduleRevisionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.dayPlanId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
                           typedResults: items,
                         ),
                     ];
@@ -9125,7 +9662,16 @@ class $$UserPreferencesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$UserPreferencesTable, UserPreference>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $UserPreferencesTable,
+                    UserPreference
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -9754,7 +10300,7 @@ class $$TimeBlocksTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$TimeBlocksTable, TimeBlock>(table),
                   $$TimeBlocksTableReferences(db, table, e),
                 ),
               )
@@ -9798,18 +10344,19 @@ class $$TimeBlocksTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (tasksRefs)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       TimeBlock,
                       $TimeBlocksTable,
-                      Task
+                      Task,
+                      $TasksTable
                     >(
                       currentTable: table,
                       referencedTable: $$TimeBlocksTableReferences
                           ._tasksRefsTable(db),
                       managerFromTypedResult: (p0) =>
                           $$TimeBlocksTableReferences(db, table, p0).tasksRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.blockId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'block_id',
                       typedResults: items,
                     ),
                 ];
@@ -10767,8 +11314,10 @@ class $$TasksTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$TasksTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$TasksTable, Task>(table),
+                  $$TasksTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback:
@@ -10832,10 +11381,11 @@ class $$TasksTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (estimationRecordsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Task,
                           $TasksTable,
-                          EstimationRecord
+                          EstimationRecord,
+                          $EstimationRecordsTable
                         >(
                           currentTable: table,
                           referencedTable: $$TasksTableReferences
@@ -10846,17 +11396,16 @@ class $$TasksTableTableManager
                                 table,
                                 p0,
                               ).estimationRecordsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.taskId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'task_id',
                           typedResults: items,
                         ),
                       if (focusSessionsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Task,
                           $TasksTable,
-                          FocusSession
+                          FocusSession,
+                          $FocusSessionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$TasksTableReferences
@@ -10867,10 +11416,8 @@ class $$TasksTableTableManager
                                 table,
                                 p0,
                               ).focusSessionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.taskId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'task_id',
                           typedResults: items,
                         ),
                     ];
@@ -11259,7 +11806,7 @@ class $$ScheduleRevisionsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ScheduleRevisionsTable, ScheduleRevision>(table),
                   $$ScheduleRevisionsTableReferences(db, table, e),
                 ),
               )
@@ -11308,10 +11855,11 @@ class $$ScheduleRevisionsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (revisionUndosRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           ScheduleRevision,
                           $ScheduleRevisionsTable,
-                          RevisionUndo
+                          RevisionUndo,
+                          $RevisionUndosTable
                         >(
                           currentTable: table,
                           referencedTable: $$ScheduleRevisionsTableReferences
@@ -11322,10 +11870,8 @@ class $$ScheduleRevisionsTableTableManager
                                 table,
                                 p0,
                               ).revisionUndosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.revisionId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'revision_id',
                           typedResults: items,
                         ),
                     ];
@@ -11574,7 +12120,7 @@ class $$RevisionUndosTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$RevisionUndosTable, RevisionUndo>(table),
                   $$RevisionUndosTableReferences(db, table, e),
                 ),
               )
@@ -11887,7 +12433,16 @@ class $$SyncOperationsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$SyncOperationsTable, SyncOperation>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $SyncOperationsTable,
+                    SyncOperation
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -12359,7 +12914,7 @@ class $$EstimationRecordsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$EstimationRecordsTable, EstimationRecord>(table),
                   $$EstimationRecordsTableReferences(db, table, e),
                 ),
               )
@@ -12588,7 +13143,16 @@ class $$EnergyCheckInsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$EnergyCheckInsTable, EnergyCheckIn>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $EnergyCheckInsTable,
+                    EnergyCheckIn
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -12664,6 +13228,27 @@ final class $$FocusSessionsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$FocusSessionStatesTable, List<FocusSessionState>>
+  _focusSessionStatesRefsTable(_$DayweftDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.focusSessionStates,
+        aliasName: 'focus_sessions__id__focus_session_states__session_id',
+      );
+
+  $$FocusSessionStatesTableProcessedTableManager get focusSessionStatesRefs {
+    final manager = $$FocusSessionStatesTableTableManager(
+      $_db,
+      $_db.focusSessionStates,
+    ).filter((f) => f.sessionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _focusSessionStatesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -12743,6 +13328,31 @@ class $$FocusSessionsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> focusSessionStatesRefs(
+    Expression<bool> Function($$FocusSessionStatesTableFilterComposer f) f,
+  ) {
+    final $$FocusSessionStatesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.focusSessionStates,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionStatesTableFilterComposer(
+            $db: $db,
+            $table: $db.focusSessionStates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -12888,6 +13498,32 @@ class $$FocusSessionsTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> focusSessionStatesRefs<T extends Object>(
+    Expression<T> Function($$FocusSessionStatesTableAnnotationComposer a) f,
+  ) {
+    final $$FocusSessionStatesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.focusSessionStates,
+          getReferencedColumn: (t) => t.sessionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$FocusSessionStatesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.focusSessionStates,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$FocusSessionsTableTableManager
@@ -12903,7 +13539,7 @@ class $$FocusSessionsTableTableManager
           $$FocusSessionsTableUpdateCompanionBuilder,
           (FocusSession, $$FocusSessionsTableReferences),
           FocusSession,
-          PrefetchHooks Function({bool taskId})
+          PrefetchHooks Function({bool taskId, bool focusSessionStatesRefs})
         > {
   $$FocusSessionsTableTableManager(
     _$DayweftDatabase db,
@@ -12973,12 +13609,435 @@ class $$FocusSessionsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$FocusSessionsTable, FocusSession>(table),
                   $$FocusSessionsTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({taskId = false}) {
+          prefetchHooksCallback:
+              ({taskId = false, focusSessionStatesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (focusSessionStatesRefs) db.focusSessionStates,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (taskId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.taskId,
+                                    referencedTable:
+                                        $$FocusSessionsTableReferences
+                                            ._taskIdTable(db),
+                                    referencedColumn:
+                                        $$FocusSessionsTableReferences
+                                            ._taskIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (focusSessionStatesRefs)
+                        await $_getPrefetchedDataByColumns<
+                          FocusSession,
+                          $FocusSessionsTable,
+                          FocusSessionState,
+                          $FocusSessionStatesTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FocusSessionsTableReferences
+                              ._focusSessionStatesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FocusSessionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).focusSessionStatesRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'session_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$FocusSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $FocusSessionsTable,
+      FocusSession,
+      $$FocusSessionsTableFilterComposer,
+      $$FocusSessionsTableOrderingComposer,
+      $$FocusSessionsTableAnnotationComposer,
+      $$FocusSessionsTableCreateCompanionBuilder,
+      $$FocusSessionsTableUpdateCompanionBuilder,
+      (FocusSession, $$FocusSessionsTableReferences),
+      FocusSession,
+      PrefetchHooks Function({bool taskId, bool focusSessionStatesRefs})
+    >;
+typedef $$FocusSessionStatesTableCreateCompanionBuilder =
+    FocusSessionStatesCompanion Function({
+      required String sessionId,
+      required String mode,
+      Value<int> elapsedMilliseconds,
+      Value<int?> anchorMilliseconds,
+      Value<String?> bootToken,
+      Value<int> version,
+      Value<int?> estimateAtStart,
+      Value<bool> active,
+      Value<int> rowid,
+    });
+typedef $$FocusSessionStatesTableUpdateCompanionBuilder =
+    FocusSessionStatesCompanion Function({
+      Value<String> sessionId,
+      Value<String> mode,
+      Value<int> elapsedMilliseconds,
+      Value<int?> anchorMilliseconds,
+      Value<String?> bootToken,
+      Value<int> version,
+      Value<int?> estimateAtStart,
+      Value<bool> active,
+      Value<int> rowid,
+    });
+
+final class $$FocusSessionStatesTableReferences
+    extends
+        BaseReferences<
+          _$DayweftDatabase,
+          $FocusSessionStatesTable,
+          FocusSessionState
+        > {
+  $$FocusSessionStatesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FocusSessionsTable _sessionIdTable(_$DayweftDatabase db) => db
+      .focusSessions
+      .createAlias('focus_session_states__session_id__focus_sessions__id');
+
+  $$FocusSessionsTableProcessedTableManager get sessionId {
+    final $_column = $_itemColumn<String>('session_id')!;
+
+    final manager = $$FocusSessionsTableTableManager(
+      $_db,
+      $_db.focusSessions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FocusSessionStatesTableFilterComposer
+    extends Composer<_$DayweftDatabase, $FocusSessionStatesTable> {
+  $$FocusSessionStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get elapsedMilliseconds => $composableBuilder(
+    column: $table.elapsedMilliseconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get anchorMilliseconds => $composableBuilder(
+    column: $table.anchorMilliseconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bootToken => $composableBuilder(
+    column: $table.bootToken,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get estimateAtStart => $composableBuilder(
+    column: $table.estimateAtStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FocusSessionsTableFilterComposer get sessionId {
+    final $$FocusSessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FocusSessionStatesTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $FocusSessionStatesTable> {
+  $$FocusSessionStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get elapsedMilliseconds => $composableBuilder(
+    column: $table.elapsedMilliseconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get anchorMilliseconds => $composableBuilder(
+    column: $table.anchorMilliseconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bootToken => $composableBuilder(
+    column: $table.bootToken,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get estimateAtStart => $composableBuilder(
+    column: $table.estimateAtStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FocusSessionsTableOrderingComposer get sessionId {
+    final $$FocusSessionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FocusSessionStatesTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $FocusSessionStatesTable> {
+  $$FocusSessionStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get mode =>
+      $composableBuilder(column: $table.mode, builder: (column) => column);
+
+  GeneratedColumn<int> get elapsedMilliseconds => $composableBuilder(
+    column: $table.elapsedMilliseconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get anchorMilliseconds => $composableBuilder(
+    column: $table.anchorMilliseconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get bootToken =>
+      $composableBuilder(column: $table.bootToken, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<int> get estimateAtStart => $composableBuilder(
+    column: $table.estimateAtStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  $$FocusSessionsTableAnnotationComposer get sessionId {
+    final $$FocusSessionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FocusSessionStatesTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $FocusSessionStatesTable,
+          FocusSessionState,
+          $$FocusSessionStatesTableFilterComposer,
+          $$FocusSessionStatesTableOrderingComposer,
+          $$FocusSessionStatesTableAnnotationComposer,
+          $$FocusSessionStatesTableCreateCompanionBuilder,
+          $$FocusSessionStatesTableUpdateCompanionBuilder,
+          (FocusSessionState, $$FocusSessionStatesTableReferences),
+          FocusSessionState,
+          PrefetchHooks Function({bool sessionId})
+        > {
+  $$FocusSessionStatesTableTableManager(
+    _$DayweftDatabase db,
+    $FocusSessionStatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FocusSessionStatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FocusSessionStatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FocusSessionStatesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> sessionId = const Value.absent(),
+                Value<String> mode = const Value.absent(),
+                Value<int> elapsedMilliseconds = const Value.absent(),
+                Value<int?> anchorMilliseconds = const Value.absent(),
+                Value<String?> bootToken = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int?> estimateAtStart = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FocusSessionStatesCompanion(
+                sessionId: sessionId,
+                mode: mode,
+                elapsedMilliseconds: elapsedMilliseconds,
+                anchorMilliseconds: anchorMilliseconds,
+                bootToken: bootToken,
+                version: version,
+                estimateAtStart: estimateAtStart,
+                active: active,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String sessionId,
+                required String mode,
+                Value<int> elapsedMilliseconds = const Value.absent(),
+                Value<int?> anchorMilliseconds = const Value.absent(),
+                Value<String?> bootToken = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int?> estimateAtStart = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FocusSessionStatesCompanion.insert(
+                sessionId: sessionId,
+                mode: mode,
+                elapsedMilliseconds: elapsedMilliseconds,
+                anchorMilliseconds: anchorMilliseconds,
+                bootToken: bootToken,
+                version: version,
+                estimateAtStart: estimateAtStart,
+                active: active,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FocusSessionStatesTable, FocusSessionState>(
+                    table,
+                  ),
+                  $$FocusSessionStatesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({sessionId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -12998,16 +14057,18 @@ class $$FocusSessionsTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (taskId) {
+                    if (sessionId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.taskId,
-                                referencedTable: $$FocusSessionsTableReferences
-                                    ._taskIdTable(db),
-                                referencedColumn: $$FocusSessionsTableReferences
-                                    ._taskIdTable(db)
-                                    .id,
+                                currentColumn: table.sessionId,
+                                referencedTable:
+                                    $$FocusSessionStatesTableReferences
+                                        ._sessionIdTable(db),
+                                referencedColumn:
+                                    $$FocusSessionStatesTableReferences
+                                        ._sessionIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -13023,19 +14084,19 @@ class $$FocusSessionsTableTableManager
       );
 }
 
-typedef $$FocusSessionsTableProcessedTableManager =
+typedef $$FocusSessionStatesTableProcessedTableManager =
     ProcessedTableManager<
       _$DayweftDatabase,
-      $FocusSessionsTable,
-      FocusSession,
-      $$FocusSessionsTableFilterComposer,
-      $$FocusSessionsTableOrderingComposer,
-      $$FocusSessionsTableAnnotationComposer,
-      $$FocusSessionsTableCreateCompanionBuilder,
-      $$FocusSessionsTableUpdateCompanionBuilder,
-      (FocusSession, $$FocusSessionsTableReferences),
-      FocusSession,
-      PrefetchHooks Function({bool taskId})
+      $FocusSessionStatesTable,
+      FocusSessionState,
+      $$FocusSessionStatesTableFilterComposer,
+      $$FocusSessionStatesTableOrderingComposer,
+      $$FocusSessionStatesTableAnnotationComposer,
+      $$FocusSessionStatesTableCreateCompanionBuilder,
+      $$FocusSessionStatesTableUpdateCompanionBuilder,
+      (FocusSessionState, $$FocusSessionStatesTableReferences),
+      FocusSessionState,
+      PrefetchHooks Function({bool sessionId})
     >;
 typedef $$ShareLinksTableCreateCompanionBuilder =
     ShareLinksCompanion Function({
@@ -13253,7 +14314,16 @@ class $$ShareLinksTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ShareLinksTable, ShareLink>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $ShareLinksTable,
+                    ShareLink
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -13467,7 +14537,18 @@ class $$CalendarConnectionsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$CalendarConnectionsTable, CalendarConnection>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $CalendarConnectionsTable,
+                    CalendarConnection
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -13519,6 +14600,8 @@ class $DayweftDatabaseManager {
       $$EnergyCheckInsTableTableManager(_db, _db.energyCheckIns);
   $$FocusSessionsTableTableManager get focusSessions =>
       $$FocusSessionsTableTableManager(_db, _db.focusSessions);
+  $$FocusSessionStatesTableTableManager get focusSessionStates =>
+      $$FocusSessionStatesTableTableManager(_db, _db.focusSessionStates);
   $$ShareLinksTableTableManager get shareLinks =>
       $$ShareLinksTableTableManager(_db, _db.shareLinks);
   $$CalendarConnectionsTableTableManager get calendarConnections =>

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Add date-scoped planning/history, shared Inbox, current-time text and injectable clocks.
+- Add five reconciled starter templates with selected-block confirmation, duplicate/stale guards and durable undo.
+- Validate and preview day imports; preserve original dates/dependencies and reject repeated or malformed imports atomically.
+- Persist Quiet Focus countdown/count-up, pause/resume/restart, abandoned sessions and interruptions using Android monotonic time; require review when reboot invalidates time evidence.
+- Link explicit task completion to measured focus time and reversible history; prevent deleted measurement snapshots being restored by undo.
+- Migrate SQLite to v11 with a single-active-focus constraint and historical-record preservation.
+- Update Android tooling/API 36, set the Dayweft label, restrict backups and reject release builds without upload signing.
+- Remove unused generators/icons and the obsolete SQLite plugin; retain package lockfiles and add verification/release scripts.
+- Record the 1.0 audit, remaining gaps and resumable roadmap. Native calendar, notifications, cloud sync, public sharing and store submission remain unfinished.
+
 - Add task detail editing, validated predecessor links, reversible deletion/return to Inbox, drag placement and stale-editor protection across Today and Inbox.
 - Expose block category/buffer editing and overnight end times; show before/after edit history and original/revised recovery times.
 - Preserve confirmed capture fields inside blocks and retain/remap task constraints during local export/import.

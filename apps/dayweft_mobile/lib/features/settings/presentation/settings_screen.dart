@@ -1,3 +1,4 @@
+import 'package:dayweft_mobile/features/data_management/presentation/day_import_dialog.dart';
 import 'package:dayweft_mobile/features/onboarding/domain/onboarding_preferences.dart';
 import 'package:dayweft_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:dayweft_mobile/features/planning/application/planning_controller.dart';
@@ -159,9 +160,11 @@ class _SettingsView extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.upload_file_outlined),
             title: const Text('Data import'),
-            subtitle: const Text('Merge a Dayweft JSON export into today.'),
+            subtitle: const Text(
+              'Review and merge a single-day export on its original date.',
+            ),
             trailing: TextButton(
-              onPressed: () => _showImportDialog(context, ref),
+              onPressed: () => showDayImportDialog(context),
               child: const Text('Import'),
             ),
           ),
@@ -262,54 +265,6 @@ Future<void> _showExportDialog(BuildContext context, WidgetRef ref) async {
           child: const Text('Done'),
         ),
       ],
-    ),
-  );
-}
-
-Future<void> _showImportDialog(BuildContext context, WidgetRef ref) async {
-  final controller = TextEditingController();
-  String? error;
-  await showDialog<void>(
-    context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
-        title: const Text('Import local data'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          minLines: 6,
-          maxLines: 12,
-          decoration: InputDecoration(
-            labelText: 'Dayweft JSON',
-            errorText: error,
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              try {
-                await ref
-                    .read(planningControllerProvider.notifier)
-                    .importLocalData(controller.text);
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              } on FormatException catch (exception) {
-                setState(() => error = exception.message);
-              } on Object {
-                setState(
-                  () => error = 'This does not look like a Dayweft export.',
-                );
-              }
-            },
-            child: const Text('Import'),
-          ),
-        ],
-      ),
     ),
   );
 }

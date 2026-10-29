@@ -7,12 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'database schema starts at version 10 and creates core tables',
+    'database schema starts at version 11 and creates core tables',
     () async {
       final database = DayweftDatabase.forTesting(NativeDatabase.memory());
       addTearDown(database.close);
 
-      expect(database.schemaVersion, 10);
+      expect(database.schemaVersion, 11);
 
       final tables = await database
           .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -80,7 +80,7 @@ void main() {
     final version = await database
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 10);
+    expect(version.read<int>('user_version'), 11);
     final legacy = await database
         .select(database.estimationRecords)
         .getSingle();
@@ -122,6 +122,7 @@ void main() {
     ]) {
       await previous.customStatement('ALTER TABLE tasks DROP COLUMN $column');
     }
+    await previous.customStatement('DROP TABLE focus_session_states');
     await previous.customStatement('PRAGMA user_version = 8');
     await previous.close();
     final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -172,6 +173,7 @@ void main() {
       await previous.customStatement(
         'ALTER TABLE tasks DROP COLUMN dependency_ids_json',
       );
+      await previous.customStatement('DROP TABLE focus_session_states');
       await previous.customStatement('PRAGMA user_version = 9');
       await previous.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -183,6 +185,40 @@ void main() {
       expect(task.cognitiveLoad, isNull);
       expect(task.dependencyIdsJson, '[]');
       expect(task.localVersion, 1);
+    },
+  );
+
+  test(
+    'version 10 focus records survive durable-state table migration',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v10-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final previous = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 10, 27);
+      await previous
+          .into(previous.focusSessions)
+          .insert(
+            FocusSessionsCompanion.insert(
+              id: 'legacy-focus',
+              title: 'Keep my record',
+              startedAt: now,
+              plannedMinutes: 25,
+              actualMinutes: const Value(10),
+              status: 'completed',
+              createdAt: now,
+            ),
+          );
+      await previous.customStatement('DROP TABLE focus_session_states');
+      await previous.customStatement('PRAGMA user_version = 10');
+      await previous.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final session = await upgraded.select(upgraded.focusSessions).getSingle();
+      expect(session.actualMinutes, 10);
+      expect(session.title, 'Keep my record');
+      expect(await upgraded.select(upgraded.focusSessionStates).get(), isEmpty);
+      expect(upgraded.schemaVersion, 11);
     },
   );
 }

@@ -34,3 +34,9 @@ dart tool/check_coverage.dart packages/dayweft_domain/coverage/lcov.info package
 ```
 
 Each group must reach 80%; no eligible lines fails the gate. Mobile scope includes only domain/application directories; generated files and presentation code are excluded. GitHub Actions uploads the three LCOV reports and builds Android debug and unsigned iOS simulator targets.
+
+## Reproducible verification
+
+Use `bash scripts/verify.sh`; set `BUILD_ANDROID_DEBUG=1` to include the Android build. The script enforces the pinned Flutter SDK and package lockfiles, checks generated Drift drift, performs read-only formatting checks, analyses all four packages and runs all tests/coverage gates. See [development](DEVELOPMENT.md).
+
+Date-navigation regressions exercise real Riverpod/SQLite, frozen time, shared Inbox, isolated date history/undo, durable reopen and overnight blocks. Civil month/leap boundaries are tested; this does not establish native IANA timezone/DST or TalkBack verification. The baseline was 59 mobile, 15 domain, 15 engine and 2 design-system tests; later executed counts are recorded in [implementation status](implementation-status.md).

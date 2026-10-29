@@ -2,14 +2,21 @@ import 'package:adaptive_day_engine/adaptive_day_engine.dart';
 import 'package:dayweft_domain/dayweft_domain.dart' as domain;
 import 'package:dayweft_mobile/core/database/database_provider.dart';
 import 'package:dayweft_mobile/core/database/dayweft_database.dart' show Task;
+import 'package:dayweft_mobile/core/time/app_clock.dart';
+import 'package:dayweft_mobile/features/data_management/domain/day_import.dart';
 import 'package:dayweft_mobile/features/onboarding/domain/onboarding_preferences.dart';
+import 'package:dayweft_mobile/features/planning/application/planning_date.dart';
 import 'package:dayweft_mobile/features/planning/data/local_planning_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final localPlanningRepositoryProvider = Provider<LocalPlanningRepository>((
   ref,
 ) {
-  return LocalPlanningRepository(ref.watch(dayweftDatabaseProvider));
+  return LocalPlanningRepository(
+    ref.watch(dayweftDatabaseProvider),
+    now: ref.watch(appClockProvider).now,
+    planningDate: ref.watch(planningDateProvider),
+  );
 });
 
 final planningControllerProvider =
@@ -29,12 +36,12 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
 
   @override
   Future<LocalDaySnapshot> build() {
-    return _repository.loadToday();
+    return ref.watch(localPlanningRepositoryProvider).loadSelectedDay();
   }
 
   Future<void> reload() async {
     state = const AsyncLoading<LocalDaySnapshot>();
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> completeOnboarding({
@@ -45,17 +52,17 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       includeSampleData: includeSampleData,
       choices: choices,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> removeSampleData() async {
     await _repository.removeSampleData();
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> updatePlanningPreferences(OnboardingPreferences choices) async {
     await _repository.updatePlanningPreferences(choices);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> updatePlanningBuffers({
@@ -68,7 +75,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       contingencyMinutes: contingencyMinutes,
       transitionMinutes: transitionMinutes,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> addBlock({
@@ -93,12 +100,12 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       transitionBufferMinutes: transitionBufferMinutes,
       recoveryBufferMinutes: recoveryBufferMinutes,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> deleteBlock(String blockId) async {
     await _repository.deleteBlock(blockId);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> updateBlock({
@@ -127,7 +134,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       transitionBufferMinutes: transitionBufferMinutes,
       recoveryBufferMinutes: recoveryBufferMinutes,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> moveBlock({
@@ -135,7 +142,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     required int direction,
   }) async {
     await _repository.moveBlock(blockId: blockId, direction: direction);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> reorderBlockToIndex({
@@ -143,7 +150,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     required int newIndex,
   }) async {
     await _repository.reorderBlockToIndex(blockId: blockId, newIndex: newIndex);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> addTaskToBlock({
@@ -156,17 +163,17 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       title: title,
       estimatedMinutes: estimatedMinutes,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> addInboxTask(String title) async {
     await _repository.addInboxTask(title: title);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> addInboxTasks(List<String> titles) async {
     await _repository.addInboxTasks(titles);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> addConfirmedCaptures(
@@ -174,7 +181,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     String? blockId,
   }) async {
     await _repository.addConfirmedCaptures(captures, blockId: blockId);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> moveInboxTaskToBlock({
@@ -182,7 +189,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     required String blockId,
   }) async {
     await _repository.moveInboxTaskToBlock(taskId: taskId, blockId: blockId);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> movePlannedTaskToBlock({
@@ -190,12 +197,12 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     required String blockId,
   }) async {
     await _repository.movePlannedTaskToBlock(taskId: taskId, blockId: blockId);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> toggleTask(String taskId) async {
     await _repository.toggleTask(taskId);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> updateTask({
@@ -208,7 +215,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       expectedVersion: expectedVersion,
       details: details,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<String> deleteTask(
@@ -219,7 +226,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       taskId,
       expectedVersion: expectedVersion,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
     return revisionId;
   }
 
@@ -231,7 +238,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       taskId,
       expectedVersion: expectedVersion,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> recordTaskActualDuration(
@@ -242,12 +249,26 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
       taskId,
       actualMinutes: actualMinutes,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
+  }
+
+  Future<domain.TemplatePreview> previewTemplate(DayTemplate template) =>
+      _repository.previewTemplate(template);
+
+  Future<void> applyTemplatePreview(
+    domain.TemplatePreview preview, {
+    Set<int>? selectedIndices,
+  }) async {
+    await _repository.applyTemplatePreview(
+      preview,
+      selectedIndices: selectedIndices,
+    );
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> applyTemplate(DayTemplate template) async {
     await _repository.applyTemplate(template);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<String> exportLocalData() {
@@ -256,8 +277,11 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
 
   Future<void> importLocalData(String rawJson) async {
     await _repository.importLocalData(rawJson);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
+
+  DayImport previewLocalImport(String rawJson) =>
+      _repository.previewLocalImport(rawJson);
 
   Future<List<RealityObservation>> realityCheckToday() {
     return _repository.realityCheckToday();
@@ -275,7 +299,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
 
   Future<void> applyReweaveAlternative(ReweaveAlternative alternative) async {
     await _repository.applyReweaveAlternative(alternative);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<RhythmSummary> loadRhythmSummary() {
@@ -284,12 +308,12 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
 
   Future<void> recordEnergyCheckIn(String level) async {
     await _repository.recordEnergyCheckIn(level);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> setEnergyEnabled(bool enabled) async {
     await _repository.setEnergyEnabled(enabled);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> excludeEstimationRecord(
@@ -297,17 +321,17 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     required bool excluded,
   }) async {
     await _repository.excludeEstimationRecord(id, excluded: excluded);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> deleteEstimationRecord(String id) async {
     await _repository.deleteEstimationRecord(id);
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> deleteLearningHistory() async {
     await _repository.deleteLearningHistory();
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
   }
 
   Future<void> completeFocusSession({
@@ -340,7 +364,7 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     final didUndo = await _repository.undoLastRevision(
       expectedRevisionId: expectedRevisionId,
     );
-    state = await AsyncValue.guard(_repository.loadToday);
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
     return didUndo;
   }
 

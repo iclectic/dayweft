@@ -8,7 +8,9 @@ import 'package:dayweft_mobile/features/planning/application/planning_controller
 import 'package:dayweft_mobile/features/planning/application/revision_comparison.dart';
 import 'package:dayweft_mobile/features/planning/data/local_planning_repository.dart';
 import 'package:dayweft_mobile/features/tasks/presentation/planning_task_tile.dart';
+import 'package:dayweft_mobile/features/templates/presentation/template_picker.dart';
 import 'package:dayweft_mobile/features/timeline/presentation/block_editor_screen.dart';
+import 'package:dayweft_mobile/features/timeline/presentation/timeline_date_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -42,7 +44,7 @@ class TodayTimelineScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   tooltip: 'Apply template',
-                  onPressed: () => _showTemplatePreview(context, ref),
+                  onPressed: () => showTemplatePicker(context),
                   icon: const Icon(Icons.view_timeline_outlined),
                 ),
               ],
@@ -51,6 +53,7 @@ class TodayTimelineScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
               sliver: SliverList.list(
                 children: <Widget>[
+                  TimelineDateBar(snapshot: snapshot),
                   Text(
                     'A day that adapts with you.',
                     style: Theme.of(context).textTheme.titleMedium,
@@ -366,77 +369,6 @@ Future<void> _showAddTaskSheet(
   showDragHandle: true,
   builder: (_) => CaptureSheet(blockId: block.id),
 );
-
-Future<void> _showTemplatePreview(BuildContext context, WidgetRef ref) async {
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    builder: (context) {
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        children: <Widget>[
-          Text('Templates', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          const Text(
-            'Applying a template adds blocks after preview. Existing commitments stay intact.',
-          ),
-          const SizedBox(height: 16),
-          for (final template in dayweftTemplates)
-            Card(
-              child: ListTile(
-                title: Text(template.name),
-                subtitle: Text('${template.blocks.length} blocks'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showTemplateBlocks(context, ref, template),
-              ),
-            ),
-        ],
-      );
-    },
-  );
-}
-
-Future<void> _showTemplateBlocks(
-  BuildContext context,
-  WidgetRef ref,
-  DayTemplate template,
-) async {
-  await showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(template.name),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          for (final block in template.blocks)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(block.title),
-              subtitle: Text(
-                '${block.startTime}-${block.endTime} • ${block.blockType}',
-              ),
-            ),
-        ],
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            ref
-                .read(planningControllerProvider.notifier)
-                .applyTemplate(template);
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-          },
-          child: const Text('Apply'),
-        ),
-      ],
-    ),
-  );
-}
 
 Future<void> _showRealityCheck(BuildContext context, WidgetRef ref) async {
   final observations = await ref
