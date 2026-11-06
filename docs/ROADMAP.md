@@ -160,3 +160,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: this stores drafts only; no actual split allocations, recovery preview/application, undo, export or UI exists. Split suggestions remain rejected. Buffer positioning and remaining 1.0 gates remain open; no device/live-backend verification is claimed.
 - Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
 - Exact next implementation task: integrate a concrete fragment proposal into recovery and add atomic live allocation persistence and durable undo, including stale-plan, partial-write, task deletion, export/import and restart tests before enabling UI.
+
+## Concrete allocation proposal checkpoint — 6 November 2026
+
+- Last completed slice: a deterministic pure-Dart greedy allocator constructs explicit timed fragments, validates complete work conservation and exposes a non-mutating proposal through the planning controller. A real controller/repository test saves a proposal as a versioned draft. Fixed commitments remain protected; dependencies, time bounds, minimum fragments and conservative buffer capacity are checked.
+- Changed files: adaptive-engine allocation proposal/export/tests, mobile planning repository/controller and controller test, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed (128 mobile, 31 domain, 23 engine and 2 design tests; mobile domain/application 97.2%, domain 93.9%, engine 92.6%). An earlier verification run showed engine lint notices; these were corrected before the final passing run.
+- Outstanding defects and unfinished requirements: the proposal is not connected to Reweave, disruption input, live task allocations, UI, import/export or durable undo. It is a greedy search: no proposal does not prove infeasibility. Buffers are conservatively reserved at block ends because their actual positions are not stored. Split application remains rejected and other 1.0 gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: model live fragment allocations throughout task placement, deletion and rendering, with forward migration and import/export; then connect disruption-aware recovery preview and atomic apply/undo, guarded by real-chain no-loss tests before enabling UI.

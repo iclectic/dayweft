@@ -97,6 +97,17 @@ class StoredAllocationDraft {
   final List<domain.TaskAllocation> allocations;
 }
 
+class AllocationProposal {
+  AllocationProposal({
+    required this.planId,
+    required this.planRevision,
+    required List<domain.TaskAllocation> allocations,
+  }) : allocations = List.unmodifiable(allocations);
+  final String planId;
+  final int planRevision;
+  final List<domain.TaskAllocation> allocations;
+}
+
 class ParsedCapture {
   const ParsedCapture({
     required this.title,
@@ -1433,6 +1444,19 @@ class LocalPlanningRepository {
     final engine = _engineFor(snapshot);
     final plan = _toDomainPlan(snapshot);
     return Isolate.run(() => engine.realityCheck(plan));
+  }
+
+  /// Computes a proposal only. A null result is not proof of infeasibility.
+  Future<AllocationProposal?> previewAllocationProposal() async {
+    final snapshot = await loadSelectedDay();
+    final plan = _toDomainPlan(snapshot);
+    final allocations = await Isolate.run(() => proposeTaskAllocations(plan));
+    if (allocations == null) return null;
+    return AllocationProposal(
+      planId: snapshot.plan.id,
+      planRevision: snapshot.plan.revision,
+      allocations: allocations,
+    );
   }
 
   /// Stores a reviewed draft only; it does not allocate tasks or change a plan.

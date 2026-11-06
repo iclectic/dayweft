@@ -29,6 +29,61 @@ void main() {
       container.read(planningControllerProvider).requireValue;
 
   test(
+    'split proposal is concrete, non-mutating and can be saved as a draft',
+    () async {
+      final today = DateTime.now();
+      final nine = DateTime(today.year, today.month, today.day, 9);
+      await controller.addBlock(
+        title: 'First',
+        startsAt: nine,
+        endsAt: nine.add(const Duration(hours: 1)),
+        blockType: 'flexible',
+      );
+      await controller.addBlock(
+        title: 'Second',
+        startsAt: nine.add(const Duration(hours: 2)),
+        endsAt: nine.add(const Duration(hours: 3)),
+        blockType: 'flexible',
+      );
+      final blockId = snapshot().blocks.first.id;
+      await controller.addTaskToBlock(
+        blockId: blockId,
+        title: 'Long task',
+        estimatedMinutes: 90,
+      );
+      final task = snapshot().tasks.single;
+      await controller.updateTask(
+        taskId: task.id,
+        expectedVersion: task.localVersion,
+        details: domain.TaskDetails(
+          title: task.title,
+          estimatedMinutes: 90,
+          canSplit: true,
+          minimumUsefulMinutes: 20,
+        ),
+      );
+      final before = snapshot();
+      final proposal = (await controller.previewAllocationProposal())!;
+      expect(proposal.allocations, hasLength(2));
+      expect(snapshot().tasks.single.blockId, blockId);
+      expect(snapshot().plan.revision, before.plan.revision);
+      final saved = await container
+          .read(localPlanningRepositoryProvider)
+          .saveAllocationDraft(
+            expectedPlanId: proposal.planId,
+            expectedPlanRevision: proposal.planRevision,
+            expectedDraftVersion: null,
+            allocations: proposal.allocations,
+          );
+      expect(saved.allocations.map((part) => part.window.duration), [
+        const Duration(hours: 1),
+        const Duration(minutes: 30),
+      ]);
+      expect(snapshot().tasks.single.blockId, blockId);
+    },
+  );
+
+  test(
     'persisted task windows reach Reality Check and recovery through the controller',
     () async {
       final today = DateTime.now();

@@ -302,6 +302,9 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
     return _repository.realityCheckToday();
   }
 
+  Future<AllocationProposal?> previewAllocationProposal() =>
+      _repository.previewAllocationProposal();
+
   Future<ReweaveResult> reweaveToday({
     required domain.DisruptionType disruptionType,
     int? unavailableMinutes,

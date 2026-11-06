@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Concrete allocation proposal checkpoint — 6 November 2026
+
+- Last completed slice: the engine can construct a deterministic concrete allocation proposal and the controller can preview it without altering the plan; the repository can save it as a validated draft. A real controller/repository test covers the path.
+- Changed files: adaptive-engine proposal/export/tests, mobile planning repository/controller and controller test, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed (128 mobile, 31 domain, 23 engine and 2 design tests; mobile domain/application 97.2%, domain 93.9%, engine 92.6%). Earlier engine lint notices were corrected before the final run.
+- Outstanding defects and unfinished requirements: this is not a Reweave alternative and does not account for a disruption. It is not connected to live task fragments, UI, import/export or undo; split application remains rejected. No proposal is not proof of infeasibility. Exact buffer placement is unknown, so block-end reservation is conservative. Other release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: represent live fragments safely across placement, deletion, rendering and import/export with forward migration, then integrate disruption-aware preview and atomic apply/undo with no-loss real-chain tests.
+
 ## Fragment draft storage checkpoint — 6 November 2026
 
 - Last completed slice: schema v15 stores per-day allocation drafts separately from live task assignments. Writes validate complete allocations and check plan and draft versions atomically; reopening preserves the draft and flags it stale after plan or validation changes. A real-row v14 upgrade preserves existing task data.
