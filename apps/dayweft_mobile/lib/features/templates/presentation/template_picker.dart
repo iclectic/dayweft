@@ -1,9 +1,12 @@
 import 'package:dayweft_domain/dayweft_domain.dart';
 import 'package:dayweft_mobile/core/errors/planning_failure.dart';
 import 'package:dayweft_mobile/features/planning/application/planning_controller.dart';
+import 'package:dayweft_mobile/features/planning/data/local_planning_repository.dart'
+    show RecurringTemplatePreview;
 import 'package:dayweft_mobile/features/templates/application/template_library_controller.dart';
 import 'package:dayweft_mobile/features/templates/data/starter_templates.dart';
 import 'package:dayweft_mobile/features/templates/presentation/custom_template_editor.dart';
+import 'package:dayweft_mobile/features/templates/presentation/recurrence_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -118,6 +121,14 @@ class _TemplateLibraryState extends ConsumerState<_TemplateLibrary> {
                               child: Text('Duplicate template'),
                             ),
                             PopupMenuItem(
+                              value: 'recurrence',
+                              child: Text('Edit weekly recurrence'),
+                            ),
+                            PopupMenuItem(
+                              value: 'occurrence',
+                              child: Text('Preview recurrence for this day'),
+                            ),
+                            PopupMenuItem(
                               value: 'delete',
                               child: Text('Delete template'),
                             ),
@@ -134,6 +145,10 @@ class _TemplateLibraryState extends ConsumerState<_TemplateLibrary> {
                                     .read(templateLibraryProvider.notifier)
                                     .duplicate(template),
                               );
+                            } else if (action == 'recurrence') {
+                              _run(() => _editRecurrence(template));
+                            } else if (action == 'occurrence') {
+                              _run(() => _previewOccurrence(template));
                             } else {
                               _run(() => _delete(template));
                             }
@@ -168,6 +183,41 @@ class _TemplateLibraryState extends ConsumerState<_TemplateLibrary> {
     final applied = await showDialog<bool>(
       context: context,
       builder: (_) => TemplatePreviewDialog(preview: preview),
+    );
+    if (applied == true && mounted) Navigator.pop(context);
+  }
+
+  Future<void> _editRecurrence(DayTemplate template) async {
+    final saved = await ref
+        .read(templateRecurrenceRepositoryProvider)
+        .get(template.id);
+    final day =
+        (await ref.read(localPlanningRepositoryProvider).loadSelectedDay())
+            .plan
+            .day;
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => RecurrenceEditor(
+          template: template,
+          stored: saved,
+          initialDay: day,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _previewOccurrence(DayTemplate template) async {
+    final occurrence = await ref
+        .read(planningControllerProvider.notifier)
+        .previewRecurringTemplate(template);
+    if (!mounted) return;
+    final applied = await showDialog<bool>(
+      context: context,
+      builder: (_) => TemplatePreviewDialog(
+        preview: occurrence.preview,
+        occurrence: occurrence,
+      ),
     );
     if (applied == true && mounted) Navigator.pop(context);
   }
@@ -247,8 +297,13 @@ class _TemplateLibraryState extends ConsumerState<_TemplateLibrary> {
 }
 
 class TemplatePreviewDialog extends ConsumerStatefulWidget {
-  const TemplatePreviewDialog({required this.preview, super.key});
+  const TemplatePreviewDialog({
+    required this.preview,
+    this.occurrence,
+    super.key,
+  });
   final TemplatePreview preview;
+  final RecurringTemplatePreview? occurrence;
   @override
   ConsumerState<TemplatePreviewDialog> createState() =>
       _TemplatePreviewDialogState();
@@ -337,9 +392,18 @@ class _TemplatePreviewDialogState extends ConsumerState<TemplatePreviewDialog> {
       _error = null;
     });
     try {
-      await ref
-          .read(planningControllerProvider.notifier)
-          .applyTemplatePreview(widget.preview, selectedIndices: _selected);
+      final controller = ref.read(planningControllerProvider.notifier);
+      if (widget.occurrence case final occurrence?) {
+        await controller.applyRecurringTemplatePreview(
+          occurrence,
+          selectedIndices: _selected,
+        );
+      } else {
+        await controller.applyTemplatePreview(
+          widget.preview,
+          selectedIndices: _selected,
+        );
+      }
       if (mounted) Navigator.pop(context, true);
     } on Object catch (error) {
       if (mounted) {

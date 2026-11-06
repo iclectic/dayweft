@@ -1,10 +1,13 @@
 import 'package:dayweft_design_system/dayweft_design_system.dart';
+import 'package:dayweft_domain/dayweft_domain.dart' as domain;
 import 'package:dayweft_mobile/core/database/database_provider.dart';
 import 'package:dayweft_mobile/core/database/dayweft_database.dart';
 import 'package:dayweft_mobile/core/time/app_clock.dart';
 import 'package:dayweft_mobile/features/planning/data/local_planning_repository.dart';
 import 'package:dayweft_mobile/features/templates/data/custom_template_repository.dart';
+import 'package:dayweft_mobile/features/templates/data/template_recurrence_repository.dart';
 import 'package:dayweft_mobile/features/templates/presentation/custom_template_editor.dart';
+import 'package:dayweft_mobile/features/templates/presentation/recurrence_editor.dart';
 import 'package:dayweft_mobile/features/templates/presentation/template_picker.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +63,205 @@ void main() {
     await tester.tap(find.text('Templates'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('configure recurrence, cancel preview and apply explicitly', (
+    tester,
+  ) async {
+    final template = await templates.create(
+      name: 'Weekly work',
+      blocks: [_block],
+    );
+    await open(tester);
+    await tester.tap(find.byTooltip('Actions for Weekly work'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit weekly recurrence'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Save recurrence'));
+    await tester.tap(find.text('Save recurrence'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose at least one weekday.'), findsOneWidget);
+    await tester.ensureVisible(find.text('Thursday'));
+    await tester.tap(find.text('Thursday'));
+    await tester.ensureVisible(find.text('Save recurrence'));
+    await tester.tap(find.text('Save recurrence'));
+    await tester.pumpAndSettle();
+    expect(
+      (await TemplateRecurrenceRepository(
+        database,
+      ).get(template.id))!.rule!.occursOn(DateTime(2026, 10, 29)),
+      isTrue,
+    );
+    await tester.tap(find.byTooltip('Actions for Weekly work'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Preview recurrence for this day'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel').last);
+    await tester.pumpAndSettle();
+    final planning = LocalPlanningRepository(database, now: _Clock().now);
+    expect((await planning.loadToday()).blocks, isEmpty);
+    await tester.tap(find.byTooltip('Actions for Weekly work'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Preview recurrence for this day'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add selected blocks'));
+    await tester.pumpAndSettle();
+    expect((await planning.loadToday()).blocks.single.title, 'Morning work');
+    expect(await planning.undoLastRevision(), isTrue);
+    expect((await planning.loadToday()).blocks, isEmpty);
+  });
+
+  testWidgets('stale recurrence editor keeps the newer rule and draft', (
+    tester,
+  ) async {
+    final template = await templates.create(
+      name: 'Weekly work',
+      blocks: [_block],
+    );
+    await open(tester);
+    await tester.tap(find.byTooltip('Actions for Weekly work'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit weekly recurrence'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Thursday'));
+    final other = TemplateRecurrenceRepository(database);
+    await other.save(
+      templateId: template.id,
+      expectedTemplateVersion: 1,
+      expectedVersion: null,
+      rule: domain.TemplateRecurrence(
+        weekdays: {1},
+        startsOn: DateTime(2026, 10, 1),
+      ),
+    );
+    await tester.ensureVisible(find.text('Save recurrence'));
+    await tester.tap(find.text('Save recurrence'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('This recurrence changed.'), findsOneWidget);
+    expect((await other.get(template.id))!.rule!.weekdays, {1});
+    await tester.ensureVisible(find.text('Thursday'));
+    expect(
+      tester
+          .widget<CheckboxListTile>(
+            find.ancestor(
+              of: find.text('Thursday'),
+              matching: find.byType(CheckboxListTile),
+            ),
+          )
+          .value,
+      isTrue,
+    );
+  });
+
+  testWidgets('exclude a date and confirm recurrence removal', (tester) async {
+    final template = await templates.create(
+      name: 'Weekly work',
+      blocks: [_block],
+    );
+    final rules = TemplateRecurrenceRepository(database);
+    await rules.save(
+      templateId: template.id,
+      expectedTemplateVersion: 1,
+      expectedVersion: null,
+      rule: domain.TemplateRecurrence(
+        weekdays: {4},
+        startsOn: DateTime(2026, 10, 1),
+      ),
+    );
+    await open(tester);
+    await tester.tap(find.byTooltip('Actions for Weekly work'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit weekly recurrence'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Exclude a date'));
+    await tester.tap(find.text('Exclude a date'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Save recurrence'));
+    await tester.tap(find.text('Save recurrence'));
+    await tester.pumpAndSettle();
+    expect(
+      (await rules.get(template.id))!.rule!.occursOn(DateTime(2026, 10, 29)),
+      isFalse,
+    );
+    await tester.tap(find.byTooltip('Actions for Weekly work'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Preview recurrence for this day'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('no recurrence for the selected day'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('Actions for Weekly work'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit weekly recurrence'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Remove recurrence'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Remove recurrence'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel').last);
+    await tester.pumpAndSettle();
+    expect((await rules.get(template.id))!.rule, isNotNull);
+    await tester.tap(find.text('Remove recurrence'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remove').last);
+    await tester.pumpAndSettle();
+    expect((await rules.get(template.id))!.rule, isNull);
+  });
+
+  testWidgets('recurrence editor works with narrow layout and large text', (
+    tester,
+  ) async {
+    final template = await templates.create(
+      name: 'Weekly work',
+      blocks: [_block],
+    );
+    await tester.binding.setSurfaceSize(const Size(320, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [dayweftDatabaseProvider.overrideWithValue(database)],
+        child: MaterialApp(
+          theme: DayweftTheme.dark(),
+          home: RecurrenceEditor(
+            template: template,
+            stored: null,
+            initialDay: DateTime(2026, 10, 29),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Thursday'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Thursday'));
+    await tester.scrollUntilVisible(
+      find.text('Save recurrence'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await tester.tap(find.text('Save recurrence'));
+    await tester.pumpAndSettle();
+    expect(
+      (await TemplateRecurrenceRepository(
+        database,
+      ).get(template.id))!.rule!.weekdays,
+      {4},
+    );
+    expect(tester.takeException(), isNull);
+    semantics.dispose();
+  });
 
   testWidgets(
     'create, review and apply a custom block through the actual editors',

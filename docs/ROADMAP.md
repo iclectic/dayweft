@@ -12,7 +12,7 @@ Status vocabulary: NOT STARTED, IN PROGRESS, VERIFIED, BLOCKED. Evidence disting
 | 4 Onboarding | Skippable/resumable complete choices, safe opt-in samples | IN PROGRESS | Draft restart and first-plan journey |
 | 5 Timeline/tasks | Dates, current time, complete constraints, no-loss durable revisions | IN PROGRESS | Cross-date persistence/edit/undo and window/allocation tests |
 | 6 Capture | Offline reviewed atomic capture, Inbox tools and native entry | IN PROGRESS | External share/dedup/restart/permission tests |
-| 7 Templates | Starters/custom editing, selected safe application and recurrence | IN PROGRESS | Custom library verified in local automated tests; implement recurrence/exceptions |
+| 7 Templates | Starters/custom editing, selected safe application and recurrence | IN PROGRESS | Manual Android/accessibility and full-backup verification; automatic recurrence is not implemented |
 | 8 Engine | All hard constraints and persisted splits, deterministic alternatives | IN PROGRESS | Independent invariants/oracle and temporal test matrix |
 | 9 Reweave | Actual disruption effects, before/after and durable decisions | IN PROGRESS | All disruption inputs and no-mutation cancellation |
 | 10 Focus | Durable measured countdown/count-up with lifecycle/platform evidence | IN PROGRESS | Native emulator probes pass; full UI, hardware, timezone/clock and notifications pending |
@@ -115,3 +115,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: recurrence has no user-facing rule or exception controls and is not automatically applied. UI accessibility, visual verification and end-to-end testing are still required. Other 1.0 gaps, including full backups and native/cloud/release work, remain open.
 - Human action required: existing identity, upload signing, hosting, device and Play gates remain unchanged.
 - Exact next implementation task: expose creation/editing/removal of weekly rules and date exceptions and a selected-day occurrence preview using the existing confirmation dialog; cover stale/error, cancellation, large-text and accessibility paths through the real controller.
+
+## Recurrence controls checkpoint — 6 November 2026
+
+- Last completed slice: custom-template actions expose weekly rule editing, start/end dates, excluded dates, confirmed removal and a selected-day recurrence preview. No rule applies blocks automatically. Selected blocks are applied through the existing version-checked revision/undo path.
+- Changed files: template library provider, picker and recurrence editor, template widget tests, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: formatting, mobile analysis, focused template widget tests and `bash scripts/verify.sh` passed after correcting a semantics-test cleanup error in the first full run. Final suite: 121 mobile, 25 domain, 15 engine and 2 design tests; coverage gates mobile domain/application 96.9%, domain 90.2%, engine 90.2%. Widget tests cover rule validation, excluded dates, removal confirmation, stale edits, preview cancellation/application/undo, and 320px dark layout at 200% text with automated touch-target checks.
+- Outstanding defects and unfinished requirements: no device/TalkBack or visual screenshot verification was performed; single-day export does not back up templates or recurrence. Automatic application is deliberately absent. Full temporal task constraints, persisted splits and all other 1.0 gaps remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: implement hard earliest/latest task windows across domain validation, editor, persistence and scheduling, with migration and real-chain tests; preserve existing tasks and reject infeasible previews.

@@ -3,6 +3,7 @@ import 'package:dayweft_mobile/core/database/database_provider.dart';
 import 'package:dayweft_mobile/core/errors/planning_failure.dart';
 import 'package:dayweft_mobile/core/time/app_clock.dart';
 import 'package:dayweft_mobile/features/templates/data/custom_template_repository.dart';
+import 'package:dayweft_mobile/features/templates/data/template_recurrence_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final customTemplateRepositoryProvider = Provider<CustomTemplateRepository>(
@@ -11,6 +12,13 @@ final customTemplateRepositoryProvider = Provider<CustomTemplateRepository>(
     now: ref.watch(appClockProvider).now,
   ),
 );
+final templateRecurrenceRepositoryProvider =
+    Provider<TemplateRecurrenceRepository>(
+      (ref) => TemplateRecurrenceRepository(
+        ref.watch(dayweftDatabaseProvider),
+        now: ref.watch(appClockProvider).now,
+      ),
+    );
 final templateLibraryProvider =
     AsyncNotifierProvider<TemplateLibraryController, List<DayTemplate>>(
       TemplateLibraryController.new,

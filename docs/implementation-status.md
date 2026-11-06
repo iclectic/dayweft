@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Recurrence controls checkpoint — 6 November 2026
+
+- Last completed slice: the custom-template library offers weekly recurrence editing, optional date boundaries and exclusions, confirmed removal, and selected-day preview/application. Each application requires confirmation and uses durable undo; recurrence does not automatically alter plans.
+- Changed files: template library provider, picker, recurrence editor, `apps/dayweft_mobile/test/custom_templates_widget_test.dart`, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting, mobile analysis, focused widget tests and full `bash scripts/verify.sh` passed (121 mobile, 25 domain, 15 engine and 2 design tests). Coverage gates: mobile domain/application 96.9%, domain 90.2%, engine 90.2%. A first full run exposed a test-only semantics-handle cleanup error, fixed before the final run. Automated coverage includes cancellation, exclusion, confirmed removal, stale rule, undo and narrow dark 200% text/touch targets.
+- Outstanding defects and unfinished requirements: no device/TalkBack or visual screenshot verification is claimed; day export is not a full backup and excludes recurrence. Automatic application, hard task windows, persisted splits, native/cloud integrations and release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play requirements remain unchanged.
+- Exact next implementation task: hard earliest/latest task windows across validation, persistence, editing and scheduling, with a non-destructive migration and real repository/controller regression tests.
+
 ## Recurrence occurrence checkpoint — 6 November 2026
 
 - Last completed slice: selected-date recurrence preview and atomic application through the real planning controller/repository, using existing conflict reconciliation, source identity duplicate protection and durable revision/undo. Rule, template and plan versions are checked before writes.
