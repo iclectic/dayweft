@@ -106,3 +106,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: recurrence is not exposed in the UI or connected to occurrence previews, duplicate protection and durable application/undo. Date exceptions only suppress future reviewed occurrences; no existing day is modified. Full backup, native integrations and other 1.0 gates remain open.
 - Human action required: existing identity, release signing, hosting, device and Play gates remain unchanged.
 - Exact next implementation task: connect versioned recurrence occurrences to selected-date previews and atomic revision/undo, including rule-change staleness, duplicate and overnight tests, before adding recurrence controls.
+
+## Recurrence occurrence checkpoint — 6 November 2026
+
+- Last completed slice: the planning controller and repository can preview an eligible selected-date occurrence and apply selected blocks atomically through the existing conflict protection and durable revision/undo. Application rechecks rule version, eligibility, template version and plan revision; existing per-day template source identities prevent duplicates.
+- Changed files: planning repository/controller, `apps/dayweft_mobile/test/recurring_template_application_test.dart`, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: mobile formatting, `flutter analyze`, focused occurrence tests, and `bash scripts/verify.sh` passed (117 mobile, 25 domain, 15 engine and 2 design tests). Coverage gates: mobile domain/application 96.8%, domain 90.2%, engine 90.2%. The real controller/SQLite tests cover excluded days, changed rules/dates, duplicate protection, existing commitments, actual file reopening/undo and an overnight occurrence.
+- Outstanding defects and unfinished requirements: recurrence has no user-facing rule or exception controls and is not automatically applied. UI accessibility, visual verification and end-to-end testing are still required. Other 1.0 gaps, including full backups and native/cloud/release work, remain open.
+- Human action required: existing identity, upload signing, hosting, device and Play gates remain unchanged.
+- Exact next implementation task: expose creation/editing/removal of weekly rules and date exceptions and a selected-day occurrence preview using the existing confirmation dialog; cover stale/error, cancellation, large-text and accessibility paths through the real controller.

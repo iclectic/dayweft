@@ -255,6 +255,21 @@ class PlanningController extends AsyncNotifier<LocalDaySnapshot> {
   Future<domain.TemplatePreview> previewTemplate(DayTemplate template) =>
       _repository.previewTemplate(template);
 
+  Future<RecurringTemplatePreview> previewRecurringTemplate(
+    DayTemplate template,
+  ) => _repository.previewRecurringTemplate(template);
+
+  Future<void> applyRecurringTemplatePreview(
+    RecurringTemplatePreview preview, {
+    Set<int>? selectedIndices,
+  }) async {
+    await _repository.applyRecurringTemplatePreview(
+      preview,
+      selectedIndices: selectedIndices,
+    );
+    state = await AsyncValue.guard(_repository.loadSelectedDay);
+  }
+
   Future<void> applyTemplatePreview(
     domain.TemplatePreview preview, {
     Set<int>? selectedIndices,

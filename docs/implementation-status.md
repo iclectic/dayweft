@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Recurrence occurrence checkpoint — 6 November 2026
+
+- Last completed slice: selected-date recurrence preview and atomic application through the real planning controller/repository, using existing conflict reconciliation, source identity duplicate protection and durable revision/undo. Rule, template and plan versions are checked before writes.
+- Changed files: planning repository/controller, `apps/dayweft_mobile/test/recurring_template_application_test.dart`, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting, mobile `flutter analyze`, focused occurrence tests and full `bash scripts/verify.sh` passed (117 mobile, 25 domain, 15 engine and 2 design tests). Coverage gates: mobile domain/application 96.8%, domain 90.2%, engine 90.2%. File-backed reopen/undo, excluded dates, stale rules/dates, duplicate prevention, existing commitments and an overnight occurrence were exercised.
+- Outstanding defects and unfinished requirements: no recurrence editor, exception controls or user-facing occurrence entry exists yet; no automatic application occurs. The full product and release gates remain open.
+- Human action required: existing identity, upload signing, service ownership, hardware and Play gates remain unchanged.
+- Exact next implementation task: add accessible weekly-rule and exception controls plus reviewed selected-date application; verify cancellation, stale/error handling and large-text UI through the real controller.
+
 ## Recurrence storage checkpoint — 6 November 2026
 
 - Last completed slice: schema v13 adds a local recurrence table. Rules, civil-date exceptions and versioned removal survive a database reopen; writes reject stale rule and template versions. A real-row v12 upgrade retains existing template data.

@@ -8,6 +8,7 @@ import 'package:dayweft_mobile/core/errors/planning_failure.dart';
 import 'package:dayweft_mobile/features/data_management/domain/day_import.dart';
 import 'package:dayweft_mobile/features/onboarding/domain/onboarding_preferences.dart';
 import 'package:dayweft_mobile/features/templates/data/custom_template_repository.dart';
+import 'package:dayweft_mobile/features/templates/data/template_recurrence_repository.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
@@ -67,6 +68,16 @@ class LocalDaySnapshot {
     return tasks.where((task) => task.blockId == blockId).toList()
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   }
+}
+
+/// A reviewed occurrence is tied to both the plan and the stored rule version.
+class RecurringTemplatePreview {
+  const RecurringTemplatePreview({
+    required this.preview,
+    required this.ruleVersion,
+  });
+  final domain.TemplatePreview preview;
+  final int ruleVersion;
 }
 
 class ParsedCapture {
@@ -1021,6 +1032,51 @@ class LocalPlanningRepository {
     await loadSelectedDay(),
     await _resolveTemplate(template),
   );
+
+  Future<RecurringTemplatePreview> previewRecurringTemplate(
+    domain.DayTemplate template,
+  ) async {
+    final snapshot = await loadSelectedDay();
+    final stored = await _resolveTemplate(template);
+    final recurrence = await TemplateRecurrenceRepository(
+      _database,
+    ).get(stored.id);
+    if (recurrence?.rule == null ||
+        !recurrence!.rule!.occursOn(snapshot.plan.day)) {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'This template has no recurrence for the selected day.',
+      );
+    }
+    return RecurringTemplatePreview(
+      preview: _templatePreview(snapshot, stored),
+      ruleVersion: recurrence.version,
+    );
+  }
+
+  Future<void> applyRecurringTemplatePreview(
+    RecurringTemplatePreview occurrence, {
+    Set<int>? selectedIndices,
+  }) async {
+    await _database.transaction(() async {
+      final snapshot = await loadSelectedDay();
+      final recurrence = await TemplateRecurrenceRepository(
+        _database,
+      ).get(occurrence.preview.template.id);
+      if (recurrence?.rule == null ||
+          recurrence!.version != occurrence.ruleVersion ||
+          !recurrence.rule!.occursOn(snapshot.plan.day)) {
+        throw const PlanningFailure(
+          PlanningFailureCode.staleProposal,
+          'The recurrence changed. Review a new preview before applying it.',
+        );
+      }
+      await applyTemplatePreview(
+        occurrence.preview,
+        selectedIndices: selectedIndices,
+      );
+    });
+  }
 
   Future<domain.DayTemplate> _resolveTemplate(
     domain.DayTemplate template,
