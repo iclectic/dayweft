@@ -34,6 +34,8 @@ domain.TaskDetails taskDetailsFor(Task task) => domain.TaskDetails(
   category: task.category,
   notes: task.notes,
   deadline: task.deadline,
+  earliestStart: task.earliestStart,
+  latestFinish: task.latestFinish,
   energyRequired: task.energyRequired == null
       ? null
       : domain.EnergyLevel.values.byName(task.energyRequired!),
@@ -714,6 +716,8 @@ class LocalPlanningRepository {
           category: Value(_optionalText(details.category)),
           notes: Value(_optionalText(details.notes)),
           deadline: Value(details.deadline),
+          earliestStart: Value(details.earliestStart),
+          latestFinish: Value(details.latestFinish),
           energyRequired: Value(details.energyRequired?.name),
           cognitiveLoad: Value(details.cognitiveLoad?.name),
           dependencyIdsJson: Value(jsonEncode(details.dependencyIds)),
@@ -1377,6 +1381,12 @@ class LocalPlanningRepository {
                 deadline: Value(
                   DateTime.tryParse(task['deadline'] as String? ?? ''),
                 ),
+                earliestStart: Value(
+                  DateTime.tryParse(task['earliestStart'] as String? ?? ''),
+                ),
+                latestFinish: Value(
+                  DateTime.tryParse(task['latestFinish'] as String? ?? ''),
+                ),
                 canSplit: Value((task['canSplit'] as bool?) ?? false),
                 minimumUsefulMinutes: Value(
                   (task['minimumUsefulMinutes'] as int?) ?? 15,
@@ -1957,6 +1967,16 @@ class LocalPlanningRepository {
                   ? null
                   : DateTime.parse(task['deadline']! as String),
             ),
+            earliestStart: Value(
+              task['earliestStart'] == null
+                  ? null
+                  : DateTime.parse(task['earliestStart']! as String),
+            ),
+            latestFinish: Value(
+              task['latestFinish'] == null
+                  ? null
+                  : DateTime.parse(task['latestFinish']! as String),
+            ),
             canSplit: Value(task['canSplit']! as bool),
             minimumUsefulMinutes: Value(task['minimumUsefulMinutes']! as int),
             status: Value(task['status']! as String),
@@ -2379,6 +2399,8 @@ class LocalPlanningRepository {
       'category': task.category,
       'status': task.status,
       'deadline': task.deadline?.toIso8601String(),
+      'earliestStart': task.earliestStart?.toIso8601String(),
+      'latestFinish': task.latestFinish?.toIso8601String(),
       'canSplit': task.canSplit,
       'minimumUsefulMinutes': task.minimumUsefulMinutes,
       'sortOrder': task.sortOrder,
@@ -2453,6 +2475,8 @@ class LocalPlanningRepository {
                   priority: _domainPriority(task.priority),
                   category: task.category,
                   deadline: task.deadline,
+                  earliestStart: task.earliestStart,
+                  latestFinish: task.latestFinish,
                   notes: task.notes,
                   energyRequired: task.energyRequired == null
                       ? null

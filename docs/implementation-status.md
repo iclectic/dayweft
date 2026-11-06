@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Task-window persistence checkpoint — 6 November 2026
+
+- Last completed slice: task earliest-start/latest-finish bounds can be edited and persist through schema v14, task revision/undo and day import/export. Reality Check and recovery receive stored bounds; a real-row v13 migration test preserves existing tasks with unset bounds.
+- Changed files: mobile database schema and regenerated Drift output, import validator, planning repository/revision comparison, task editor, migration/repository/controller/widget tests and task-editor goldens, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: `dart run build_runner build`, formatting, mobile analysis and focused tests; `flutter test --update-goldens test/task_editor_widget_test.dart` (light/dark fixtures visually inspected); final `bash scripts/verify.sh` passed (125 mobile, 26 domain, 17 engine and 2 design tests). Coverage: mobile domain/application 97.2%, domain 90.3%, engine 91.7%. The first full run stopped at formatting and the final rerun passed.
+- Outstanding defects and unfinished requirements: manual placement outside bounds is reported by Reality Check rather than blocked, while recovery rejects invalid candidates. The engine constrains the whole block, which may reject a feasible individual allocation. Persisted splits, comprehensive DST/device tests and all other release gates remain open; no device or TalkBack verification is claimed.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: persisted task fragment allocations with non-destructive migration, explicit preview, atomic apply/undo, minimum-fragment and dependency tests through the real controller/repository chain.
+
 ## Task-window engine foundation — 6 November 2026
 
 - Last completed slice: optional hard earliest-start/latest-finish bounds in domain tasks and validation; Reality Check and recovery conservatively require a constrained task's containing block to fit its window. Bounds survive engine deferral and recovery proposal validation checks they were not changed.

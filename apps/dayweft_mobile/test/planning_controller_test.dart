@@ -1,3 +1,4 @@
+import 'package:adaptive_day_engine/adaptive_day_engine.dart';
 import 'package:dayweft_domain/dayweft_domain.dart' as domain;
 import 'package:dayweft_mobile/core/database/database_provider.dart';
 import 'package:dayweft_mobile/core/database/dayweft_database.dart';
@@ -26,6 +27,62 @@ void main() {
   });
   LocalDaySnapshot snapshot() =>
       container.read(planningControllerProvider).requireValue;
+
+  test(
+    'persisted task windows reach Reality Check and recovery through the controller',
+    () async {
+      final today = DateTime.now();
+      final nine = DateTime(today.year, today.month, today.day, 9);
+      await controller.addBlock(
+        title: 'Work',
+        startsAt: nine,
+        endsAt: nine.add(const Duration(hours: 1)),
+        blockType: 'flexible',
+      );
+      await controller.addTaskToBlock(
+        blockId: snapshot().blocks.single.id,
+        title: 'Constrained',
+        estimatedMinutes: 30,
+      );
+      final task = snapshot().tasks.single;
+      await controller.updateTask(
+        taskId: task.id,
+        expectedVersion: task.localVersion,
+        details: domain.TaskDetails(
+          title: task.title,
+          estimatedMinutes: 30,
+          priority: domain.TaskPriority.essential,
+          earliestStart: nine.add(const Duration(hours: 1)),
+          latestFinish: nine.add(const Duration(hours: 3)),
+        ),
+      );
+      expect(
+        (await controller.realityCheckToday()).any(
+          (issue) => issue.type == RealityIssueType.outsideTaskWindow,
+        ),
+        isTrue,
+      );
+      final result = await controller.reweaveToday(
+        disruptionType: domain.DisruptionType.custom,
+      );
+      expect(result.alternatives, isNotEmpty);
+      expect(
+        result.alternatives.first.preview.blocks.single.window.start,
+        nine.add(const Duration(hours: 1)),
+      );
+      await controller.applyReweaveAlternative(result.alternatives.first);
+      expect(
+        snapshot().tasks.single.earliestStart,
+        nine.add(const Duration(hours: 1)),
+      );
+      expect(
+        snapshot().blocks.single.startsAt,
+        nine.add(const Duration(hours: 1)),
+      );
+      expect(await controller.undoLastRevision(), isTrue);
+      expect(snapshot().blocks.single.startsAt, nine);
+    },
+  );
 
   test(
     'local onboarding, sample removal and preferences flow through real SQLite',

@@ -34,6 +34,8 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
   late domain.EnergyLevel? _energy = taskDetailsFor(widget.task).energyRequired;
   late domain.CognitiveLoad? _load = taskDetailsFor(widget.task).cognitiveLoad;
   late DateTime? _deadline = widget.task.deadline;
+  late DateTime? _earliestStart = widget.task.earliestStart;
+  late DateTime? _latestFinish = widget.task.latestFinish;
   late bool _canSplit = widget.task.canSplit;
   late final Set<String> _dependencies = taskDependencyIds(widget.task).toSet();
   bool _saving = false;
@@ -109,6 +111,19 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
                     onPressed: () => setState(() => _deadline = null),
                     icon: const Icon(Icons.close),
                   ),
+          ),
+          const Text(
+            'Optional hard time window. The whole block containing this task must fit inside it.',
+          ),
+          _windowTile(
+            'Earliest start',
+            _earliestStart,
+            (value) => _earliestStart = value,
+          ),
+          _windowTile(
+            'Latest finish',
+            _latestFinish,
+            (value) => _latestFinish = value,
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<domain.EnergyLevel>(
@@ -227,6 +242,60 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
     );
   }
 
+  Widget _windowTile(
+    String label,
+    DateTime? value,
+    ValueChanged<DateTime?> update,
+  ) {
+    final localizations = MaterialLocalizations.of(context);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(label),
+      subtitle: Text(
+        value == null
+            ? 'Not set'
+            : '${localizations.formatMediumDate(value)} · ${TimeOfDay.fromDateTime(value).format(context)}',
+      ),
+      onTap: _saving
+          ? null
+          : () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: value ?? DateTime.now(),
+                firstDate: DateTime(1),
+                lastDate: DateTime(9999, 12, 31),
+              );
+              if (date == null || !mounted) return;
+              final time = await showTimePicker(
+                context: context,
+                initialTime: value == null
+                    ? const TimeOfDay(hour: 9, minute: 0)
+                    : TimeOfDay.fromDateTime(value),
+              );
+              if (time != null && mounted) {
+                setState(
+                  () => update(
+                    DateTime(
+                      date.year,
+                      date.month,
+                      date.day,
+                      time.hour,
+                      time.minute,
+                    ),
+                  ),
+                );
+              }
+            },
+      trailing: value == null
+          ? const Icon(Icons.event_outlined)
+          : IconButton(
+              tooltip: 'Clear ${label.toLowerCase()}',
+              onPressed: _saving ? null : () => setState(() => update(null)),
+              icon: const Icon(Icons.close),
+            ),
+    );
+  }
+
   Future<void> _pickDeadline() async {
     final date = await showDatePicker(
       context: context,
@@ -274,6 +343,8 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
               category: _category.text,
               notes: _notes.text,
               deadline: _deadline,
+              earliestStart: _earliestStart,
+              latestFinish: _latestFinish,
               energyRequired: _energy,
               cognitiveLoad: _load,
               canSplit: _canSplit,

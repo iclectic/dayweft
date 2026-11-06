@@ -23,10 +23,47 @@ void main() {
   Future<Task> task() async => (await repository.loadToday()).inboxTasks.single;
 
   test(
+    'time windows survive export and import and malformed windows are rejected',
+    () async {
+      final original = await task();
+      final earliest = DateTime(2026, 11, 2, 9);
+      final latest = DateTime(2026, 11, 2, 12);
+      await repository.updateTask(
+        taskId: original.id,
+        expectedVersion: original.localVersion,
+        details: domain.TaskDetails(
+          title: original.title,
+          estimatedMinutes: 30,
+          earliestStart: earliest,
+          latestFinish: latest,
+        ),
+      );
+      final raw = await repository.exportLocalData();
+      final other = DayweftDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(other.close);
+      final imported = LocalPlanningRepository(other);
+      await imported.importLocalData(raw);
+      final restored = (await imported.loadToday()).inboxTasks.single;
+      expect(restored.earliestStart, earliest);
+      expect(restored.latestFinish, latest);
+      final invalid = jsonDecode(raw) as Map<String, dynamic>;
+      final row = (invalid['tasks'] as List).single as Map<String, dynamic>;
+      row['latestFinish'] = '2026-11-02T09:10:00';
+      await expectLater(
+        imported.importLocalData(jsonEncode(invalid)),
+        throwsA(isA<PlanningFailure>()),
+      );
+      expect((await imported.loadToday()).inboxTasks, hasLength(1));
+    },
+  );
+
+  test(
     'all edited attributes persist and undo survives repository recreation',
     () async {
       final original = await task();
       final deadline = DateTime(2026, 11, 2, 17);
+      final earliest = DateTime(2026, 11, 2, 9);
+      final latest = DateTime(2026, 11, 2, 12);
       await repository.updateTask(
         taskId: original.id,
         expectedVersion: original.localVersion,
@@ -37,6 +74,8 @@ void main() {
           category: 'study',
           notes: 'Local notes',
           deadline: deadline,
+          earliestStart: earliest,
+          latestFinish: latest,
           energyRequired: domain.EnergyLevel.low,
           cognitiveLoad: domain.CognitiveLoad.demanding,
           canSplit: true,
@@ -51,6 +90,8 @@ void main() {
       expect(changed.category, 'study');
       expect(changed.notes, 'Local notes');
       expect(changed.deadline, deadline);
+      expect(changed.earliestStart, earliest);
+      expect(changed.latestFinish, latest);
       expect(changed.energyRequired, 'low');
       expect(changed.cognitiveLoad, 'demanding');
       expect(changed.canSplit, isTrue);
@@ -60,6 +101,8 @@ void main() {
       expect(restored.title, original.title);
       expect(restored.notes, isNull);
       expect(restored.deadline, isNull);
+      expect(restored.earliestStart, isNull);
+      expect(restored.latestFinish, isNull);
       expect(restored.cognitiveLoad, isNull);
       expect(restored.canSplit, isFalse);
       expect(restored.localVersion, greaterThan(changed.localVersion));

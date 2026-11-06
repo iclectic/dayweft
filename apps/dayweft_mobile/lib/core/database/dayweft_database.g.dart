@@ -2883,6 +2883,29 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _earliestStartMeta = const VerificationMeta(
+    'earliestStart',
+  );
+  @override
+  late final GeneratedColumn<DateTime> earliestStart =
+      GeneratedColumn<DateTime>(
+        'earliest_start',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _latestFinishMeta = const VerificationMeta(
+    'latestFinish',
+  );
+  @override
+  late final GeneratedColumn<DateTime> latestFinish = GeneratedColumn<DateTime>(
+    'latest_finish',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _canSplitMeta = const VerificationMeta(
     'canSplit',
   );
@@ -3006,6 +3029,8 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     status,
     sourceId,
     deadline,
+    earliestStart,
+    latestFinish,
     canSplit,
     minimumUsefulMinutes,
     sortOrder,
@@ -3176,6 +3201,24 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
       );
     }
+    if (data.containsKey('earliest_start')) {
+      context.handle(
+        _earliestStartMeta,
+        earliestStart.isAcceptableOrUnknown(
+          data['earliest_start']!,
+          _earliestStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('latest_finish')) {
+      context.handle(
+        _latestFinishMeta,
+        latestFinish.isAcceptableOrUnknown(
+          data['latest_finish']!,
+          _latestFinishMeta,
+        ),
+      );
+    }
     if (data.containsKey('can_split')) {
       context.handle(
         _canSplitMeta,
@@ -3324,6 +3367,14 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}deadline'],
       ),
+      earliestStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}earliest_start'],
+      ),
+      latestFinish: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}latest_finish'],
+      ),
       canSplit: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}can_split'],
@@ -3394,6 +3445,8 @@ class Task extends DataClass implements Insertable<Task> {
   final String status;
   final String? sourceId;
   final DateTime? deadline;
+  final DateTime? earliestStart;
+  final DateTime? latestFinish;
   final bool canSplit;
   final int minimumUsefulMinutes;
   final int sortOrder;
@@ -3423,6 +3476,8 @@ class Task extends DataClass implements Insertable<Task> {
     required this.status,
     this.sourceId,
     this.deadline,
+    this.earliestStart,
+    this.latestFinish,
     required this.canSplit,
     required this.minimumUsefulMinutes,
     required this.sortOrder,
@@ -3478,6 +3533,12 @@ class Task extends DataClass implements Insertable<Task> {
     }
     if (!nullToAbsent || deadline != null) {
       map['deadline'] = Variable<DateTime>(deadline);
+    }
+    if (!nullToAbsent || earliestStart != null) {
+      map['earliest_start'] = Variable<DateTime>(earliestStart);
+    }
+    if (!nullToAbsent || latestFinish != null) {
+      map['latest_finish'] = Variable<DateTime>(latestFinish);
     }
     map['can_split'] = Variable<bool>(canSplit);
     map['minimum_useful_minutes'] = Variable<int>(minimumUsefulMinutes);
@@ -3544,6 +3605,12 @@ class Task extends DataClass implements Insertable<Task> {
       deadline: deadline == null && nullToAbsent
           ? const Value.absent()
           : Value(deadline),
+      earliestStart: earliestStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(earliestStart),
+      latestFinish: latestFinish == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latestFinish),
       canSplit: Value(canSplit),
       minimumUsefulMinutes: Value(minimumUsefulMinutes),
       sortOrder: Value(sortOrder),
@@ -3587,6 +3654,8 @@ class Task extends DataClass implements Insertable<Task> {
       status: serializer.fromJson<String>(json['status']),
       sourceId: serializer.fromJson<String?>(json['sourceId']),
       deadline: serializer.fromJson<DateTime?>(json['deadline']),
+      earliestStart: serializer.fromJson<DateTime?>(json['earliestStart']),
+      latestFinish: serializer.fromJson<DateTime?>(json['latestFinish']),
       canSplit: serializer.fromJson<bool>(json['canSplit']),
       minimumUsefulMinutes: serializer.fromJson<int>(
         json['minimumUsefulMinutes'],
@@ -3625,6 +3694,8 @@ class Task extends DataClass implements Insertable<Task> {
       'status': serializer.toJson<String>(status),
       'sourceId': serializer.toJson<String?>(sourceId),
       'deadline': serializer.toJson<DateTime?>(deadline),
+      'earliestStart': serializer.toJson<DateTime?>(earliestStart),
+      'latestFinish': serializer.toJson<DateTime?>(latestFinish),
       'canSplit': serializer.toJson<bool>(canSplit),
       'minimumUsefulMinutes': serializer.toJson<int>(minimumUsefulMinutes),
       'sortOrder': serializer.toJson<int>(sortOrder),
@@ -3659,6 +3730,8 @@ class Task extends DataClass implements Insertable<Task> {
     String? status,
     Value<String?> sourceId = const Value.absent(),
     Value<DateTime?> deadline = const Value.absent(),
+    Value<DateTime?> earliestStart = const Value.absent(),
+    Value<DateTime?> latestFinish = const Value.absent(),
     bool? canSplit,
     int? minimumUsefulMinutes,
     int? sortOrder,
@@ -3698,6 +3771,10 @@ class Task extends DataClass implements Insertable<Task> {
     status: status ?? this.status,
     sourceId: sourceId.present ? sourceId.value : this.sourceId,
     deadline: deadline.present ? deadline.value : this.deadline,
+    earliestStart: earliestStart.present
+        ? earliestStart.value
+        : this.earliestStart,
+    latestFinish: latestFinish.present ? latestFinish.value : this.latestFinish,
     canSplit: canSplit ?? this.canSplit,
     minimumUsefulMinutes: minimumUsefulMinutes ?? this.minimumUsefulMinutes,
     sortOrder: sortOrder ?? this.sortOrder,
@@ -3749,6 +3826,12 @@ class Task extends DataClass implements Insertable<Task> {
       status: data.status.present ? data.status.value : this.status,
       sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
+      earliestStart: data.earliestStart.present
+          ? data.earliestStart.value
+          : this.earliestStart,
+      latestFinish: data.latestFinish.present
+          ? data.latestFinish.value
+          : this.latestFinish,
       canSplit: data.canSplit.present ? data.canSplit.value : this.canSplit,
       minimumUsefulMinutes: data.minimumUsefulMinutes.present
           ? data.minimumUsefulMinutes.value
@@ -3789,6 +3872,8 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('status: $status, ')
           ..write('sourceId: $sourceId, ')
           ..write('deadline: $deadline, ')
+          ..write('earliestStart: $earliestStart, ')
+          ..write('latestFinish: $latestFinish, ')
           ..write('canSplit: $canSplit, ')
           ..write('minimumUsefulMinutes: $minimumUsefulMinutes, ')
           ..write('sortOrder: $sortOrder, ')
@@ -3823,6 +3908,8 @@ class Task extends DataClass implements Insertable<Task> {
     status,
     sourceId,
     deadline,
+    earliestStart,
+    latestFinish,
     canSplit,
     minimumUsefulMinutes,
     sortOrder,
@@ -3856,6 +3943,8 @@ class Task extends DataClass implements Insertable<Task> {
           other.status == this.status &&
           other.sourceId == this.sourceId &&
           other.deadline == this.deadline &&
+          other.earliestStart == this.earliestStart &&
+          other.latestFinish == this.latestFinish &&
           other.canSplit == this.canSplit &&
           other.minimumUsefulMinutes == this.minimumUsefulMinutes &&
           other.sortOrder == this.sortOrder &&
@@ -3887,6 +3976,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String> status;
   final Value<String?> sourceId;
   final Value<DateTime?> deadline;
+  final Value<DateTime?> earliestStart;
+  final Value<DateTime?> latestFinish;
   final Value<bool> canSplit;
   final Value<int> minimumUsefulMinutes;
   final Value<int> sortOrder;
@@ -3917,6 +4008,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.status = const Value.absent(),
     this.sourceId = const Value.absent(),
     this.deadline = const Value.absent(),
+    this.earliestStart = const Value.absent(),
+    this.latestFinish = const Value.absent(),
     this.canSplit = const Value.absent(),
     this.minimumUsefulMinutes = const Value.absent(),
     this.sortOrder = const Value.absent(),
@@ -3948,6 +4041,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     required String status,
     this.sourceId = const Value.absent(),
     this.deadline = const Value.absent(),
+    this.earliestStart = const Value.absent(),
+    this.latestFinish = const Value.absent(),
     this.canSplit = const Value.absent(),
     this.minimumUsefulMinutes = const Value.absent(),
     required int sortOrder,
@@ -3987,6 +4082,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? status,
     Expression<String>? sourceId,
     Expression<DateTime>? deadline,
+    Expression<DateTime>? earliestStart,
+    Expression<DateTime>? latestFinish,
     Expression<bool>? canSplit,
     Expression<int>? minimumUsefulMinutes,
     Expression<int>? sortOrder,
@@ -4019,6 +4116,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (status != null) 'status': status,
       if (sourceId != null) 'source_id': sourceId,
       if (deadline != null) 'deadline': deadline,
+      if (earliestStart != null) 'earliest_start': earliestStart,
+      if (latestFinish != null) 'latest_finish': latestFinish,
       if (canSplit != null) 'can_split': canSplit,
       if (minimumUsefulMinutes != null)
         'minimum_useful_minutes': minimumUsefulMinutes,
@@ -4053,6 +4152,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<String>? status,
     Value<String?>? sourceId,
     Value<DateTime?>? deadline,
+    Value<DateTime?>? earliestStart,
+    Value<DateTime?>? latestFinish,
     Value<bool>? canSplit,
     Value<int>? minimumUsefulMinutes,
     Value<int>? sortOrder,
@@ -4084,6 +4185,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       status: status ?? this.status,
       sourceId: sourceId ?? this.sourceId,
       deadline: deadline ?? this.deadline,
+      earliestStart: earliestStart ?? this.earliestStart,
+      latestFinish: latestFinish ?? this.latestFinish,
       canSplit: canSplit ?? this.canSplit,
       minimumUsefulMinutes: minimumUsefulMinutes ?? this.minimumUsefulMinutes,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -4157,6 +4260,12 @@ class TasksCompanion extends UpdateCompanion<Task> {
     if (deadline.present) {
       map['deadline'] = Variable<DateTime>(deadline.value);
     }
+    if (earliestStart.present) {
+      map['earliest_start'] = Variable<DateTime>(earliestStart.value);
+    }
+    if (latestFinish.present) {
+      map['latest_finish'] = Variable<DateTime>(latestFinish.value);
+    }
     if (canSplit.present) {
       map['can_split'] = Variable<bool>(canSplit.value);
     }
@@ -4214,6 +4323,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('status: $status, ')
           ..write('sourceId: $sourceId, ')
           ..write('deadline: $deadline, ')
+          ..write('earliestStart: $earliestStart, ')
+          ..write('latestFinish: $latestFinish, ')
           ..write('canSplit: $canSplit, ')
           ..write('minimumUsefulMinutes: $minimumUsefulMinutes, ')
           ..write('sortOrder: $sortOrder, ')
@@ -11243,6 +11354,8 @@ typedef $$TasksTableCreateCompanionBuilder =
       required String status,
       Value<String?> sourceId,
       Value<DateTime?> deadline,
+      Value<DateTime?> earliestStart,
+      Value<DateTime?> latestFinish,
       Value<bool> canSplit,
       Value<int> minimumUsefulMinutes,
       required int sortOrder,
@@ -11275,6 +11388,8 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String?> sourceId,
       Value<DateTime?> deadline,
+      Value<DateTime?> earliestStart,
+      Value<DateTime?> latestFinish,
       Value<bool> canSplit,
       Value<int> minimumUsefulMinutes,
       Value<int> sortOrder,
@@ -11457,6 +11572,16 @@ class $$TasksTableFilterComposer
 
   ColumnFilters<DateTime> get deadline => $composableBuilder(
     column: $table.deadline,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get earliestStart => $composableBuilder(
+    column: $table.earliestStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get latestFinish => $composableBuilder(
+    column: $table.latestFinish,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11697,6 +11822,16 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get earliestStart => $composableBuilder(
+    column: $table.earliestStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get latestFinish => $composableBuilder(
+    column: $table.latestFinish,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get canSplit => $composableBuilder(
     column: $table.canSplit,
     builder: (column) => ColumnOrderings(column),
@@ -11866,6 +12001,16 @@ class $$TasksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deadline =>
       $composableBuilder(column: $table.deadline, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get earliestStart => $composableBuilder(
+    column: $table.earliestStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get latestFinish => $composableBuilder(
+    column: $table.latestFinish,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get canSplit =>
       $composableBuilder(column: $table.canSplit, builder: (column) => column);
@@ -12050,6 +12195,8 @@ class $$TasksTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> sourceId = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
+                Value<DateTime?> earliestStart = const Value.absent(),
+                Value<DateTime?> latestFinish = const Value.absent(),
                 Value<bool> canSplit = const Value.absent(),
                 Value<int> minimumUsefulMinutes = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
@@ -12080,6 +12227,8 @@ class $$TasksTableTableManager
                 status: status,
                 sourceId: sourceId,
                 deadline: deadline,
+                earliestStart: earliestStart,
+                latestFinish: latestFinish,
                 canSplit: canSplit,
                 minimumUsefulMinutes: minimumUsefulMinutes,
                 sortOrder: sortOrder,
@@ -12112,6 +12261,8 @@ class $$TasksTableTableManager
                 required String status,
                 Value<String?> sourceId = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
+                Value<DateTime?> earliestStart = const Value.absent(),
+                Value<DateTime?> latestFinish = const Value.absent(),
                 Value<bool> canSplit = const Value.absent(),
                 Value<int> minimumUsefulMinutes = const Value.absent(),
                 required int sortOrder,
@@ -12142,6 +12293,8 @@ class $$TasksTableTableManager
                 status: status,
                 sourceId: sourceId,
                 deadline: deadline,
+                earliestStart: earliestStart,
+                latestFinish: latestFinish,
                 canSplit: canSplit,
                 minimumUsefulMinutes: minimumUsefulMinutes,
                 sortOrder: sortOrder,

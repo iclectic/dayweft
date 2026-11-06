@@ -113,6 +113,8 @@ class Tasks extends Table {
   TextColumn get status => text()();
   TextColumn get sourceId => text().nullable()();
   DateTimeColumn get deadline => dateTime().nullable()();
+  DateTimeColumn get earliestStart => dateTime().nullable()();
+  DateTimeColumn get latestFinish => dateTime().nullable()();
   BoolColumn get canSplit => boolean().withDefault(const Constant(false))();
   IntColumn get minimumUsefulMinutes =>
       integer().withDefault(const Constant(15))();
@@ -296,7 +298,7 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
@@ -390,6 +392,10 @@ class DayweftDatabase extends _$DayweftDatabase {
         }
         if (from < 13) {
           await migrator.createTable(templateRecurrences);
+        }
+        if (from < 14) {
+          await migrator.addColumn(tasks, tasks.earliestStart);
+          await migrator.addColumn(tasks, tasks.latestFinish);
         }
       },
     );

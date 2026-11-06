@@ -35,6 +35,8 @@ List<RevisionFieldChange> compareRevision(String changeSetJson) {
     'category': ('Category', RevisionValueType.text),
     'notes': ('Notes', RevisionValueType.text),
     'deadline': ('Deadline', RevisionValueType.instant),
+    'earliestStart': ('Earliest start', RevisionValueType.instant),
+    'latestFinish': ('Latest finish', RevisionValueType.instant),
     'energyRequired': ('Energy requirement', RevisionValueType.text),
     'cognitiveLoad': ('Cognitive load', RevisionValueType.text),
     'canSplit': ('Allow splitting', RevisionValueType.flag),

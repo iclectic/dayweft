@@ -6,6 +6,50 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  Future<void> removeTaskWindowColumns(DayweftDatabase database) async {
+    await database.customStatement(
+      'ALTER TABLE tasks DROP COLUMN earliest_start',
+    );
+    await database.customStatement(
+      'ALTER TABLE tasks DROP COLUMN latest_finish',
+    );
+  }
+
+  test(
+    'version 13 task rows retain their data and gain unset windows',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v13-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 11, 6);
+      await old
+          .into(old.tasks)
+          .insert(
+            TasksCompanion.insert(
+              id: 'existing',
+              title: 'Keep this task',
+              estimatedMinutes: 45,
+              priority: 'high',
+              status: 'inbox',
+              sortOrder: 0,
+              syncState: SyncState.localOnly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await removeTaskWindowColumns(old);
+      await old.customStatement('PRAGMA user_version = 13');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final task = await upgraded.select(upgraded.tasks).getSingle();
+      expect(task.title, 'Keep this task');
+      expect(task.estimatedMinutes, 45);
+      expect(task.earliestStart, isNull);
+      expect(task.latestFinish, isNull);
+    },
+  );
   test(
     'version 12 upgrade preserves templates and creates recurrence storage',
     () async {
@@ -27,6 +71,7 @@ void main() {
             ),
           );
       await old.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(old);
       await old.customStatement('PRAGMA user_version = 12');
       await old.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -72,6 +117,7 @@ void main() {
           );
       await old.customStatement('DROP TABLE saved_templates');
       await old.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(old);
       await old.customStatement('PRAGMA user_version = 11');
       await old.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -90,12 +136,12 @@ void main() {
   );
 
   test(
-    'database schema starts at version 13 and creates core tables',
+    'database schema starts at version 14 and creates core tables',
     () async {
       final database = DayweftDatabase.forTesting(NativeDatabase.memory());
       addTearDown(database.close);
 
-      expect(database.schemaVersion, 13);
+      expect(database.schemaVersion, 14);
 
       final tables = await database
           .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -163,7 +209,7 @@ void main() {
     final version = await database
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 13);
+    expect(version.read<int>('user_version'), 14);
     final legacy = await database
         .select(database.estimationRecords)
         .getSingle();
@@ -208,6 +254,7 @@ void main() {
     await previous.customStatement('DROP TABLE focus_session_states');
     await previous.customStatement('DROP TABLE saved_templates');
     await previous.customStatement('DROP TABLE template_recurrences');
+    await removeTaskWindowColumns(previous);
     await previous.customStatement('PRAGMA user_version = 8');
     await previous.close();
     final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -261,6 +308,7 @@ void main() {
       await previous.customStatement('DROP TABLE focus_session_states');
       await previous.customStatement('DROP TABLE saved_templates');
       await previous.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(previous);
       await previous.customStatement('PRAGMA user_version = 9');
       await previous.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -299,6 +347,7 @@ void main() {
       await previous.customStatement('DROP TABLE focus_session_states');
       await previous.customStatement('DROP TABLE saved_templates');
       await previous.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(previous);
       await previous.customStatement('PRAGMA user_version = 10');
       await previous.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -307,7 +356,7 @@ void main() {
       expect(session.actualMinutes, 10);
       expect(session.title, 'Keep my record');
       expect(await upgraded.select(upgraded.focusSessionStates).get(), isEmpty);
-      expect(upgraded.schemaVersion, 13);
+      expect(upgraded.schemaVersion, 14);
     },
   );
 }

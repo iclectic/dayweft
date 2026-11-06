@@ -89,6 +89,51 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('set and clear an earliest start through the editor', (
+    tester,
+  ) async {
+    await openInbox(tester);
+    await tester.tap(find.text('Review notes'));
+    await tester.pumpAndSettle();
+    final scrollable = find
+        .descendant(
+          of: find.byType(TaskEditorScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(
+      find.text('Earliest start'),
+      200,
+      scrollable: scrollable,
+    );
+    await tester.tap(find.text('Earliest start'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save task'));
+    await tester.pumpAndSettle();
+    expect(
+      (await repository.loadToday()).inboxTasks.single.earliestStart,
+      isNotNull,
+    );
+    await tester.tap(find.text('Review notes'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byTooltip('Clear earliest start'),
+      200,
+      scrollable: scrollable,
+    );
+    await tester.tap(find.byTooltip('Clear earliest start'));
+    await tester.tap(find.text('Save task'));
+    await tester.pumpAndSettle();
+    expect(
+      (await repository.loadToday()).inboxTasks.single.earliestStart,
+      isNull,
+    );
+  });
+
   testWidgets('delete confirmation and one-tap undo restore the task', (
     tester,
   ) async {

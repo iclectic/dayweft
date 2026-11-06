@@ -154,6 +154,12 @@ class DayImport {
         title: text(task, 'title', 500),
         estimatedMinutes: integer(task, 'estimatedMinutes', 1, 1440),
         priority: priority,
+        earliestStart: task['earliestStart'] == null
+            ? null
+            : date(task['earliestStart']),
+        latestFinish: task['latestFinish'] == null
+            ? null
+            : date(task['latestFinish']),
         canSplit: task['canSplit'] as bool? ?? false,
         minimumUsefulMinutes: integer(
           task,
