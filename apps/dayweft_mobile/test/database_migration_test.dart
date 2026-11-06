@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Future<void> removeTaskWindowColumns(DayweftDatabase database) async {
+    await database.customStatement('DROP TABLE allocation_drafts');
     await database.customStatement(
       'ALTER TABLE tasks DROP COLUMN earliest_start',
     );
@@ -14,6 +15,42 @@ void main() {
       'ALTER TABLE tasks DROP COLUMN latest_finish',
     );
   }
+
+  test(
+    'version 14 upgrade preserves a real task and creates empty draft storage',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v14-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 11, 6);
+      await old
+          .into(old.tasks)
+          .insert(
+            TasksCompanion.insert(
+              id: 'keep',
+              title: 'Existing task',
+              estimatedMinutes: 45,
+              priority: 'high',
+              status: 'inbox',
+              sortOrder: 0,
+              syncState: SyncState.localOnly,
+              earliestStart: Value(now),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await old.customStatement('DROP TABLE allocation_drafts');
+      await old.customStatement('PRAGMA user_version = 14');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final task = await upgraded.select(upgraded.tasks).getSingle();
+      expect(task.title, 'Existing task');
+      expect(task.earliestStart, now);
+      expect(await upgraded.select(upgraded.allocationDrafts).get(), isEmpty);
+    },
+  );
 
   test(
     'version 13 task rows retain their data and gain unset windows',
@@ -136,12 +173,12 @@ void main() {
   );
 
   test(
-    'database schema starts at version 14 and creates core tables',
+    'database schema starts at version 15 and creates core tables',
     () async {
       final database = DayweftDatabase.forTesting(NativeDatabase.memory());
       addTearDown(database.close);
 
-      expect(database.schemaVersion, 14);
+      expect(database.schemaVersion, 15);
 
       final tables = await database
           .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -209,7 +246,7 @@ void main() {
     final version = await database
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 14);
+    expect(version.read<int>('user_version'), 15);
     final legacy = await database
         .select(database.estimationRecords)
         .getSingle();
@@ -356,7 +393,7 @@ void main() {
       expect(session.actualMinutes, 10);
       expect(session.title, 'Keep my record');
       expect(await upgraded.select(upgraded.focusSessionStates).get(), isEmpty);
-      expect(upgraded.schemaVersion, 14);
+      expect(upgraded.schemaVersion, 15);
     },
   );
 }

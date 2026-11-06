@@ -82,6 +82,21 @@ class RecurringTemplatePreview {
   final int ruleVersion;
 }
 
+class StoredAllocationDraft {
+  StoredAllocationDraft({
+    required this.planId,
+    required this.planRevision,
+    required this.version,
+    required this.isStale,
+    required List<domain.TaskAllocation> allocations,
+  }) : allocations = List.unmodifiable(allocations);
+  final String planId;
+  final int planRevision;
+  final int version;
+  final bool isStale;
+  final List<domain.TaskAllocation> allocations;
+}
+
 class ParsedCapture {
   const ParsedCapture({
     required this.title,
@@ -1418,6 +1433,126 @@ class LocalPlanningRepository {
     final engine = _engineFor(snapshot);
     final plan = _toDomainPlan(snapshot);
     return Isolate.run(() => engine.realityCheck(plan));
+  }
+
+  /// Stores a reviewed draft only; it does not allocate tasks or change a plan.
+  Future<StoredAllocationDraft> saveAllocationDraft({
+    required String expectedPlanId,
+    required int expectedPlanRevision,
+    required int? expectedDraftVersion,
+    required List<domain.TaskAllocation> allocations,
+  }) => _database.transaction(() async {
+    final snapshot = await loadSelectedDay();
+    if (snapshot.plan.id != expectedPlanId ||
+        snapshot.plan.revision != expectedPlanRevision) {
+      throw const PlanningFailure(
+        PlanningFailureCode.staleProposal,
+        'The plan changed. Review the allocation draft again.',
+      );
+    }
+    await _assertPlanVersion(snapshot.plan);
+    final existing =
+        await (_database.select(_database.allocationDrafts)
+              ..where((row) => row.dayPlanId.equals(snapshot.plan.id)))
+            .getSingleOrNull();
+    if (existing?.version != expectedDraftVersion) {
+      throw const PlanningFailure(
+        PlanningFailureCode.staleProposal,
+        'The allocation draft changed. Open the latest version.',
+      );
+    }
+    if (allocations.length > 5000 ||
+        allocations.any((item) => item.id.length > 200)) {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'The allocation draft is too large.',
+      );
+    }
+    final plan = _toDomainPlan(snapshot);
+    final issue = domain.taskAllocationIssue(
+      tasks: plan.tasks,
+      blocks: plan.blocks,
+      allocations: allocations,
+    );
+    if (issue != null) {
+      throw PlanningFailure(PlanningFailureCode.constraintViolation, issue);
+    }
+    final version = (existing?.version ?? 0) + 1;
+    await _database
+        .into(_database.allocationDrafts)
+        .insertOnConflictUpdate(
+          AllocationDraftsCompanion.insert(
+            dayPlanId: snapshot.plan.id,
+            planRevision: snapshot.plan.revision,
+            version: version,
+            allocationsJson: jsonEncode({
+              'formatVersion': 1,
+              'allocations': [
+                for (final item in allocations)
+                  {
+                    'id': item.id,
+                    'taskId': item.taskId,
+                    'blockId': item.blockId,
+                    'start': item.window.start.toIso8601String(),
+                    'end': item.window.end.toIso8601String(),
+                  },
+              ],
+            }),
+            updatedAt: _now(),
+          ),
+        );
+    return StoredAllocationDraft(
+      planId: snapshot.plan.id,
+      planRevision: snapshot.plan.revision,
+      version: version,
+      isStale: false,
+      allocations: allocations,
+    );
+  });
+
+  Future<StoredAllocationDraft?> loadAllocationDraft() async {
+    final snapshot = await loadSelectedDay();
+    final row =
+        await (_database.select(_database.allocationDrafts)
+              ..where((row) => row.dayPlanId.equals(snapshot.plan.id)))
+            .getSingleOrNull();
+    if (row == null) return null;
+    try {
+      final json = jsonDecode(row.allocationsJson) as Map<String, dynamic>;
+      if (json['formatVersion'] != 1) throw const FormatException();
+      final values = json['allocations'] as List<dynamic>;
+      if (values.length > 5000) throw const FormatException();
+      final allocations = values.map((value) {
+        final entry = value as Map<String, dynamic>;
+        return domain.TaskAllocation(
+          id: entry['id'] as String,
+          taskId: entry['taskId'] as String,
+          blockId: entry['blockId'] as String,
+          window: domain.TimeWindow(
+            start: DateTime.parse(entry['start'] as String),
+            end: DateTime.parse(entry['end'] as String),
+          ),
+        );
+      }).toList();
+      final plan = _toDomainPlan(snapshot);
+      final issue = domain.taskAllocationIssue(
+        tasks: plan.tasks,
+        blocks: plan.blocks,
+        allocations: allocations,
+      );
+      return StoredAllocationDraft(
+        planId: row.dayPlanId,
+        planRevision: row.planRevision,
+        version: row.version,
+        isStale: row.planRevision != snapshot.plan.revision || issue != null,
+        allocations: allocations,
+      );
+    } on Object {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'The allocation draft could not be read. Your plan has not changed.',
+      );
+    }
   }
 
   Future<ReweaveResult> reweaveToday({

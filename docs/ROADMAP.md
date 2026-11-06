@@ -151,3 +151,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: allocations are not stored or connected to the engine, controller, previews, UI, import/export or durable undo; split proposals remain rejected. Reserved buffers have durations but no individual positions, so validation checks their capacity, not exact placement. Full-device backup, native integration and other release gates remain open.
 - Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
 - Exact next implementation task: add non-destructive fragment storage with real-row migration and versioned atomic save/reopen tests, then integrate complete validated allocation proposals into recovery preview/apply/undo before exposing splitting.
+
+## Fragment draft storage checkpoint — 6 November 2026
+
+- Last completed slice: schema v15 adds per-day, versioned allocation-draft storage. The repository atomically validates a complete draft against the current plan and checks both plan and draft versions. Drafts survive reopening and are flagged stale when their plan changes or allocations no longer validate; saving does not change task placement or plan history.
+- Changed files: mobile database schema/regenerated Drift output, planning repository, migration and file-backed draft tests, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: mobile generation, formatting, analysis and focused migration/draft tests; `bash scripts/verify.sh` passed (127 mobile, 31 domain, 17 engine and 2 design tests; mobile domain/application 97.2%, domain 93.9%, engine 91.7%).
+- Outstanding defects and unfinished requirements: this stores drafts only; no actual split allocations, recovery preview/application, undo, export or UI exists. Split suggestions remain rejected. Buffer positioning and remaining 1.0 gates remain open; no device/live-backend verification is claimed.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: integrate a concrete fragment proposal into recovery and add atomic live allocation persistence and durable undo, including stale-plan, partial-write, task deletion, export/import and restart tests before enabling UI.

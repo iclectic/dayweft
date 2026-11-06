@@ -9551,6 +9551,387 @@ class TemplateRecurrencesCompanion extends UpdateCompanion<TemplateRecurrence> {
   }
 }
 
+class $AllocationDraftsTable extends AllocationDrafts
+    with TableInfo<$AllocationDraftsTable, AllocationDraft> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AllocationDraftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dayPlanIdMeta = const VerificationMeta(
+    'dayPlanId',
+  );
+  @override
+  late final GeneratedColumn<String> dayPlanId = GeneratedColumn<String>(
+    'day_plan_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES day_plans (id)',
+    ),
+  );
+  static const VerificationMeta _planRevisionMeta = const VerificationMeta(
+    'planRevision',
+  );
+  @override
+  late final GeneratedColumn<int> planRevision = GeneratedColumn<int>(
+    'plan_revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _allocationsJsonMeta = const VerificationMeta(
+    'allocationsJson',
+  );
+  @override
+  late final GeneratedColumn<String> allocationsJson = GeneratedColumn<String>(
+    'allocations_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    dayPlanId,
+    planRevision,
+    version,
+    allocationsJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'allocation_drafts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AllocationDraft> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('day_plan_id')) {
+      context.handle(
+        _dayPlanIdMeta,
+        dayPlanId.isAcceptableOrUnknown(data['day_plan_id']!, _dayPlanIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayPlanIdMeta);
+    }
+    if (data.containsKey('plan_revision')) {
+      context.handle(
+        _planRevisionMeta,
+        planRevision.isAcceptableOrUnknown(
+          data['plan_revision']!,
+          _planRevisionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_planRevisionMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('allocations_json')) {
+      context.handle(
+        _allocationsJsonMeta,
+        allocationsJson.isAcceptableOrUnknown(
+          data['allocations_json']!,
+          _allocationsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_allocationsJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {dayPlanId};
+  @override
+  AllocationDraft map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AllocationDraft(
+      dayPlanId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day_plan_id'],
+      )!,
+      planRevision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}plan_revision'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      allocationsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}allocations_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AllocationDraftsTable createAlias(String alias) {
+    return $AllocationDraftsTable(attachedDatabase, alias);
+  }
+}
+
+class AllocationDraft extends DataClass implements Insertable<AllocationDraft> {
+  final String dayPlanId;
+  final int planRevision;
+  final int version;
+  final String allocationsJson;
+  final DateTime updatedAt;
+  const AllocationDraft({
+    required this.dayPlanId,
+    required this.planRevision,
+    required this.version,
+    required this.allocationsJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['day_plan_id'] = Variable<String>(dayPlanId);
+    map['plan_revision'] = Variable<int>(planRevision);
+    map['version'] = Variable<int>(version);
+    map['allocations_json'] = Variable<String>(allocationsJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AllocationDraftsCompanion toCompanion(bool nullToAbsent) {
+    return AllocationDraftsCompanion(
+      dayPlanId: Value(dayPlanId),
+      planRevision: Value(planRevision),
+      version: Value(version),
+      allocationsJson: Value(allocationsJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AllocationDraft.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AllocationDraft(
+      dayPlanId: serializer.fromJson<String>(json['dayPlanId']),
+      planRevision: serializer.fromJson<int>(json['planRevision']),
+      version: serializer.fromJson<int>(json['version']),
+      allocationsJson: serializer.fromJson<String>(json['allocationsJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'dayPlanId': serializer.toJson<String>(dayPlanId),
+      'planRevision': serializer.toJson<int>(planRevision),
+      'version': serializer.toJson<int>(version),
+      'allocationsJson': serializer.toJson<String>(allocationsJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AllocationDraft copyWith({
+    String? dayPlanId,
+    int? planRevision,
+    int? version,
+    String? allocationsJson,
+    DateTime? updatedAt,
+  }) => AllocationDraft(
+    dayPlanId: dayPlanId ?? this.dayPlanId,
+    planRevision: planRevision ?? this.planRevision,
+    version: version ?? this.version,
+    allocationsJson: allocationsJson ?? this.allocationsJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AllocationDraft copyWithCompanion(AllocationDraftsCompanion data) {
+    return AllocationDraft(
+      dayPlanId: data.dayPlanId.present ? data.dayPlanId.value : this.dayPlanId,
+      planRevision: data.planRevision.present
+          ? data.planRevision.value
+          : this.planRevision,
+      version: data.version.present ? data.version.value : this.version,
+      allocationsJson: data.allocationsJson.present
+          ? data.allocationsJson.value
+          : this.allocationsJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AllocationDraft(')
+          ..write('dayPlanId: $dayPlanId, ')
+          ..write('planRevision: $planRevision, ')
+          ..write('version: $version, ')
+          ..write('allocationsJson: $allocationsJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(dayPlanId, planRevision, version, allocationsJson, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AllocationDraft &&
+          other.dayPlanId == this.dayPlanId &&
+          other.planRevision == this.planRevision &&
+          other.version == this.version &&
+          other.allocationsJson == this.allocationsJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AllocationDraftsCompanion extends UpdateCompanion<AllocationDraft> {
+  final Value<String> dayPlanId;
+  final Value<int> planRevision;
+  final Value<int> version;
+  final Value<String> allocationsJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AllocationDraftsCompanion({
+    this.dayPlanId = const Value.absent(),
+    this.planRevision = const Value.absent(),
+    this.version = const Value.absent(),
+    this.allocationsJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AllocationDraftsCompanion.insert({
+    required String dayPlanId,
+    required int planRevision,
+    required int version,
+    required String allocationsJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : dayPlanId = Value(dayPlanId),
+       planRevision = Value(planRevision),
+       version = Value(version),
+       allocationsJson = Value(allocationsJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<AllocationDraft> custom({
+    Expression<String>? dayPlanId,
+    Expression<int>? planRevision,
+    Expression<int>? version,
+    Expression<String>? allocationsJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (dayPlanId != null) 'day_plan_id': dayPlanId,
+      if (planRevision != null) 'plan_revision': planRevision,
+      if (version != null) 'version': version,
+      if (allocationsJson != null) 'allocations_json': allocationsJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AllocationDraftsCompanion copyWith({
+    Value<String>? dayPlanId,
+    Value<int>? planRevision,
+    Value<int>? version,
+    Value<String>? allocationsJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AllocationDraftsCompanion(
+      dayPlanId: dayPlanId ?? this.dayPlanId,
+      planRevision: planRevision ?? this.planRevision,
+      version: version ?? this.version,
+      allocationsJson: allocationsJson ?? this.allocationsJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (dayPlanId.present) {
+      map['day_plan_id'] = Variable<String>(dayPlanId.value);
+    }
+    if (planRevision.present) {
+      map['plan_revision'] = Variable<int>(planRevision.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (allocationsJson.present) {
+      map['allocations_json'] = Variable<String>(allocationsJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AllocationDraftsCompanion(')
+          ..write('dayPlanId: $dayPlanId, ')
+          ..write('planRevision: $planRevision, ')
+          ..write('version: $version, ')
+          ..write('allocationsJson: $allocationsJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DayweftDatabase extends GeneratedDatabase {
   _$DayweftDatabase(QueryExecutor e) : super(e);
   $DayweftDatabaseManager get managers => $DayweftDatabaseManager(this);
@@ -9576,6 +9957,9 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
   late final $SavedTemplatesTable savedTemplates = $SavedTemplatesTable(this);
   late final $TemplateRecurrencesTable templateRecurrences =
       $TemplateRecurrencesTable(this);
+  late final $AllocationDraftsTable allocationDrafts = $AllocationDraftsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9596,6 +9980,7 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
     calendarConnections,
     savedTemplates,
     templateRecurrences,
+    allocationDrafts,
   ];
 }
 
@@ -9684,6 +10069,27 @@ final class $$DayPlansTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _scheduleRevisionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AllocationDraftsTable, List<AllocationDraft>>
+  _allocationDraftsRefsTable(_$DayweftDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.allocationDrafts,
+        aliasName: 'day_plans__id__allocation_drafts__day_plan_id',
+      );
+
+  $$AllocationDraftsTableProcessedTableManager get allocationDraftsRefs {
+    final manager = $$AllocationDraftsTableTableManager(
+      $_db,
+      $_db.allocationDrafts,
+    ).filter((f) => f.dayPlanId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _allocationDraftsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -9817,6 +10223,31 @@ class $$DayPlansTableFilterComposer
           }) => $$ScheduleRevisionsTableFilterComposer(
             $db: $db,
             $table: $db.scheduleRevisions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> allocationDraftsRefs(
+    Expression<bool> Function($$AllocationDraftsTableFilterComposer f) f,
+  ) {
+    final $$AllocationDraftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.allocationDrafts,
+      getReferencedColumn: (t) => t.dayPlanId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AllocationDraftsTableFilterComposer(
+            $db: $db,
+            $table: $db.allocationDrafts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -10005,6 +10436,31 @@ class $$DayPlansTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> allocationDraftsRefs<T extends Object>(
+    Expression<T> Function($$AllocationDraftsTableAnnotationComposer a) f,
+  ) {
+    final $$AllocationDraftsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.allocationDrafts,
+      getReferencedColumn: (t) => t.dayPlanId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AllocationDraftsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.allocationDrafts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$DayPlansTableTableManager
@@ -10024,6 +10480,7 @@ class $$DayPlansTableTableManager
             bool timeBlocksRefs,
             bool tasksRefs,
             bool scheduleRevisionsRefs,
+            bool allocationDraftsRefs,
           })
         > {
   $$DayPlansTableTableManager(_$DayweftDatabase db, $DayPlansTable table)
@@ -10102,6 +10559,7 @@ class $$DayPlansTableTableManager
                 timeBlocksRefs = false,
                 tasksRefs = false,
                 scheduleRevisionsRefs = false,
+                allocationDraftsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -10109,6 +10567,7 @@ class $$DayPlansTableTableManager
                     if (timeBlocksRefs) db.timeBlocks,
                     if (tasksRefs) db.tasks,
                     if (scheduleRevisionsRefs) db.scheduleRevisions,
+                    if (allocationDraftsRefs) db.allocationDrafts,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -10173,6 +10632,26 @@ class $$DayPlansTableTableManager
                           referencedColumn: 'day_plan_id',
                           typedResults: items,
                         ),
+                      if (allocationDraftsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          DayPlan,
+                          $DayPlansTable,
+                          AllocationDraft,
+                          $AllocationDraftsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DayPlansTableReferences
+                              ._allocationDraftsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DayPlansTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).allocationDraftsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -10197,6 +10676,7 @@ typedef $$DayPlansTableProcessedTableManager =
         bool timeBlocksRefs,
         bool tasksRefs,
         bool scheduleRevisionsRefs,
+        bool allocationDraftsRefs,
       })
     >;
 typedef $$UserPreferencesTableCreateCompanionBuilder =
@@ -16056,6 +16536,340 @@ typedef $$TemplateRecurrencesTableProcessedTableManager =
       TemplateRecurrence,
       PrefetchHooks Function()
     >;
+typedef $$AllocationDraftsTableCreateCompanionBuilder =
+    AllocationDraftsCompanion Function({
+      required String dayPlanId,
+      required int planRevision,
+      required int version,
+      required String allocationsJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AllocationDraftsTableUpdateCompanionBuilder =
+    AllocationDraftsCompanion Function({
+      Value<String> dayPlanId,
+      Value<int> planRevision,
+      Value<int> version,
+      Value<String> allocationsJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$AllocationDraftsTableReferences
+    extends
+        BaseReferences<
+          _$DayweftDatabase,
+          $AllocationDraftsTable,
+          AllocationDraft
+        > {
+  $$AllocationDraftsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DayPlansTable _dayPlanIdTable(_$DayweftDatabase db) =>
+      db.dayPlans.createAlias('allocation_drafts__day_plan_id__day_plans__id');
+
+  $$DayPlansTableProcessedTableManager get dayPlanId {
+    final $_column = $_itemColumn<String>('day_plan_id')!;
+
+    final manager = $$DayPlansTableTableManager(
+      $_db,
+      $_db.dayPlans,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_dayPlanIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AllocationDraftsTableFilterComposer
+    extends Composer<_$DayweftDatabase, $AllocationDraftsTable> {
+  $$AllocationDraftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get planRevision => $composableBuilder(
+    column: $table.planRevision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$DayPlansTableFilterComposer get dayPlanId {
+    final $$DayPlansTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dayPlanId,
+      referencedTable: $db.dayPlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DayPlansTableFilterComposer(
+            $db: $db,
+            $table: $db.dayPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationDraftsTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $AllocationDraftsTable> {
+  $$AllocationDraftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get planRevision => $composableBuilder(
+    column: $table.planRevision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$DayPlansTableOrderingComposer get dayPlanId {
+    final $$DayPlansTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dayPlanId,
+      referencedTable: $db.dayPlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DayPlansTableOrderingComposer(
+            $db: $db,
+            $table: $db.dayPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationDraftsTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $AllocationDraftsTable> {
+  $$AllocationDraftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get planRevision => $composableBuilder(
+    column: $table.planRevision,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$DayPlansTableAnnotationComposer get dayPlanId {
+    final $$DayPlansTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dayPlanId,
+      referencedTable: $db.dayPlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DayPlansTableAnnotationComposer(
+            $db: $db,
+            $table: $db.dayPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationDraftsTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $AllocationDraftsTable,
+          AllocationDraft,
+          $$AllocationDraftsTableFilterComposer,
+          $$AllocationDraftsTableOrderingComposer,
+          $$AllocationDraftsTableAnnotationComposer,
+          $$AllocationDraftsTableCreateCompanionBuilder,
+          $$AllocationDraftsTableUpdateCompanionBuilder,
+          (AllocationDraft, $$AllocationDraftsTableReferences),
+          AllocationDraft,
+          PrefetchHooks Function({bool dayPlanId})
+        > {
+  $$AllocationDraftsTableTableManager(
+    _$DayweftDatabase db,
+    $AllocationDraftsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AllocationDraftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AllocationDraftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AllocationDraftsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> dayPlanId = const Value.absent(),
+                Value<int> planRevision = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String> allocationsJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AllocationDraftsCompanion(
+                dayPlanId: dayPlanId,
+                planRevision: planRevision,
+                version: version,
+                allocationsJson: allocationsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String dayPlanId,
+                required int planRevision,
+                required int version,
+                required String allocationsJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AllocationDraftsCompanion.insert(
+                dayPlanId: dayPlanId,
+                planRevision: planRevision,
+                version: version,
+                allocationsJson: allocationsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AllocationDraftsTable, AllocationDraft>(table),
+                  $$AllocationDraftsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({dayPlanId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (dayPlanId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.dayPlanId,
+                                referencedTable:
+                                    $$AllocationDraftsTableReferences
+                                        ._dayPlanIdTable(db),
+                                referencedColumn:
+                                    $$AllocationDraftsTableReferences
+                                        ._dayPlanIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AllocationDraftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $AllocationDraftsTable,
+      AllocationDraft,
+      $$AllocationDraftsTableFilterComposer,
+      $$AllocationDraftsTableOrderingComposer,
+      $$AllocationDraftsTableAnnotationComposer,
+      $$AllocationDraftsTableCreateCompanionBuilder,
+      $$AllocationDraftsTableUpdateCompanionBuilder,
+      (AllocationDraft, $$AllocationDraftsTableReferences),
+      AllocationDraft,
+      PrefetchHooks Function({bool dayPlanId})
+    >;
 
 class $DayweftDatabaseManager {
   final _$DayweftDatabase _db;
@@ -16090,4 +16904,6 @@ class $DayweftDatabaseManager {
       $$SavedTemplatesTableTableManager(_db, _db.savedTemplates);
   $$TemplateRecurrencesTableTableManager get templateRecurrences =>
       $$TemplateRecurrencesTableTableManager(_db, _db.templateRecurrences);
+  $$AllocationDraftsTableTableManager get allocationDrafts =>
+      $$AllocationDraftsTableTableManager(_db, _db.allocationDrafts);
 }

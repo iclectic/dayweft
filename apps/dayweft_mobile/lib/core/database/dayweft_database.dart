@@ -273,6 +273,18 @@ class TemplateRecurrences extends Table {
   Set<Column<Object>> get primaryKey => {templateId};
 }
 
+/// Drafts are separate from the live plan until allocation application exists.
+class AllocationDrafts extends Table {
+  TextColumn get dayPlanId => text().references(DayPlans, #id)();
+  IntColumn get planRevision => integer()();
+  IntColumn get version => integer()();
+  TextColumn get allocationsJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {dayPlanId};
+}
+
 @DriftDatabase(
   tables: <Type>[
     DayPlans,
@@ -290,6 +302,7 @@ class TemplateRecurrences extends Table {
     CalendarConnections,
     SavedTemplates,
     TemplateRecurrences,
+    AllocationDrafts,
   ],
 )
 class DayweftDatabase extends _$DayweftDatabase {
@@ -298,7 +311,7 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration {
@@ -396,6 +409,9 @@ class DayweftDatabase extends _$DayweftDatabase {
         if (from < 14) {
           await migrator.addColumn(tasks, tasks.earliestStart);
           await migrator.addColumn(tasks, tasks.latestFinish);
+        }
+        if (from < 15) {
+          await migrator.createTable(allocationDrafts);
         }
       },
     );

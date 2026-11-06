@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Fragment draft storage checkpoint — 6 November 2026
+
+- Last completed slice: schema v15 stores per-day allocation drafts separately from live task assignments. Writes validate complete allocations and check plan and draft versions atomically; reopening preserves the draft and flags it stale after plan or validation changes. A real-row v14 upgrade preserves existing task data.
+- Changed files: mobile database schema and regenerated Drift output, planning repository, migration and file-backed allocation-draft tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: generation, formatting, mobile analysis and focused migration/draft tests, then `bash scripts/verify.sh` (127 mobile, 31 domain, 17 engine and 2 design tests passed; mobile domain/application 97.2%, domain 93.9%, engine 91.7%).
+- Outstanding defects and unfinished requirements: drafts do not alter a live plan and are not exposed in the UI. Real split allocations, recovery preview/application, durable undo and import/export remain unimplemented; split suggestions continue to be rejected. Buffer positioning and other 1.0 gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: produce concrete recovery fragments and integrate validated atomic live allocation persistence and durable undo, including stale, partial-write, deletion, import/export and restart tests before exposing the feature.
+
 ## Fragment validation foundation — 6 November 2026
 
 - Last completed slice: a pure Dart fragment model and complete-proposal validator checks identity, conservation of each planned task's estimate, split permissions, minimum durations, time bounds, capacity, overlap and predecessor order.
