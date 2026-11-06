@@ -142,3 +142,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: Reality Check reports manual placements outside bounds and recovery rejects invalid candidates; manual placement is not blocked. Whole-block enforcement is conservative until individual allocations exist. Full-device backups, DST/device testing, persisted task splits and remaining 1.0 gates remain open. No device or TalkBack verification is claimed.
 - Human action required: existing identity, upload signing, hosting, device and Play gates remain unchanged.
 - Exact next implementation task: design and implement persisted task fragment allocations with non-destructive migration, explicit preview and no-loss atomic apply/undo; cover dependency ordering, minimum fragments and migration/restart through real controller/repository tests.
+
+## Fragment validation foundation — 6 November 2026
+
+- Last completed slice: pure Dart allocation model and complete-proposal validator require planned task estimates to be conserved, respect split permission and minimum fragments, check placement/time bounds and deadlines, detect overlaps and capacity, and require predecessors to finish first.
+- Changed files: domain allocation model/export and tests, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: domain formatting, analysis and focused allocation tests; `bash scripts/verify.sh` passed (125 mobile, 31 domain, 17 engine and 2 design tests; all coverage gates passed).
+- Outstanding defects and unfinished requirements: allocations are not stored or connected to the engine, controller, previews, UI, import/export or durable undo; split proposals remain rejected. Reserved buffers have durations but no individual positions, so validation checks their capacity, not exact placement. Full-device backup, native integration and other release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: add non-destructive fragment storage with real-row migration and versioned atomic save/reopen tests, then integrate complete validated allocation proposals into recovery preview/apply/undo before exposing splitting.

@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Fragment validation foundation — 6 November 2026
+
+- Last completed slice: a pure Dart fragment model and complete-proposal validator checks identity, conservation of each planned task's estimate, split permissions, minimum durations, time bounds, capacity, overlap and predecessor order.
+- Changed files: `packages/dayweft_domain/lib/src/task_allocation.dart`, its export and tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: domain formatting, analysis and focused allocation tests; `bash scripts/verify.sh` passed (125 mobile, 31 domain, 17 engine and 2 design tests; all coverage gates passed).
+- Outstanding defects and unfinished requirements: fragment data has no storage, engine/controller integration, preview, UI, export or durable undo. Split proposals remain rejected. Buffer positions are not represented, so the validator checks buffer capacity only. All other 1.0 gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: implement forward-migrated fragment storage and atomic versioned persistence with real-row upgrade/reopen tests, then integrate validated preview/apply/undo before exposing the feature.
+
 ## Task-window persistence checkpoint — 6 November 2026
 
 - Last completed slice: task earliest-start/latest-finish bounds can be edited and persist through schema v14, task revision/undo and day import/export. Reality Check and recovery receive stored bounds; a real-row v13 migration test preserves existing tasks with unset bounds.
