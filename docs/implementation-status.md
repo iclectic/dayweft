@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Recurrence storage checkpoint — 6 November 2026
+
+- Last completed slice: schema v13 adds a local recurrence table. Rules, civil-date exceptions and versioned removal survive a database reopen; writes reject stale rule and template versions. A real-row v12 upgrade retains existing template data.
+- Changed files: `apps/dayweft_mobile/lib/core/database/dayweft_database.dart` and regenerated Drift output, recurrence repository and migration/repository tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: `dart run build_runner build`, formatting, mobile `flutter analyze`, focused migration and recurrence repository tests (10 passed), and `bash scripts/verify.sh` (114 mobile, 25 domain, 15 engine and 2 design tests passed). Coverage gates: mobile domain/application 96.8%, domain 90.2%, engine 90.2%.
+- Outstanding defects and unfinished requirements: no recurrence UI or occurrence preview/application/undo exists yet; stored rules do not change any plans. Complete backups, native integrations, hosted services and release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play requirements remain unchanged.
+- Exact next implementation task: connect selected-date occurrence preview and atomic version-checked application/undo, covering stale rules, duplicates and overnight schedules before exposing recurrence controls.
+
 ## Recurrence foundation — 6 November 2026
 
 - Last completed slice: a pure Dart weekly civil-date rule with inclusive start/end dates, excluded dates and validation. It is not yet connected to the application.

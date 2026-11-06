@@ -97,3 +97,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: this model is not persisted or connected to preview/application, and does not constitute a recurring-template feature. Schema migration, exception editing, occurrence identities, stale guards, atomic undo, overnight and full-chain tests remain required, alongside the other open 1.0 gaps above.
 - Human action required: existing identity, signing, hosting, device and Play gates remain unchanged.
 - Exact next implementation task: persist versioned recurrence rules and exceptions using a non-destructive migration and real-row upgrade test; connect occurrence preview to the existing confirmation and undo path before exposing controls.
+
+## Recurrence storage checkpoint — 6 November 2026
+
+- Last completed slice: schema v13 adds local recurrence storage; versioned rules and excluded civil dates survive reopening. Removal keeps a versioned tombstone, and stale rule or template versions cannot overwrite current state.
+- Changed files: database schema and regenerated Drift output, recurrence repository, migration and repository tests, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: mobile `dart run build_runner build`, formatting, `flutter analyze`, focused migration/repository tests (10 passed), and `bash scripts/verify.sh` (114 mobile, 25 domain, 15 engine and 2 design tests passed). Coverage gates: mobile domain/application 96.8%, domain 90.2%, engine 90.2%.
+- Outstanding defects and unfinished requirements: recurrence is not exposed in the UI or connected to occurrence previews, duplicate protection and durable application/undo. Date exceptions only suppress future reviewed occurrences; no existing day is modified. Full backup, native integrations and other 1.0 gates remain open.
+- Human action required: existing identity, release signing, hosting, device and Play gates remain unchanged.
+- Exact next implementation task: connect versioned recurrence occurrences to selected-date previews and atomic revision/undo, including rule-change staleness, duplicate and overnight tests, before adding recurrence controls.

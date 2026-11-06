@@ -7,6 +7,40 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
+    'version 12 upgrade preserves templates and creates recurrence storage',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v12-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 11, 6);
+      await old
+          .into(old.savedTemplates)
+          .insert(
+            SavedTemplatesCompanion.insert(
+              id: 'user:existing',
+              name: 'Existing pattern',
+              blocksJson: '[]',
+              version: const Value(4),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await old.customStatement('DROP TABLE template_recurrences');
+      await old.customStatement('PRAGMA user_version = 12');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final row = await upgraded.select(upgraded.savedTemplates).getSingle();
+      expect(row.name, 'Existing pattern');
+      expect(row.version, 4);
+      expect(
+        await upgraded.select(upgraded.templateRecurrences).get(),
+        isEmpty,
+      );
+    },
+  );
+  test(
     'version 11 migration preserves focus state and creates an empty template library',
     () async {
       final directory = await Directory.systemTemp.createTemp('dayweft-v11-');
@@ -37,6 +71,7 @@ void main() {
             ),
           );
       await old.customStatement('DROP TABLE saved_templates');
+      await old.customStatement('DROP TABLE template_recurrences');
       await old.customStatement('PRAGMA user_version = 11');
       await old.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -55,12 +90,12 @@ void main() {
   );
 
   test(
-    'database schema starts at version 12 and creates core tables',
+    'database schema starts at version 13 and creates core tables',
     () async {
       final database = DayweftDatabase.forTesting(NativeDatabase.memory());
       addTearDown(database.close);
 
-      expect(database.schemaVersion, 12);
+      expect(database.schemaVersion, 13);
 
       final tables = await database
           .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
@@ -128,7 +163,7 @@ void main() {
     final version = await database
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 12);
+    expect(version.read<int>('user_version'), 13);
     final legacy = await database
         .select(database.estimationRecords)
         .getSingle();
@@ -172,6 +207,7 @@ void main() {
     }
     await previous.customStatement('DROP TABLE focus_session_states');
     await previous.customStatement('DROP TABLE saved_templates');
+    await previous.customStatement('DROP TABLE template_recurrences');
     await previous.customStatement('PRAGMA user_version = 8');
     await previous.close();
     final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -224,6 +260,7 @@ void main() {
       );
       await previous.customStatement('DROP TABLE focus_session_states');
       await previous.customStatement('DROP TABLE saved_templates');
+      await previous.customStatement('DROP TABLE template_recurrences');
       await previous.customStatement('PRAGMA user_version = 9');
       await previous.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -261,6 +298,7 @@ void main() {
           );
       await previous.customStatement('DROP TABLE focus_session_states');
       await previous.customStatement('DROP TABLE saved_templates');
+      await previous.customStatement('DROP TABLE template_recurrences');
       await previous.customStatement('PRAGMA user_version = 10');
       await previous.close();
       final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -269,7 +307,7 @@ void main() {
       expect(session.actualMinutes, 10);
       expect(session.title, 'Keep my record');
       expect(await upgraded.select(upgraded.focusSessionStates).get(), isEmpty);
-      expect(upgraded.schemaVersion, 12);
+      expect(upgraded.schemaVersion, 13);
     },
   );
 }

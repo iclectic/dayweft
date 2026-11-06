@@ -9118,6 +9118,328 @@ class SavedTemplatesCompanion extends UpdateCompanion<SavedTemplate> {
   }
 }
 
+class $TemplateRecurrencesTable extends TemplateRecurrences
+    with TableInfo<$TemplateRecurrencesTable, TemplateRecurrence> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TemplateRecurrencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _templateIdMeta = const VerificationMeta(
+    'templateId',
+  );
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+    'template_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ruleJsonMeta = const VerificationMeta(
+    'ruleJson',
+  );
+  @override
+  late final GeneratedColumn<String> ruleJson = GeneratedColumn<String>(
+    'rule_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    templateId,
+    ruleJson,
+    version,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'template_recurrences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TemplateRecurrence> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('template_id')) {
+      context.handle(
+        _templateIdMeta,
+        templateId.isAcceptableOrUnknown(data['template_id']!, _templateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    if (data.containsKey('rule_json')) {
+      context.handle(
+        _ruleJsonMeta,
+        ruleJson.isAcceptableOrUnknown(data['rule_json']!, _ruleJsonMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {templateId};
+  @override
+  TemplateRecurrence map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TemplateRecurrence(
+      templateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_id'],
+      )!,
+      ruleJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rule_json'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TemplateRecurrencesTable createAlias(String alias) {
+    return $TemplateRecurrencesTable(attachedDatabase, alias);
+  }
+}
+
+class TemplateRecurrence extends DataClass
+    implements Insertable<TemplateRecurrence> {
+  final String templateId;
+  final String? ruleJson;
+  final int version;
+  final DateTime updatedAt;
+  const TemplateRecurrence({
+    required this.templateId,
+    this.ruleJson,
+    required this.version,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['template_id'] = Variable<String>(templateId);
+    if (!nullToAbsent || ruleJson != null) {
+      map['rule_json'] = Variable<String>(ruleJson);
+    }
+    map['version'] = Variable<int>(version);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TemplateRecurrencesCompanion toCompanion(bool nullToAbsent) {
+    return TemplateRecurrencesCompanion(
+      templateId: Value(templateId),
+      ruleJson: ruleJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ruleJson),
+      version: Value(version),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TemplateRecurrence.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TemplateRecurrence(
+      templateId: serializer.fromJson<String>(json['templateId']),
+      ruleJson: serializer.fromJson<String?>(json['ruleJson']),
+      version: serializer.fromJson<int>(json['version']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'templateId': serializer.toJson<String>(templateId),
+      'ruleJson': serializer.toJson<String?>(ruleJson),
+      'version': serializer.toJson<int>(version),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TemplateRecurrence copyWith({
+    String? templateId,
+    Value<String?> ruleJson = const Value.absent(),
+    int? version,
+    DateTime? updatedAt,
+  }) => TemplateRecurrence(
+    templateId: templateId ?? this.templateId,
+    ruleJson: ruleJson.present ? ruleJson.value : this.ruleJson,
+    version: version ?? this.version,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TemplateRecurrence copyWithCompanion(TemplateRecurrencesCompanion data) {
+    return TemplateRecurrence(
+      templateId: data.templateId.present
+          ? data.templateId.value
+          : this.templateId,
+      ruleJson: data.ruleJson.present ? data.ruleJson.value : this.ruleJson,
+      version: data.version.present ? data.version.value : this.version,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TemplateRecurrence(')
+          ..write('templateId: $templateId, ')
+          ..write('ruleJson: $ruleJson, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(templateId, ruleJson, version, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TemplateRecurrence &&
+          other.templateId == this.templateId &&
+          other.ruleJson == this.ruleJson &&
+          other.version == this.version &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TemplateRecurrencesCompanion extends UpdateCompanion<TemplateRecurrence> {
+  final Value<String> templateId;
+  final Value<String?> ruleJson;
+  final Value<int> version;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const TemplateRecurrencesCompanion({
+    this.templateId = const Value.absent(),
+    this.ruleJson = const Value.absent(),
+    this.version = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TemplateRecurrencesCompanion.insert({
+    required String templateId,
+    this.ruleJson = const Value.absent(),
+    this.version = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : templateId = Value(templateId),
+       updatedAt = Value(updatedAt);
+  static Insertable<TemplateRecurrence> custom({
+    Expression<String>? templateId,
+    Expression<String>? ruleJson,
+    Expression<int>? version,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (templateId != null) 'template_id': templateId,
+      if (ruleJson != null) 'rule_json': ruleJson,
+      if (version != null) 'version': version,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TemplateRecurrencesCompanion copyWith({
+    Value<String>? templateId,
+    Value<String?>? ruleJson,
+    Value<int>? version,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return TemplateRecurrencesCompanion(
+      templateId: templateId ?? this.templateId,
+      ruleJson: ruleJson ?? this.ruleJson,
+      version: version ?? this.version,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (ruleJson.present) {
+      map['rule_json'] = Variable<String>(ruleJson.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TemplateRecurrencesCompanion(')
+          ..write('templateId: $templateId, ')
+          ..write('ruleJson: $ruleJson, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DayweftDatabase extends GeneratedDatabase {
   _$DayweftDatabase(QueryExecutor e) : super(e);
   $DayweftDatabaseManager get managers => $DayweftDatabaseManager(this);
@@ -9141,6 +9463,8 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
   late final $CalendarConnectionsTable calendarConnections =
       $CalendarConnectionsTable(this);
   late final $SavedTemplatesTable savedTemplates = $SavedTemplatesTable(this);
+  late final $TemplateRecurrencesTable templateRecurrences =
+      $TemplateRecurrencesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9160,6 +9484,7 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
     shareLinks,
     calendarConnections,
     savedTemplates,
+    templateRecurrences,
   ];
 }
 
@@ -15368,6 +15693,216 @@ typedef $$SavedTemplatesTableProcessedTableManager =
       SavedTemplate,
       PrefetchHooks Function()
     >;
+typedef $$TemplateRecurrencesTableCreateCompanionBuilder =
+    TemplateRecurrencesCompanion Function({
+      required String templateId,
+      Value<String?> ruleJson,
+      Value<int> version,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$TemplateRecurrencesTableUpdateCompanionBuilder =
+    TemplateRecurrencesCompanion Function({
+      Value<String> templateId,
+      Value<String?> ruleJson,
+      Value<int> version,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$TemplateRecurrencesTableFilterComposer
+    extends Composer<_$DayweftDatabase, $TemplateRecurrencesTable> {
+  $$TemplateRecurrencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruleJson => $composableBuilder(
+    column: $table.ruleJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TemplateRecurrencesTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $TemplateRecurrencesTable> {
+  $$TemplateRecurrencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruleJson => $composableBuilder(
+    column: $table.ruleJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TemplateRecurrencesTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $TemplateRecurrencesTable> {
+  $$TemplateRecurrencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ruleJson =>
+      $composableBuilder(column: $table.ruleJson, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$TemplateRecurrencesTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $TemplateRecurrencesTable,
+          TemplateRecurrence,
+          $$TemplateRecurrencesTableFilterComposer,
+          $$TemplateRecurrencesTableOrderingComposer,
+          $$TemplateRecurrencesTableAnnotationComposer,
+          $$TemplateRecurrencesTableCreateCompanionBuilder,
+          $$TemplateRecurrencesTableUpdateCompanionBuilder,
+          (
+            TemplateRecurrence,
+            BaseReferences<
+              _$DayweftDatabase,
+              $TemplateRecurrencesTable,
+              TemplateRecurrence
+            >,
+          ),
+          TemplateRecurrence,
+          PrefetchHooks Function()
+        > {
+  $$TemplateRecurrencesTableTableManager(
+    _$DayweftDatabase db,
+    $TemplateRecurrencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TemplateRecurrencesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TemplateRecurrencesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$TemplateRecurrencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> templateId = const Value.absent(),
+                Value<String?> ruleJson = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TemplateRecurrencesCompanion(
+                templateId: templateId,
+                ruleJson: ruleJson,
+                version: version,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String templateId,
+                Value<String?> ruleJson = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => TemplateRecurrencesCompanion.insert(
+                templateId: templateId,
+                ruleJson: ruleJson,
+                version: version,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TemplateRecurrencesTable, TemplateRecurrence>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $TemplateRecurrencesTable,
+                    TemplateRecurrence
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TemplateRecurrencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $TemplateRecurrencesTable,
+      TemplateRecurrence,
+      $$TemplateRecurrencesTableFilterComposer,
+      $$TemplateRecurrencesTableOrderingComposer,
+      $$TemplateRecurrencesTableAnnotationComposer,
+      $$TemplateRecurrencesTableCreateCompanionBuilder,
+      $$TemplateRecurrencesTableUpdateCompanionBuilder,
+      (
+        TemplateRecurrence,
+        BaseReferences<
+          _$DayweftDatabase,
+          $TemplateRecurrencesTable,
+          TemplateRecurrence
+        >,
+      ),
+      TemplateRecurrence,
+      PrefetchHooks Function()
+    >;
 
 class $DayweftDatabaseManager {
   final _$DayweftDatabase _db;
@@ -15400,4 +15935,6 @@ class $DayweftDatabaseManager {
       $$CalendarConnectionsTableTableManager(_db, _db.calendarConnections);
   $$SavedTemplatesTableTableManager get savedTemplates =>
       $$SavedTemplatesTableTableManager(_db, _db.savedTemplates);
+  $$TemplateRecurrencesTableTableManager get templateRecurrences =>
+      $$TemplateRecurrencesTableTableManager(_db, _db.templateRecurrences);
 }

@@ -261,6 +261,16 @@ class SavedTemplates extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class TemplateRecurrences extends Table {
+  TextColumn get templateId => text()();
+  TextColumn get ruleJson => text().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {templateId};
+}
+
 @DriftDatabase(
   tables: <Type>[
     DayPlans,
@@ -277,6 +287,7 @@ class SavedTemplates extends Table {
     ShareLinks,
     CalendarConnections,
     SavedTemplates,
+    TemplateRecurrences,
   ],
 )
 class DayweftDatabase extends _$DayweftDatabase {
@@ -285,7 +296,7 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration {
@@ -376,6 +387,9 @@ class DayweftDatabase extends _$DayweftDatabase {
         }
         if (from < 12) {
           await migrator.createTable(savedTemplates);
+        }
+        if (from < 13) {
+          await migrator.createTable(templateRecurrences);
         }
       },
     );
