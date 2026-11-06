@@ -33,6 +33,22 @@ String? taskAllocationIssue({
   final allocationIds = <String>{};
   final byTask = <String, List<TaskAllocation>>{};
   final byBlock = <String, List<TaskAllocation>>{};
+  final fixedOwners = <String, String>{};
+  for (final block in blocks.where((block) => block.type == BlockType.fixed)) {
+    for (final id in block.taskIds) {
+      if (fixedOwners.containsKey(id)) {
+        return 'A task cannot belong to more than one fixed commitment.';
+      }
+      fixedOwners[id] = block.id;
+    }
+  }
+  final sortedBlocks = [...blocks]
+    ..sort((a, b) => a.window.start.compareTo(b.window.start));
+  for (var i = 1; i < sortedBlocks.length; i++) {
+    if (sortedBlocks[i - 1].window.overlaps(sortedBlocks[i].window)) {
+      return 'Overlapping blocks must be resolved before allocating tasks.';
+    }
+  }
   for (final allocation in allocations) {
     final task = taskById[allocation.taskId];
     final block = blockById[allocation.blockId];
@@ -44,11 +60,23 @@ String? taskAllocationIssue({
       return 'Every allocation must identify a distinct allocation, planned task and existing block.';
     }
     final window = allocation.window;
+    final fixedOwner = fixedOwners[task.id];
+    if ((fixedOwner != null && fixedOwner != block.id) ||
+        (block.type == BlockType.fixed && fixedOwner != block.id)) {
+      return 'Tasks cannot be moved into or out of a fixed commitment.';
+    }
     if (window.duration <= Duration.zero ||
         window.duration.inMicroseconds % Duration.microsecondsPerMinute != 0 ||
         window.start.isBefore(block.window.start) ||
         window.end.isAfter(block.window.end)) {
       return 'Each allocation must fit inside its block and use whole, positive minutes.';
+    }
+    // Until buffer positions are represented, conservatively reserve the end
+    // of the block. This matches the proposal generator's assumption.
+    if (window.end.isAfter(
+      block.window.end.subtract(block.reservedBufferDuration),
+    )) {
+      return 'An allocation overlaps the time reserved for block buffers.';
     }
     if ((task.earliestStart != null &&
             window.start.isBefore(task.earliestStart!)) ||

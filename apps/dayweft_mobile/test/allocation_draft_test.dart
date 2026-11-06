@@ -9,6 +9,76 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('draft cannot move a task out of a fixed commitment', () async {
+    final db = DayweftDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+    final day = DateTime(2026, 11, 2);
+    final repository = LocalPlanningRepository(db, planningDate: day);
+    await repository.addBlock(
+      title: 'Fixed',
+      startsAt: DateTime(2026, 11, 2, 9),
+      endsAt: DateTime(2026, 11, 2, 10),
+      blockType: 'fixed',
+    );
+    await repository.addBlock(
+      title: 'Flexible',
+      startsAt: DateTime(2026, 11, 2, 11),
+      endsAt: DateTime(2026, 11, 2, 12),
+      blockType: 'flexible',
+    );
+    var snapshot = await repository.loadSelectedDay();
+    await repository.addTaskToBlock(
+      blockId: snapshot.blocks.first.id,
+      title: 'Protected',
+      estimatedMinutes: 60,
+    );
+    snapshot = await repository.loadSelectedDay();
+    final task = snapshot.tasks.single;
+    await repository.updateTask(
+      taskId: task.id,
+      expectedVersion: task.localVersion,
+      details: domain.TaskDetails(
+        title: task.title,
+        estimatedMinutes: 60,
+        canSplit: true,
+        minimumUsefulMinutes: 20,
+      ),
+    );
+    snapshot = await repository.loadSelectedDay();
+    final pieces = [
+      for (var i = 0; i < 2; i++)
+        domain.TaskAllocation(
+          id: 'part-$i',
+          taskId: task.id,
+          blockId: snapshot.blocks[i].id,
+          window: domain.TimeWindow(
+            start: snapshot.blocks[i].startsAt,
+            end: snapshot.blocks[i].startsAt.add(const Duration(minutes: 30)),
+          ),
+        ),
+    ];
+    await expectLater(
+      repository.saveAllocationDraft(
+        expectedPlanId: snapshot.plan.id,
+        expectedPlanRevision: snapshot.plan.revision,
+        expectedDraftVersion: null,
+        allocations: pieces,
+      ),
+      throwsA(
+        isA<PlanningFailure>().having(
+          (e) => e.code,
+          'code',
+          PlanningFailureCode.constraintViolation,
+        ),
+      ),
+    );
+    expect(await repository.loadAllocationDraft(), isNull);
+    expect(
+      (await repository.loadSelectedDay()).tasks.single.blockId,
+      snapshot.blocks.first.id,
+    );
+  });
+
   test(
     'draft persists atomically without changing the plan and rejects stale writes',
     () async {

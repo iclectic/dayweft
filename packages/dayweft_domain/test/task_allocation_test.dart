@@ -161,6 +161,85 @@ void main() {
       isNotNull,
     );
   });
+
+  test(
+    'does not allocate inside reserved time even when total capacity fits',
+    () {
+      final reserved = TimeBlock(
+        id: 'morning',
+        title: 'Morning',
+        window: TimeWindow(start: at(9), end: at(10)),
+        type: BlockType.flexible,
+        buffers: [
+          const DayweftBuffer(
+            id: 'buffer',
+            type: BufferType.recovery,
+            duration: Duration(minutes: 20),
+          ),
+        ],
+      );
+      expect(
+        issue(
+          [task()],
+          [part('a', 'task', 'morning', at(9, 30), at(10)), fragments.last],
+          windows: [reserved, blocks.last],
+        ),
+        isNotNull,
+      );
+    },
+  );
+
+  test('fixed commitments cannot lose or receive unrelated allocated work', () {
+    final fixed = TimeBlock(
+      id: 'morning',
+      title: 'Fixed',
+      window: TimeWindow(start: at(9), end: at(10)),
+      type: BlockType.fixed,
+      taskIds: const ['task'],
+    );
+    expect(
+      issue([task()], fragments, windows: [fixed, blocks.last]),
+      isNotNull,
+    );
+    final unrelated = TimeBlock(
+      id: 'morning',
+      title: 'Fixed',
+      window: TimeWindow(start: at(9), end: at(10)),
+      type: BlockType.fixed,
+    );
+    expect(
+      issue([task()], fragments, windows: [unrelated, blocks.last]),
+      isNotNull,
+    );
+    expect(
+      issue(
+        [task(split: false)],
+        [part('a', 'task', 'morning', at(9), at(10))],
+        windows: [fixed, blocks.last],
+      ),
+      isNull,
+    );
+  });
+
+  test(
+    'overlapping plan blocks are rejected even when allocations do not overlap',
+    () {
+      final overlapping = TimeBlock(
+        id: 'later',
+        title: 'Overlap',
+        window: TimeWindow(start: at(9, 45), end: at(11, 30)),
+        type: BlockType.flexible,
+      );
+      expect(
+        issue(
+          [task()],
+          [fragments.first, part('b', 'task', 'later', at(10), at(10, 30))],
+          windows: [blocks.first, overlapping],
+        ),
+        isNotNull,
+      );
+    },
+  );
   test(
     'predecessors must be completed or fully finish before dependent work',
     () {

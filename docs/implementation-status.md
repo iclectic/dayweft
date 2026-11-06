@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Fragment protection checkpoint — 6 November 2026
+
+- Last completed slice: allocation validation protects fixed commitments, rejects overlapping blocks and reserves buffer time at block ends. The real SQLite draft-save path rejects an attempted move out of a fixed commitment without saving a draft or changing the task.
+- Changed files: domain allocation validator/tests, mobile allocation-draft repository test, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed (128 mobile, 34 domain, 23 engine and 2 design tests); after adding the repository-chain regression, `flutter test test/allocation_draft_test.dart` passed (2 tests). The full run preceded that test-only addition.
+- Outstanding defects and unfinished requirements: live fragments, UI, disruption-aware recovery, atomic apply/undo and import/export remain unimplemented. Block-end buffer reservation is conservative because individual buffer positions are not stored. Other 1.0 gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: implement live fragment representation across edits, completion, deletion, rendering and import/export, then integrate disruption-aware recovery and atomic apply/undo with real-chain no-loss tests.
+
 ## Concrete allocation proposal checkpoint — 6 November 2026
 
 - Last completed slice: the engine can construct a deterministic concrete allocation proposal and the controller can preview it without altering the plan; the repository can save it as a validated draft. A real controller/repository test covers the path.
