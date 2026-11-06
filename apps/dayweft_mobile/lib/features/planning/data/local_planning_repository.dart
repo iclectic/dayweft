@@ -88,12 +88,14 @@ class StoredAllocationDraft {
     required this.planRevision,
     required this.version,
     required this.isStale,
+    this.unavailable,
     required List<domain.TaskAllocation> allocations,
   }) : allocations = List.unmodifiable(allocations);
   final String planId;
   final int planRevision;
   final int version;
   final bool isStale;
+  final domain.TimeWindow? unavailable;
   final List<domain.TaskAllocation> allocations;
 }
 
@@ -101,10 +103,12 @@ class AllocationProposal {
   AllocationProposal({
     required this.planId,
     required this.planRevision,
+    this.unavailable,
     required List<domain.TaskAllocation> allocations,
   }) : allocations = List.unmodifiable(allocations);
   final String planId;
   final int planRevision;
+  final domain.TimeWindow? unavailable;
   final List<domain.TaskAllocation> allocations;
 }
 
@@ -1447,17 +1451,48 @@ class LocalPlanningRepository {
   }
 
   /// Computes a proposal only. A null result is not proof of infeasibility.
-  Future<AllocationProposal?> previewAllocationProposal() async {
+  Future<AllocationProposal?> previewAllocationProposal({
+    DateTime? unavailableStart,
+    int? unavailableMinutes,
+  }) async {
+    if ((unavailableStart == null) != (unavailableMinutes == null) ||
+        (unavailableMinutes != null &&
+            (unavailableMinutes < 1 || unavailableMinutes > 1440))) {
+      throw const PlanningFailure(
+        PlanningFailureCode.invalidInput,
+        'Provide a start and between 1 and 1440 unavailable minutes.',
+      );
+    }
+    final unavailable = unavailableStart == null
+        ? null
+        : domain.TimeWindow(
+            start: unavailableStart,
+            end: unavailableStart.add(Duration(minutes: unavailableMinutes!)),
+          );
     final snapshot = await loadSelectedDay();
     final plan = _toDomainPlan(snapshot);
-    final allocations = await Isolate.run(() => proposeTaskAllocations(plan));
+    final allocations = await Isolate.run(
+      () => proposeTaskAllocations(plan, unavailable: unavailable),
+    );
     if (allocations == null) return null;
     return AllocationProposal(
       planId: snapshot.plan.id,
       planRevision: snapshot.plan.revision,
+      unavailable: unavailable,
       allocations: allocations,
     );
   }
+
+  Future<StoredAllocationDraft> saveAllocationProposal({
+    required AllocationProposal proposal,
+    required int? expectedDraftVersion,
+  }) => saveAllocationDraft(
+    expectedPlanId: proposal.planId,
+    expectedPlanRevision: proposal.planRevision,
+    expectedDraftVersion: expectedDraftVersion,
+    allocations: proposal.allocations,
+    unavailable: proposal.unavailable,
+  );
 
   /// Stores a reviewed draft only; it does not allocate tasks or change a plan.
   Future<StoredAllocationDraft> saveAllocationDraft({
@@ -1465,6 +1500,7 @@ class LocalPlanningRepository {
     required int expectedPlanRevision,
     required int? expectedDraftVersion,
     required List<domain.TaskAllocation> allocations,
+    domain.TimeWindow? unavailable,
   }) => _database.transaction(() async {
     final snapshot = await loadSelectedDay();
     if (snapshot.plan.id != expectedPlanId ||
@@ -1493,6 +1529,12 @@ class LocalPlanningRepository {
       );
     }
     final plan = _toDomainPlan(snapshot);
+    if (_unavailableIssue(plan, allocations, unavailable)) {
+      throw const PlanningFailure(
+        PlanningFailureCode.constraintViolation,
+        'The unavailable time conflicts with the allocations or a fixed commitment.',
+      );
+    }
     final issue = domain.taskAllocationIssue(
       tasks: plan.tasks,
       blocks: plan.blocks,
@@ -1511,6 +1553,12 @@ class LocalPlanningRepository {
             version: version,
             allocationsJson: jsonEncode({
               'formatVersion': 1,
+              'unavailable': unavailable == null
+                  ? null
+                  : {
+                      'start': unavailable.start.toIso8601String(),
+                      'end': unavailable.end.toIso8601String(),
+                    },
               'allocations': [
                 for (final item in allocations)
                   {
@@ -1530,6 +1578,7 @@ class LocalPlanningRepository {
       planRevision: snapshot.plan.revision,
       version: version,
       isStale: false,
+      unavailable: unavailable,
       allocations: allocations,
     );
   });
@@ -1558,6 +1607,17 @@ class LocalPlanningRepository {
           ),
         );
       }).toList();
+      final rawUnavailable = json['unavailable'];
+      final domain.TimeWindow? unavailable;
+      if (rawUnavailable == null) {
+        unavailable = null;
+      } else {
+        final bounds = rawUnavailable as Map<String, dynamic>;
+        unavailable = domain.TimeWindow(
+          start: DateTime.parse(bounds['start'] as String),
+          end: DateTime.parse(bounds['end'] as String),
+        );
+      }
       final plan = _toDomainPlan(snapshot);
       final issue = domain.taskAllocationIssue(
         tasks: plan.tasks,
@@ -1568,7 +1628,11 @@ class LocalPlanningRepository {
         planId: row.dayPlanId,
         planRevision: row.planRevision,
         version: row.version,
-        isStale: row.planRevision != snapshot.plan.revision || issue != null,
+        isStale:
+            row.planRevision != snapshot.plan.revision ||
+            issue != null ||
+            _unavailableIssue(plan, allocations, unavailable),
+        unavailable: unavailable,
         allocations: allocations,
       );
     } on Object {
@@ -1578,6 +1642,21 @@ class LocalPlanningRepository {
       );
     }
   }
+
+  bool _unavailableIssue(
+    domain.DayPlan plan,
+    List<domain.TaskAllocation> allocations,
+    domain.TimeWindow? unavailable,
+  ) =>
+      unavailable != null &&
+      (unavailable.duration <= Duration.zero ||
+          unavailable.duration > const Duration(days: 1) ||
+          allocations.any((part) => part.window.overlaps(unavailable)) ||
+          plan.blocks.any(
+            (block) =>
+                block.type == domain.BlockType.fixed &&
+                block.window.overlaps(unavailable),
+          ));
 
   Future<ReweaveResult> reweaveToday({
     required domain.DisruptionType disruptionType,

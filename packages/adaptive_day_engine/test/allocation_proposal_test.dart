@@ -27,6 +27,62 @@ DayPlan plan(List<TimeBlock> blocks, List<DayweftTask> tasks) => DayPlan(
 
 void main() {
   test(
+    'disruption changes fragment placement and never overlaps protected time',
+    () {
+      final input = plan(
+        [
+          block('one', 9, 10, tasks: ['task']),
+          block('two', 11, 12),
+        ],
+        [
+          const DayweftTask(
+            id: 'task',
+            title: 'Work',
+            estimatedDuration: Duration(minutes: 90),
+            canSplit: true,
+            minimumUsefulDuration: Duration(minutes: 20),
+            status: TaskStatus.planned,
+          ),
+        ],
+      );
+      final busy = TimeWindow(start: at(9), end: at(9, 30));
+      final original = proposeTaskAllocations(input)!;
+      final adjusted = proposeTaskAllocations(input, unavailable: busy)!;
+      expect(original.first.window.start, at(9));
+      expect(adjusted.first.window.start, at(9, 30));
+      expect(adjusted.every((part) => !part.window.overlaps(busy)), isTrue);
+      expect(adjusted.map((part) => part.window.duration), [
+        const Duration(minutes: 30),
+        const Duration(hours: 1),
+      ]);
+      expect(input.blocks.first.taskIds, ['task']);
+    },
+  );
+  test('fixed conflict and invalid disruption do not yield a proposal', () {
+    final input = plan([block('meeting', 9, 10, type: BlockType.fixed)], []);
+    expect(
+      proposeTaskAllocations(
+        input,
+        unavailable: TimeWindow(start: at(9, 30), end: at(10, 30)),
+      ),
+      isNull,
+    );
+    expect(
+      proposeTaskAllocations(
+        input,
+        unavailable: TimeWindow(start: at(10), end: at(10)),
+      ),
+      isNull,
+    );
+    expect(
+      proposeTaskAllocations(
+        input,
+        unavailable: TimeWindow(start: at(10), end: at(11)),
+      ),
+      isNotNull,
+    );
+  });
+  test(
     'produces deterministic concrete fragments without mutating the plan',
     () {
       final input = plan(

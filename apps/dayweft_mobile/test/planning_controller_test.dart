@@ -63,22 +63,35 @@ void main() {
         ),
       );
       final before = snapshot();
-      final proposal = (await controller.previewAllocationProposal())!;
+      await expectLater(
+        controller.previewAllocationProposal(
+          unavailableStart: nine,
+          unavailableMinutes: 0,
+        ),
+        throwsA(isA<Exception>()),
+      );
+      final proposal = (await controller.previewAllocationProposal(
+        unavailableStart: nine,
+        unavailableMinutes: 30,
+      ))!;
       expect(proposal.allocations, hasLength(2));
       expect(snapshot().tasks.single.blockId, blockId);
       expect(snapshot().plan.revision, before.plan.revision);
       final saved = await container
           .read(localPlanningRepositoryProvider)
-          .saveAllocationDraft(
-            expectedPlanId: proposal.planId,
-            expectedPlanRevision: proposal.planRevision,
+          .saveAllocationProposal(
+            proposal: proposal,
             expectedDraftVersion: null,
-            allocations: proposal.allocations,
           );
       expect(saved.allocations.map((part) => part.window.duration), [
-        const Duration(hours: 1),
         const Duration(minutes: 30),
+        const Duration(hours: 1),
       ]);
+      final restored = (await container
+          .read(localPlanningRepositoryProvider)
+          .loadAllocationDraft())!;
+      expect(restored.unavailable!.start, nine);
+      expect(restored.unavailable!.end, nine.add(const Duration(minutes: 30)));
       expect(snapshot().tasks.single.blockId, blockId);
     },
   );

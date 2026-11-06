@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Disruption-aware allocation proposal — 6 November 2026
+
+- Last completed slice: allocation proposals can account for an explicit unavailable interval, preserve fixed commitments and persist that interval with a validated draft. The controller/repository test confirms the interval changes fragment placement without changing the live plan.
+- Changed files: adaptive allocation generator/tests, planning controller/repository and their controller/draft tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed all tests (129 mobile, 34 domain, 25 engine, 2 design; mobile domain/application 97.2%, domain 94.1%, engine 92.7%). One engine lint notice from that run was fixed; engine formatting, analysis and focused proposal tests then passed with no issues.
+- Outstanding defects and unfinished requirements: this API is not yet connected to user-facing Reweave. Live fragment persistence, editing, deletion, display, import/export and atomic application/undo are not implemented; split applications remain rejected. Other release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: live fragment representation across task lifecycle and import/export, then explicit disruption-aware Reweave preview and atomic apply/undo with no-loss real-chain coverage.
+
 ## Fragment protection checkpoint — 6 November 2026
 
 - Last completed slice: allocation validation protects fixed commitments, rejects overlapping blocks and reserves buffer time at block ends. The real SQLite draft-save path rejects an attempted move out of a fixed commitment without saving a draft or changing the task.

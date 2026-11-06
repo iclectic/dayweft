@@ -6,8 +6,12 @@ import 'package:dayweft_domain/dayweft_domain.dart';
 /// search cannot produce one. Null is not proof that no valid plan exists.
 /// Fixed blocks are available only to tasks already assigned to them. Buffers
 /// reserve the end of each block because their exact placement is not stored.
-List<TaskAllocation>? proposeTaskAllocations(DayPlan plan) {
+List<TaskAllocation>? proposeTaskAllocations(
+  DayPlan plan, {
+  TimeWindow? unavailable,
+}) {
   if (plan.workingWindow.duration <= Duration.zero) return null;
+  if (unavailable != null && unavailable.duration <= Duration.zero) return null;
   final tasks =
       plan.tasks.where((task) => task.status == TaskStatus.planned).toList()
         ..sort((a, b) => a.id.compareTo(b.id));
@@ -29,7 +33,10 @@ List<TaskAllocation>? proposeTaskAllocations(DayPlan plan) {
         (block.type != BlockType.fixed &&
             (block.window.start.isBefore(plan.workingWindow.start) ||
                 block.window.end.isAfter(plan.workingWindow.end))) ||
-        (i > 0 && blocks[i - 1].window.overlaps(block.window))) {
+        (i > 0 && blocks[i - 1].window.overlaps(block.window)) ||
+        (block.type == BlockType.fixed &&
+            unavailable != null &&
+            block.window.overlaps(unavailable))) {
       return null;
     }
   }
@@ -81,11 +88,15 @@ List<TaskAllocation>? proposeTaskAllocations(DayPlan plan) {
       }
       var cursor = block.window.start;
       final usableEnd = block.window.end.subtract(block.reservedBufferDuration);
-      final occupied =
-          allocations.where((item) => item.blockId == block.id).toList()
-            ..sort((a, b) => a.window.start.compareTo(b.window.start));
+      final occupied = [
+        ...allocations
+            .where((item) => item.blockId == block.id)
+            .map((item) => item.window),
+        if (unavailable != null && unavailable.overlaps(block.window))
+          unavailable,
+      ]..sort((a, b) => a.start.compareTo(b.start));
       final boundaries = [
-        ...occupied.map((item) => item.window),
+        ...occupied,
         TimeWindow(start: usableEnd, end: usableEnd),
       ];
       for (final reserved in boundaries) {
@@ -144,6 +155,10 @@ List<TaskAllocation>? proposeTaskAllocations(DayPlan plan) {
         allocations: allocations,
       ) !=
       null) {
+    return null;
+  }
+  if (unavailable != null &&
+      allocations.any((item) => item.window.overlaps(unavailable))) {
     return null;
   }
   return List.unmodifiable(allocations);

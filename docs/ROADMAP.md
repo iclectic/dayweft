@@ -178,3 +178,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: live fragments are not persisted or rendered, and recovery cannot apply or undo splits. Exact buffer positions remain unknown; the block-end reservation is conservative. Other release gates remain open. No device or live-backend verification was performed.
 - Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
 - Exact next implementation task: model and persist live fragment allocations across task edits, completion, deletion, rendering and import/export, then connect disruption-aware recovery preview and atomic apply/undo with no-loss real-chain tests before enabling the feature.
+
+## Disruption-aware allocation proposal — 6 November 2026
+
+- Last completed slice: allocation proposals accept an explicit unavailable interval, avoid it when placing fragments, and reject fixed-commitment conflicts. The controller passes duration and start; proposal drafts retain and revalidate the interval. A failed greedy search does not prove infeasibility.
+- Changed files: adaptive allocation generator/tests, planning controller/repository, controller/draft tests, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed all tests (129 mobile, 34 domain, 25 engine, 2 design; mobile domain/application 97.2%, domain 94.1%, engine 92.7%). The run reported one engine lint notice; after adding braces, engine formatting, `dart analyze` and its focused proposal tests passed with no issues.
+- Outstanding defects and unfinished requirements: proposals are not integrated into the user-facing Reweave workflow; live fragments, task edit/delete/completion support, import/export and atomic apply/undo remain unimplemented. Existing recovery still rejects split applications. No device or live-backend verification was performed.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: model and persist live fragments across task edits, completion, deletion, rendering and import/export, then integrate the disruption-aware proposal into explicit recovery preview and atomic apply/undo with no-loss real-chain tests.

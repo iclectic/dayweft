@@ -162,6 +162,21 @@ void main() {
         repository.saveAllocationDraft(
           expectedPlanId: snapshot.plan.id,
           expectedPlanRevision: snapshot.plan.revision,
+          expectedDraftVersion: 1,
+          allocations: allocations,
+          unavailable: domain.TimeWindow(
+            start: allocations.first.window.start,
+            end: allocations.first.window.start.add(
+              const Duration(minutes: 15),
+            ),
+          ),
+        ),
+        throwsA(isA<PlanningFailure>()),
+      );
+      await expectLater(
+        repository.saveAllocationDraft(
+          expectedPlanId: snapshot.plan.id,
+          expectedPlanRevision: snapshot.plan.revision,
           expectedDraftVersion: null,
           allocations: allocations,
         ),
