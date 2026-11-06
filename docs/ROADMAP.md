@@ -88,3 +88,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Unfinished requirements: recurrence/exceptions, scheduling constraints and persisted splits, native integrations, optional sync and secure sharing, release and manual verification remain as recorded above.
 - Human action required: identity, signing, service ownership, policy/support review, hardware testing and Play approval remain outstanding; no credentials or production operation were attempted.
 - Exact next implementation task: persist recurring-template rules and per-date exceptions, with stable occurrence identities, explicit preview, version checks and atomic application/undo; cover migration, civil weekdays, overnight occurrences and duplicate prevention before enabling the UI.
+
+## Recurrence foundation — 6 November 2026
+
+- Last completed slice: a pure domain weekly recurrence rule evaluates inclusive civil-date boundaries, ISO weekdays and excluded dates without adding elapsed 24-hour durations. Invalid weekday sets and reversed ranges are rejected; input collections are copied.
+- Changed files: `packages/dayweft_domain/lib/dayweft_domain.dart`, `packages/dayweft_domain/lib/src/template_recurrence.dart`, `packages/dayweft_domain/test/template_recurrence_test.dart`, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: in `packages/dayweft_domain`, `dart format lib/dayweft_domain.dart lib/src/template_recurrence.dart test/template_recurrence_test.dart`, `dart analyze` and `dart test` passed (25 tests).
+- Outstanding defects and unfinished requirements: this model is not persisted or connected to preview/application, and does not constitute a recurring-template feature. Schema migration, exception editing, occurrence identities, stale guards, atomic undo, overnight and full-chain tests remain required, alongside the other open 1.0 gaps above.
+- Human action required: existing identity, signing, hosting, device and Play gates remain unchanged.
+- Exact next implementation task: persist versioned recurrence rules and exceptions using a non-destructive migration and real-row upgrade test; connect occurrence preview to the existing confirmation and undo path before exposing controls.

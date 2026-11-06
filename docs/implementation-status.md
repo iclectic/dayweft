@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Recurrence foundation — 6 November 2026
+
+- Last completed slice: a pure Dart weekly civil-date rule with inclusive start/end dates, excluded dates and validation. It is not yet connected to the application.
+- Changed files: `packages/dayweft_domain/lib/dayweft_domain.dart`, `packages/dayweft_domain/lib/src/template_recurrence.dart`, `packages/dayweft_domain/test/template_recurrence_test.dart`, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: `dart format lib/dayweft_domain.dart lib/src/template_recurrence.dart test/template_recurrence_test.dart`, `dart analyze` and `dart test` in `packages/dayweft_domain`; all 25 tests passed.
+- Outstanding defects and unfinished requirements: recurrence has no persistence, exception controls, occurrence identity, preview/application integration or durable undo yet. Other 1.0 gaps and release gates remain open.
+- Human action required: existing identity, signing, hosting, device and Play gates remain unchanged.
+- Exact next implementation task: persist versioned recurrence rules and exceptions with a non-destructive migration and real-row upgrade coverage, then connect reviewed occurrence application to existing revision/undo safeguards.
+
 ## Continuation checkpoint — 6 November 2026
 
 - Last completed slice: CI reads the repository Flutter pin and invokes `scripts/verify.sh` for lockfile enforcement, generated-code drift, analysis, tests and coverage. Its GitHub token is read-only. Android and iOS simulator build steps remain in the workflow.
