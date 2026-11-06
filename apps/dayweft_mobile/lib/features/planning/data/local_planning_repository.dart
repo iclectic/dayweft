@@ -1473,6 +1473,8 @@ class LocalPlanningRepository {
           task.actualDuration != before.actualDuration ||
           task.priority != before.priority ||
           task.deadline != before.deadline ||
+          task.earliestStart != before.earliestStart ||
+          task.latestFinish != before.latestFinish ||
           task.canSplit != before.canSplit ||
           task.minimumUsefulDuration != before.minimumUsefulDuration ||
           jsonEncode(task.dependencyIds) != jsonEncode(before.dependencyIds) ||

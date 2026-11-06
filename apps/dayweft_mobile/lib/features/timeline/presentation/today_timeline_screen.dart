@@ -688,6 +688,7 @@ IconData _iconForObservation(RealityIssueType type) {
     RealityIssueType.insufficientTransition => Icons.swap_horiz,
     RealityIssueType.missingBreak => Icons.self_improvement,
     RealityIssueType.impossibleDeadline => Icons.event_busy,
+    RealityIssueType.outsideTaskWindow => Icons.schedule_outlined,
     RealityIssueType.demandingTaskCluster => Icons.psychology_outlined,
     RealityIssueType.insufficientTravel => Icons.directions_walk,
     RealityIssueType.oversizedTask => Icons.open_in_full,

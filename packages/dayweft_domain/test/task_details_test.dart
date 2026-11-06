@@ -2,6 +2,44 @@ import 'package:dayweft_domain/dayweft_domain.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('hard time windows require enough time for the estimate', () {
+    final start = DateTime.utc(2026, 10, 26, 9);
+    expect(
+      TaskDetails(
+        title: 'Work',
+        estimatedMinutes: 60,
+        earliestStart: start,
+        latestFinish: start.add(const Duration(hours: 1)),
+      ).validationMessage,
+      isNull,
+    );
+    expect(
+      TaskDetails(
+        title: 'Work',
+        estimatedMinutes: 60,
+        earliestStart: start,
+        latestFinish: start.add(const Duration(minutes: 59)),
+      ).validationMessage,
+      isNotNull,
+    );
+    expect(
+      TaskDetails(
+        title: 'Work',
+        estimatedMinutes: 60,
+        earliestStart: start,
+        latestFinish: start,
+      ).validationMessage,
+      isNotNull,
+    );
+    expect(
+      TaskDetails(
+        title: 'Work',
+        estimatedMinutes: 60,
+        earliestStart: start,
+      ).validationMessage,
+      isNull,
+    );
+  });
   test('details accept optional attributes without requiring energy use', () {
     final details = TaskDetails(
       title: 'Read',

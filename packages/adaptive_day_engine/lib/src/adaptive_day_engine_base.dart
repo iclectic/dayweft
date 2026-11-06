@@ -8,6 +8,7 @@ enum RealityIssueType {
   insufficientTransition,
   missingBreak,
   impossibleDeadline,
+  outsideTaskWindow,
   demandingTaskCluster,
   insufficientTravel,
   oversizedTask,
@@ -30,6 +31,7 @@ class RealityObservation {
     RealityIssueType.outsideWorkingHours ||
     RealityIssueType.overlap ||
     RealityIssueType.impossibleDeadline ||
+    RealityIssueType.outsideTaskWindow ||
     RealityIssueType.oversizedTask => true,
     _ => false,
   };
@@ -136,6 +138,8 @@ class DayweftAdaptiveEngine {
       final details = TaskDetails(
         title: task.title,
         estimatedMinutes: task.estimatedDuration.inMinutes,
+        earliestStart: task.earliestStart,
+        latestFinish: task.latestFinish,
         canSplit: task.canSplit,
         minimumUsefulMinutes: task.minimumUsefulDuration.inMinutes,
         dependencyIds: task.dependencyIds,
@@ -255,6 +259,7 @@ class DayweftAdaptiveEngine {
     }
 
     observations.addAll(_deadlineObservations(plan));
+    observations.addAll(_taskWindowObservations(plan));
     observations.addAll(_oversizedTaskObservations(plan));
     observations.addAll(_dependencyObservations(plan));
     observations.addAll(_breakObservations(plan, planned));
@@ -389,6 +394,31 @@ class DayweftAdaptiveEngine {
       }
     }
     return observations;
+  }
+
+  List<RealityObservation> _taskWindowObservations(DayPlan plan) {
+    final tasks = plan.tasksById;
+    final issues = <RealityObservation>[];
+    for (final block in plan.blocks) {
+      for (final id in block.taskIds) {
+        final task = tasks[id];
+        if (task == null || task.status != TaskStatus.planned) continue;
+        if ((task.earliestStart != null &&
+                block.window.start.isBefore(task.earliestStart!)) ||
+            (task.latestFinish != null &&
+                block.window.end.isAfter(task.latestFinish!))) {
+          issues.add(
+            RealityObservation(
+              type: RealityIssueType.outsideTaskWindow,
+              message:
+                  'The block containing ${task.title} extends outside its permitted time window.',
+              affectedIds: [task.id, block.id],
+            ),
+          );
+        }
+      }
+    }
+    return issues;
   }
 
   List<RealityObservation> _oversizedTaskObservations(DayPlan plan) {
@@ -711,6 +741,12 @@ class DayweftAdaptiveEngine {
         return null;
       }
       var start = _latestDateTime(block.window.start, plan.workingWindow.start);
+      for (final id in block.taskIds) {
+        final task = plan.tasksById[id];
+        if (task?.status == TaskStatus.planned && task?.earliestStart != null) {
+          start = _latestDateTime(start, task!.earliestStart!);
+        }
+      }
       occupied.sort((a, b) => a.start.compareTo(b.start));
       for (final window in occupied) {
         if (start.isBefore(window.end.add(minimumTransition)) &&
@@ -788,6 +824,8 @@ class DayweftAdaptiveEngine {
               priority: task.priority,
               category: task.category,
               deadline: task.deadline,
+              earliestStart: task.earliestStart,
+              latestFinish: task.latestFinish,
               notes: task.notes,
               energyRequired: task.energyRequired,
               cognitiveLoad: task.cognitiveLoad,

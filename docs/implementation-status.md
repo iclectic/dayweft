@@ -1,5 +1,14 @@
 # Dayweft implementation status
 
+## Task-window engine foundation — 6 November 2026
+
+- Last completed slice: optional hard earliest-start/latest-finish bounds in domain tasks and validation; Reality Check and recovery conservatively require a constrained task's containing block to fit its window. Bounds survive engine deferral and recovery proposal validation checks they were not changed.
+- Changed files: domain models/validation and tests; adaptive engine and regression tests; timeline observation icon and recovery proposal validation; `docs/ROADMAP.md` and this ledger.
+- Tests actually run: package analyses and tests, focused engine regression tests and `bash scripts/verify.sh` passed (121 mobile, 26 domain, 17 engine and 2 design tests; coverage gates passed). Root analysis initially reported a missing root lints include and the new enum switch case; the switch was corrected and package analyses passed. A first verification attempt stopped at formatting before the successful rerun.
+- Outstanding defects and unfinished requirements: users cannot yet set or persist these bounds; application mapping, import/export, migration, editor and end-to-end validation remain unimplemented. Whole-block enforcement can reject otherwise feasible placements without individual allocations. No device or live-backend verification is claimed.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: non-destructive task-window migration and repository mapping, revision/undo and import/export, followed by editor controls and real-chain tests.
+
 ## Recurrence controls checkpoint — 6 November 2026
 
 - Last completed slice: the custom-template library offers weekly recurrence editing, optional date boundaries and exclusions, confirmed removal, and selected-day preview/application. Each application requires confirmation and uses durable undo; recurrence does not automatically alter plans.

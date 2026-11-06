@@ -124,3 +124,12 @@ The earlier execution queue records the original sequence. Its first five slices
 - Outstanding defects and unfinished requirements: no device/TalkBack or visual screenshot verification was performed; single-day export does not back up templates or recurrence. Automatic application is deliberately absent. Full temporal task constraints, persisted splits and all other 1.0 gaps remain open.
 - Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
 - Exact next implementation task: implement hard earliest/latest task windows across domain validation, editor, persistence and scheduling, with migration and real-chain tests; preserve existing tasks and reject infeasible previews.
+
+## Task-window engine foundation — 6 November 2026
+
+- Last completed slice: domain tasks accept optional earliest-start/latest-finish bounds; validation rejects windows too small for the estimate. Reality Check treats a block extending beyond a planned task's bounds as a hard concern. Recovery moves flexible blocks no earlier than their tasks' bounds, rejects infeasible candidates and retains bounds through deferral; application validation rejects altered bounds in a proposal.
+- Changed files: domain task models/validation/tests; adaptive engine and constraint tests; timeline observation icon; recovery proposal validation; this roadmap and `docs/implementation-status.md`.
+- Tests actually run: package analyses/tests, focused engine regression tests and `bash scripts/verify.sh` passed (121 mobile, 26 domain, 17 engine and 2 design tests; all coverage gates passed). An initial root `dart analyze` reported a missing root lints include and the newly added enum switch case; the switch was fixed, and package analyses passed. The first verification attempt stopped on formatting; the final run passed.
+- Outstanding defects and unfinished requirements: these bounds are **not yet stored, editable, imported/exported or mapped from application tasks**, so users cannot use this feature. Conservative whole-block checks can reject feasible arrangements until individual task allocations exist. Persisted splits and the remaining 1.0 requirements are still open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: add a non-destructive task-window migration, repository mapping, revision/undo and import/export support, then task editor controls and real-chain tests before claiming the feature works.

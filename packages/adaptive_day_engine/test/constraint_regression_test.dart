@@ -39,6 +39,92 @@ Disruption disruption({int? minutes}) => Disruption(
 
 void main() {
   const engine = DayweftAdaptiveEngine();
+  test('task windows constrain recovery and remain hard observations', () {
+    final input = plan(
+      [
+        block('work', 9, 10, taskIds: ['task']),
+      ],
+      tasks: [
+        DayweftTask(
+          id: 'task',
+          title: 'Work',
+          estimatedDuration: const Duration(minutes: 30),
+          priority: TaskPriority.essential,
+          earliestStart: at(10),
+          latestFinish: at(12),
+          status: TaskStatus.planned,
+        ),
+      ],
+    );
+    expect(
+      engine
+          .realityCheck(input)
+          .any(
+            (issue) =>
+                issue.type == RealityIssueType.outsideTaskWindow &&
+                issue.isHardConstraint,
+          ),
+      isTrue,
+    );
+    final result = engine.reweave(plan: input, disruption: disruption());
+    expect(result.alternatives, isNotEmpty);
+    for (final alternative in result.alternatives) {
+      expect(alternative.preview.blocks.single.window.start, at(10));
+      expect(alternative.preview.tasks.single.earliestStart, at(10));
+      expect(alternative.preview.tasks.single.latestFinish, at(12));
+    }
+  });
+
+  test(
+    'infeasible and invalid task windows do not yield valid alternatives',
+    () {
+      final impossible = plan(
+        [
+          block('work', 9, 11, taskIds: ['task']),
+        ],
+        tasks: [
+          DayweftTask(
+            id: 'task',
+            title: 'Work',
+            estimatedDuration: const Duration(minutes: 30),
+            priority: TaskPriority.essential,
+            earliestStart: at(10),
+            latestFinish: at(11),
+            status: TaskStatus.planned,
+          ),
+        ],
+      );
+      expect(
+        engine.reweave(plan: impossible, disruption: disruption()).alternatives,
+        isEmpty,
+      );
+      final invalid = plan(
+        [
+          block('work', 9, 10, taskIds: ['task']),
+        ],
+        tasks: [
+          DayweftTask(
+            id: 'task',
+            title: 'Work',
+            estimatedDuration: const Duration(hours: 2),
+            earliestStart: at(10),
+            latestFinish: at(11),
+            status: TaskStatus.planned,
+          ),
+        ],
+      );
+      expect(
+        engine
+            .realityCheck(invalid)
+            .any((issue) => issue.type == RealityIssueType.invalidInput),
+        isTrue,
+      );
+      expect(
+        engine.reweave(plan: invalid, disruption: disruption()).alternatives,
+        isEmpty,
+      );
+    },
+  );
   test('nested reservations report every overlapping pair', () {
     final input = plan([
       block('long', 9, 12),

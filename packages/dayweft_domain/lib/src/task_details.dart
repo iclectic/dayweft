@@ -8,6 +8,8 @@ class TaskDetails {
     this.category,
     this.notes,
     this.deadline,
+    this.earliestStart,
+    this.latestFinish,
     this.energyRequired,
     this.cognitiveLoad,
     this.canSplit = false,
@@ -21,6 +23,8 @@ class TaskDetails {
   final String? category;
   final String? notes;
   final DateTime? deadline;
+  final DateTime? earliestStart;
+  final DateTime? latestFinish;
   final EnergyLevel? energyRequired;
   final CognitiveLoad? cognitiveLoad;
   final bool canSplit;
@@ -33,6 +37,13 @@ class TaskDetails {
     }
     if (estimatedMinutes < 1 || estimatedMinutes > 1440) {
       return 'Enter an estimate between 1 and 1440 minutes.';
+    }
+    if (earliestStart != null &&
+        latestFinish != null &&
+        (!earliestStart!.isBefore(latestFinish!) ||
+            latestFinish!.difference(earliestStart!) <
+                Duration(minutes: estimatedMinutes))) {
+      return 'The permitted window must fit the task estimate.';
     }
     if ((notes?.length ?? 0) > 20000 || (category?.length ?? 0) > 80) {
       return 'Use up to 20,000 characters for notes and 80 for a category.';
