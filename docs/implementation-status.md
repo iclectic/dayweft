@@ -1,5 +1,15 @@
 # Dayweft implementation status
 
+## Continuation checkpoint — 6 November 2026
+
+- Last completed slice: CI reads the repository Flutter pin and invokes `scripts/verify.sh` for lockfile enforcement, generated-code drift, analysis, tests and coverage. Its GitHub token is read-only. Android and iOS simulator build steps remain in the workflow.
+- Changed files: `.github/workflows/ci.yml`, `docs/DEVELOPMENT.md`, `docs/ROADMAP.md`, `docs/audit/release-blockers.md` and this ledger.
+- Tests actually run: `bash scripts/verify.sh` passed all checks and suites; coverage was 96.8% mobile domain/application, 89.5% domain and 90.2% engine. No new device or live-backend test was performed.
+- Outstanding defects: the workflow's keyword search is not a real secret scanner; hosted Actions execution and release-bundle validation remain unverified. The existing Kotlin warning and calendar/share scaffolds remain.
+- Unfinished requirements: recurrence, scheduling constraints and persisted splits, native integrations, cloud and hosted sharing, and the remaining quality and release gates remain open.
+- Human action required: owner decisions and access for identity, signing, services, privacy/support, hardware testing and Play remain outstanding.
+- Exact next implementation task: recurring-template rules and exceptions with stable occurrence identities, reviewed version-checked application and durable undo, protected by migration and civil-time regression tests.
+
 Current product identity is **Dayweft**. The historical sections below retain earlier decisions and results; the 29 October continuation checkpoint at the end supersedes outdated gap/count statements. See [ROADMAP](ROADMAP.md) for the active execution ledger.
 
 Initially checked on 24 October 2026; updated on 26 October 2026. This ledger distinguishes working local behaviours from partial surfaces and missing integrations. The baseline table below records the starting gaps; the completed changes section records subsequent progress. The historical phase summaries are not proof that a requirement is complete. The Step 1 pack's consequential redesign proposals remain provisional; the user authorised continuation on the existing architecture and branch.

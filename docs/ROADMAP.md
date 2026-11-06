@@ -26,7 +26,7 @@ Status vocabulary: NOT STARTED, IN PROGRESS, VERIFIED, BLOCKED. Evidence disting
 | 18 Accessibility/locale | en_GB, non-drag, scale/RTL/keyboard and manual AT | IN PROGRESS | Primary journeys on named Android devices |
 | 19 Tests | Meaningful 80% domain/application and full regression matrix | IN PROGRESS | Full suite + coverage, native/backend/E2E gaps explicit |
 | 20 Performance | Profile release workloads on representative hardware | NOT STARTED | Actual measured traces; no invented budgets/results |
-| 21 CI | Reproducible least-privilege validation, scans, builds/artifacts | IN PROGRESS | Local scripts plus actual Actions run |
+| 21 CI | Reproducible least-privilege validation, scans, builds/artifacts | IN PROGRESS | Real scanner integration and actual Actions run |
 | 22 Android production | Final identity/SDK/assets/16 KB/proper signing | IN PROGRESS | Signing/identity owner inputs BLOCKED |
 | 23 Store pack | Accurate genuine assets, privacy/support/declarations | NOT STARTED | Working release screenshots and owner-reviewed materials |
 | 24 Play workflow | Owner-run test tracks, access and rollout evidence | BLOCKED | Owner account/signing/tester participation/approval |
@@ -78,3 +78,13 @@ The earlier execution queue records the original sequence. Its first five slices
 - Human action required: final application identity/upload signing, cloud/host ownership and credentials, privacy/support publication and review, named-hardware exercises, actual Play tracks/tester participation/approval. Signing and deployment remain blocked externally.
 - Exact next implementation task: persist recurring-template rules and per-date exceptions; preview a selected occurrence with stable occurrence identities, stale guards and atomic application/undo; add civil weekday/overnight/duplicate tests and real-row migration tests before enabling recurrence in the UI. Then continue hard permitted-window modelling and persisted split allocations.
 - Do not modify: existing user data, generated Dart manually, provisional identity without owner confirmation, upload keys, production accounts/deployments or unrelated repositories. Keep local-only/offline use working.
+
+## Checkpoint — 6 November 2026
+
+- Last completed slice: CI now reads `.flutter-version`, uses the shared verification script for locked resolution and generation-drift checks, and limits its token to repository read access. The hosted workflow has not yet been run.
+- Changed files: `.github/workflows/ci.yml`, `docs/DEVELOPMENT.md`, `docs/audit/release-blockers.md`, this roadmap and `docs/implementation-status.md`.
+- Tests actually run: `bash scripts/verify.sh` passed locked resolution, generation drift, formatting, all four analyses and all test suites; coverage was 96.8% mobile domain/application, 89.5% domain and 90.2% engine.
+- Outstanding defects: CI's keyword search is not a secret scanner; real scanner/advisory integration, hosted workflow execution and release-bundle verification remain open. The legacy Kotlin warning and calendar/share scaffolds remain.
+- Unfinished requirements: recurrence/exceptions, scheduling constraints and persisted splits, native integrations, optional sync and secure sharing, release and manual verification remain as recorded above.
+- Human action required: identity, signing, service ownership, policy/support review, hardware testing and Play approval remain outstanding; no credentials or production operation were attempted.
+- Exact next implementation task: persist recurring-template rules and per-date exceptions, with stable occurrence identities, explicit preview, version checks and atomic application/undo; cover migration, civil weekdays, overnight occurrences and duplicate prevention before enabling the UI.

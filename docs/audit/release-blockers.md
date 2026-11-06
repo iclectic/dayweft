@@ -9,7 +9,7 @@ Dayweft 1.0 is **not ready for submission**. Baseline: 26 October 2026, `33b5103
 - Implement and security-test optional auth/sync/account deletion and real revocable public sharing.
 - Complete functional settings, privacy deletion, themes, localisation and accessible layouts.
 - Confirm Android identity, configure owner upload signing, finish permission/assets review and verify native 16 KB compatibility in release binaries. Missing signing now fails closed; debug release signing has been removed.
-- Finish CI pin/scanner integration and complete quality evidence. Local reproducible verification, generation drift and real secret scanning are implemented/executed; they do not establish CI or release readiness.
+- Finish CI scanner integration and complete quality evidence. CI now reads the Flutter pin and runs the local verification script; a hosted run is still needed. Local generation drift and secret scans do not establish CI or release readiness.
 
 ## External inputs and validation
 

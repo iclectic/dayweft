@@ -5,14 +5,22 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Read pinned Flutter version
+        id: flutter-version
+        run: echo "version=$(cat .flutter-version)" >> "$GITHUB_OUTPUT"
+
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ steps.flutter-version.outputs.version }}
           channel: stable
           cache: true
 
@@ -22,73 +30,8 @@ jobs:
             --exclude-dir=.git \
             --exclude=ci.yml
 
-      - name: Install mobile dependencies
-        run: flutter pub get
-        working-directory: apps/dayweft_mobile
-
-      - name: Install engine dependencies
-        run: dart pub get
-        working-directory: packages/adaptive_day_engine
-
-      - name: Install domain dependencies
-        run: dart pub get
-        working-directory: packages/dayweft_domain
-
-      - name: Install design system dependencies
-        run: flutter pub get
-        working-directory: packages/dayweft_design_system
-
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
-        working-directory: apps/dayweft_mobile
-
-      - name: Verify formatting
-        run: dart format --set-exit-if-changed .
-
-      - name: Analyze mobile app
-        run: flutter analyze
-        working-directory: apps/dayweft_mobile
-
-      - name: Analyze engine
-        run: dart analyze
-        working-directory: packages/adaptive_day_engine
-
-      - name: Analyze domain
-        run: dart analyze
-        working-directory: packages/dayweft_domain
-
-      - name: Analyze design system
-        run: flutter analyze
-        working-directory: packages/dayweft_design_system
-
-      - name: Test mobile app with coverage
-        run: flutter test --coverage
-        working-directory: apps/dayweft_mobile
-
-      - name: Test engine
-        run: dart test --coverage=coverage
-        working-directory: packages/adaptive_day_engine
-
-      - name: Test domain
-        run: dart test --coverage=coverage
-        working-directory: packages/dayweft_domain
-
-      - name: Format engine coverage
-        run: dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
-        working-directory: packages/adaptive_day_engine
-
-      - name: Format domain coverage
-        run: dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
-        working-directory: packages/dayweft_domain
-
-      - name: Enforce mobile domain and application coverage
-        run: dart tool/check_coverage.dart apps/dayweft_mobile/coverage/lcov.info mobile
-
-      - name: Enforce engine coverage
-        run: dart tool/check_coverage.dart packages/adaptive_day_engine/coverage/lcov.info package
-
-      - name: Enforce shared domain coverage
-        run: dart tool/check_coverage.dart packages/dayweft_domain/coverage/lcov.info package
+      - name: Verify locked dependencies, generation, analysis and tests
+        run: bash scripts/verify.sh
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -98,15 +41,12 @@ jobs:
             apps/dayweft_mobile/coverage/lcov.info
             packages/adaptive_day_engine/coverage/lcov.info
             packages/dayweft_domain/coverage/lcov.info
-
-      - name: Test design system
-        run: flutter test
-        working-directory: packages/dayweft_design_system
+          if-no-files-found: error
 
       - name: Build Android debug
-        run: flutter build apk --debug
+        run: flutter build apk --debug --no-pub
         working-directory: apps/dayweft_mobile
 
       - name: Build iOS simulator without signing
-        run: flutter build ios --simulator --debug --no-codesign
+        run: flutter build ios --simulator --debug --no-codesign --no-pub
         working-directory: apps/dayweft_mobile

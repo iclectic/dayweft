@@ -1,6 +1,6 @@
 # Development
 
-Use Flutter **3.47.8 stable / Dart 3.13.7**, pinned in `.flutter-version`. The verification script enforces this release; CI still follows stable and needs a matching workflow pin. Install Flutter from the official stable distribution. Do not run an SDK upgrade implicitly. Python 3 is used only for reading Flutter machine output in scripts. Android builds use JDK 21 with Java bytecode level 17, SDK 36, minimum API 24, Gradle 9.1.0, AGP 9.0.1 and Kotlin 2.3.21. These versions passed the Android debug build. Flutter still warns about the application's legacy Kotlin plugin; built-in Kotlin migration remains pending.
+Use Flutter **3.47.8 stable / Dart 3.13.7**, pinned in `.flutter-version`. The verification script enforces this release and CI reads the same pin. Install Flutter from the official stable distribution. Do not run an SDK upgrade implicitly. Python 3 is used only for reading Flutter machine output in scripts. Android builds use JDK 21 with Java bytecode level 17, SDK 36, minimum API 24, Gradle 9.1.0, AGP 9.0.1 and Kotlin 2.3.21. These versions passed the Android debug build. Flutter still warns about the application's legacy Kotlin plugin; built-in Kotlin migration remains pending.
 
 From the repository root:
 
@@ -10,6 +10,8 @@ BUILD_ANDROID_DEBUG=1 bash scripts/verify.sh
 ```
 
 The script enforces lockfiles, regenerates Drift and detects drift, checks formatting/analysis, runs all four suites and separate 80% domain/application coverage gates. It does not claim device or backend verification. The `build_runner` delete-conflicting-outputs option has been removed upstream; use `dart run build_runner build` in the mobile package.
+
+CI invokes this same script before Android and iOS simulator builds. Its existing keyword check is not a substitute for a secret scanner; scanner integration and an actual hosted Actions run remain outstanding.
 
 Run locally without accounts or credentials:
 
