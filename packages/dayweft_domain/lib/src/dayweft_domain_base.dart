@@ -57,6 +57,8 @@ class DayweftTask {
     this.priority = TaskPriority.medium,
     this.category,
     this.deadline,
+    this.earliestStart,
+    this.latestFinish,
     this.notes,
     this.energyRequired,
     this.cognitiveLoad,
@@ -73,6 +75,8 @@ class DayweftTask {
   final TaskPriority priority;
   final String? category;
   final DateTime? deadline;
+  final DateTime? earliestStart;
+  final DateTime? latestFinish;
   final String? notes;
   final EnergyLevel? energyRequired;
   final CognitiveLoad? cognitiveLoad;

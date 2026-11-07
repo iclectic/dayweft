@@ -1,6 +1,6 @@
 import 'package:dayweft_mobile/features/inbox/presentation/capture_sheet.dart';
 import 'package:dayweft_mobile/features/planning/application/planning_controller.dart';
-import 'package:dayweft_mobile/features/tasks/presentation/actual_duration_dialog.dart';
+import 'package:dayweft_mobile/features/tasks/presentation/planning_task_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -37,56 +37,12 @@ class InboxScreen extends ConsumerWidget {
             else
               for (final task in snapshot.inboxTasks)
                 Card(
-                  child: ListTile(
-                    leading: Checkbox(
-                      value: task.status == 'completed',
-                      onChanged: (_) => ref
-                          .read(planningControllerProvider.notifier)
-                          .toggleTask(task.id),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: PlanningTaskTile(
+                      task: task,
+                      blocks: snapshot.blocks,
                     ),
-                    title: Text(task.title),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${task.estimatedMinutes} min estimated • ${task.priority}',
-                        ),
-                        if (task.status == 'completed')
-                          TextButton(
-                            onPressed: () => showActualDurationDialog(
-                              context,
-                              ref,
-                              taskId: task.id,
-                              previousMinutes: task.actualMinutes,
-                            ),
-                            child: Text(
-                              task.actualMinutes == null
-                                  ? 'Record actual time'
-                                  : '${task.actualMinutes} min actual · Edit',
-                            ),
-                          ),
-                      ],
-                    ),
-                    trailing: snapshot.blocks.isEmpty
-                        ? null
-                        : PopupMenuButton<String>(
-                            tooltip: 'Move to block',
-                            icon: const Icon(Icons.drive_file_move_outline),
-                            onSelected: (blockId) => ref
-                                .read(planningControllerProvider.notifier)
-                                .moveInboxTaskToBlock(
-                                  taskId: task.id,
-                                  blockId: blockId,
-                                ),
-                            itemBuilder: (context) => snapshot.blocks
-                                .map(
-                                  (block) => PopupMenuItem<String>(
-                                    value: block.id,
-                                    child: Text(block.title),
-                                  ),
-                                )
-                                .toList(),
-                          ),
                   ),
                 ),
           ],

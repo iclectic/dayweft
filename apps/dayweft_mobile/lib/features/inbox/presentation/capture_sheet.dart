@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CaptureSheet extends ConsumerStatefulWidget {
-  const CaptureSheet({this.brainDump = false, super.key});
+  const CaptureSheet({this.brainDump = false, this.blockId, super.key});
   final bool brainDump;
+  final String? blockId;
   @override
   ConsumerState<CaptureSheet> createState() => _CaptureSheetState();
 }
@@ -83,7 +84,11 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
           FilledButton(
             onPressed: _saving || _captures.isEmpty ? null : _save,
             child: Text(
-              _saving ? 'Saving locally…' : 'Confirm and add to Inbox',
+              _saving
+                  ? 'Saving locally…'
+                  : widget.blockId == null
+                  ? 'Confirm and add to Inbox'
+                  : 'Confirm and add to block',
             ),
           ),
         ],
@@ -96,7 +101,7 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
     try {
       await ref
           .read(planningControllerProvider.notifier)
-          .addConfirmedCaptures(_captures);
+          .addConfirmedCaptures(_captures, blockId: widget.blockId);
       if (mounted) Navigator.of(context).pop();
     } on Object {
       if (mounted) {

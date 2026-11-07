@@ -110,3 +110,7 @@ Use separate development, staging and production configuration. No committed sec
 ## Logging
 
 Structured logs only. Do not log task titles, notes, calendar titles, focus-session content or personal schedule descriptions. Include event type, failure code, component, non-personal counts and timings.
+
+## Dayweft 1.0 continuation
+
+The existing feature-first Flutter/Riverpod/go_router/Drift architecture is retained. The clock is now injected through Riverpod and repository constructors. Selected civil dates scope planning commands and revision history; Inbox remains global. Day navigation uses civil components, not a fixed 24-hour duration. The pure Dart engine still has no persistence or network access. See [current architecture review](audit/architecture-review.md) and [roadmap](ROADMAP.md) for unresolved native/cloud/allocation boundaries.

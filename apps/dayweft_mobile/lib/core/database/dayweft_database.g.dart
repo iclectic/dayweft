@@ -2736,6 +2736,30 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _cognitiveLoadMeta = const VerificationMeta(
+    'cognitiveLoad',
+  );
+  @override
+  late final GeneratedColumn<String> cognitiveLoad = GeneratedColumn<String>(
+    'cognitive_load',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dependencyIdsJsonMeta = const VerificationMeta(
+    'dependencyIdsJson',
+  );
+  @override
+  late final GeneratedColumn<String> dependencyIdsJson =
+      GeneratedColumn<String>(
+        'dependency_ids_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      );
   static const VerificationMeta _requestedDayMeta = const VerificationMeta(
     'requestedDay',
   );
@@ -2859,6 +2883,29 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _earliestStartMeta = const VerificationMeta(
+    'earliestStart',
+  );
+  @override
+  late final GeneratedColumn<DateTime> earliestStart =
+      GeneratedColumn<DateTime>(
+        'earliest_start',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _latestFinishMeta = const VerificationMeta(
+    'latestFinish',
+  );
+  @override
+  late final GeneratedColumn<DateTime> latestFinish = GeneratedColumn<DateTime>(
+    'latest_finish',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _canSplitMeta = const VerificationMeta(
     'canSplit',
   );
@@ -2969,6 +3016,8 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     title,
     notes,
     energyRequired,
+    cognitiveLoad,
+    dependencyIdsJson,
     requestedDay,
     requestedStartTime,
     requestedEndTime,
@@ -2980,6 +3029,8 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     status,
     sourceId,
     deadline,
+    earliestStart,
+    latestFinish,
     canSplit,
     minimumUsefulMinutes,
     sortOrder,
@@ -3039,6 +3090,24 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         energyRequired.isAcceptableOrUnknown(
           data['energy_required']!,
           _energyRequiredMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cognitive_load')) {
+      context.handle(
+        _cognitiveLoadMeta,
+        cognitiveLoad.isAcceptableOrUnknown(
+          data['cognitive_load']!,
+          _cognitiveLoadMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dependency_ids_json')) {
+      context.handle(
+        _dependencyIdsJsonMeta,
+        dependencyIdsJson.isAcceptableOrUnknown(
+          data['dependency_ids_json']!,
+          _dependencyIdsJsonMeta,
         ),
       );
     }
@@ -3130,6 +3199,24 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
       context.handle(
         _deadlineMeta,
         deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
+      );
+    }
+    if (data.containsKey('earliest_start')) {
+      context.handle(
+        _earliestStartMeta,
+        earliestStart.isAcceptableOrUnknown(
+          data['earliest_start']!,
+          _earliestStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('latest_finish')) {
+      context.handle(
+        _latestFinishMeta,
+        latestFinish.isAcceptableOrUnknown(
+          data['latest_finish']!,
+          _latestFinishMeta,
+        ),
       );
     }
     if (data.containsKey('can_split')) {
@@ -3228,6 +3315,14 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         DriftSqlType.string,
         data['${effectivePrefix}energy_required'],
       ),
+      cognitiveLoad: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cognitive_load'],
+      ),
+      dependencyIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dependency_ids_json'],
+      )!,
       requestedDay: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}requested_day'],
@@ -3271,6 +3366,14 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
       deadline: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deadline'],
+      ),
+      earliestStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}earliest_start'],
+      ),
+      latestFinish: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}latest_finish'],
       ),
       canSplit: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
@@ -3329,6 +3432,8 @@ class Task extends DataClass implements Insertable<Task> {
   final String title;
   final String? notes;
   final String? energyRequired;
+  final String? cognitiveLoad;
+  final String dependencyIdsJson;
   final String? requestedDay;
   final String? requestedStartTime;
   final String? requestedEndTime;
@@ -3340,6 +3445,8 @@ class Task extends DataClass implements Insertable<Task> {
   final String status;
   final String? sourceId;
   final DateTime? deadline;
+  final DateTime? earliestStart;
+  final DateTime? latestFinish;
   final bool canSplit;
   final int minimumUsefulMinutes;
   final int sortOrder;
@@ -3356,6 +3463,8 @@ class Task extends DataClass implements Insertable<Task> {
     required this.title,
     this.notes,
     this.energyRequired,
+    this.cognitiveLoad,
+    required this.dependencyIdsJson,
     this.requestedDay,
     this.requestedStartTime,
     this.requestedEndTime,
@@ -3367,6 +3476,8 @@ class Task extends DataClass implements Insertable<Task> {
     required this.status,
     this.sourceId,
     this.deadline,
+    this.earliestStart,
+    this.latestFinish,
     required this.canSplit,
     required this.minimumUsefulMinutes,
     required this.sortOrder,
@@ -3394,6 +3505,10 @@ class Task extends DataClass implements Insertable<Task> {
     if (!nullToAbsent || energyRequired != null) {
       map['energy_required'] = Variable<String>(energyRequired);
     }
+    if (!nullToAbsent || cognitiveLoad != null) {
+      map['cognitive_load'] = Variable<String>(cognitiveLoad);
+    }
+    map['dependency_ids_json'] = Variable<String>(dependencyIdsJson);
     if (!nullToAbsent || requestedDay != null) {
       map['requested_day'] = Variable<String>(requestedDay);
     }
@@ -3418,6 +3533,12 @@ class Task extends DataClass implements Insertable<Task> {
     }
     if (!nullToAbsent || deadline != null) {
       map['deadline'] = Variable<DateTime>(deadline);
+    }
+    if (!nullToAbsent || earliestStart != null) {
+      map['earliest_start'] = Variable<DateTime>(earliestStart);
+    }
+    if (!nullToAbsent || latestFinish != null) {
+      map['latest_finish'] = Variable<DateTime>(latestFinish);
     }
     map['can_split'] = Variable<bool>(canSplit);
     map['minimum_useful_minutes'] = Variable<int>(minimumUsefulMinutes);
@@ -3455,6 +3576,10 @@ class Task extends DataClass implements Insertable<Task> {
       energyRequired: energyRequired == null && nullToAbsent
           ? const Value.absent()
           : Value(energyRequired),
+      cognitiveLoad: cognitiveLoad == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cognitiveLoad),
+      dependencyIdsJson: Value(dependencyIdsJson),
       requestedDay: requestedDay == null && nullToAbsent
           ? const Value.absent()
           : Value(requestedDay),
@@ -3480,6 +3605,12 @@ class Task extends DataClass implements Insertable<Task> {
       deadline: deadline == null && nullToAbsent
           ? const Value.absent()
           : Value(deadline),
+      earliestStart: earliestStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(earliestStart),
+      latestFinish: latestFinish == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latestFinish),
       canSplit: Value(canSplit),
       minimumUsefulMinutes: Value(minimumUsefulMinutes),
       sortOrder: Value(sortOrder),
@@ -3508,6 +3639,8 @@ class Task extends DataClass implements Insertable<Task> {
       title: serializer.fromJson<String>(json['title']),
       notes: serializer.fromJson<String?>(json['notes']),
       energyRequired: serializer.fromJson<String?>(json['energyRequired']),
+      cognitiveLoad: serializer.fromJson<String?>(json['cognitiveLoad']),
+      dependencyIdsJson: serializer.fromJson<String>(json['dependencyIdsJson']),
       requestedDay: serializer.fromJson<String?>(json['requestedDay']),
       requestedStartTime: serializer.fromJson<String?>(
         json['requestedStartTime'],
@@ -3521,6 +3654,8 @@ class Task extends DataClass implements Insertable<Task> {
       status: serializer.fromJson<String>(json['status']),
       sourceId: serializer.fromJson<String?>(json['sourceId']),
       deadline: serializer.fromJson<DateTime?>(json['deadline']),
+      earliestStart: serializer.fromJson<DateTime?>(json['earliestStart']),
+      latestFinish: serializer.fromJson<DateTime?>(json['latestFinish']),
       canSplit: serializer.fromJson<bool>(json['canSplit']),
       minimumUsefulMinutes: serializer.fromJson<int>(
         json['minimumUsefulMinutes'],
@@ -3546,6 +3681,8 @@ class Task extends DataClass implements Insertable<Task> {
       'title': serializer.toJson<String>(title),
       'notes': serializer.toJson<String?>(notes),
       'energyRequired': serializer.toJson<String?>(energyRequired),
+      'cognitiveLoad': serializer.toJson<String?>(cognitiveLoad),
+      'dependencyIdsJson': serializer.toJson<String>(dependencyIdsJson),
       'requestedDay': serializer.toJson<String?>(requestedDay),
       'requestedStartTime': serializer.toJson<String?>(requestedStartTime),
       'requestedEndTime': serializer.toJson<String?>(requestedEndTime),
@@ -3557,6 +3694,8 @@ class Task extends DataClass implements Insertable<Task> {
       'status': serializer.toJson<String>(status),
       'sourceId': serializer.toJson<String?>(sourceId),
       'deadline': serializer.toJson<DateTime?>(deadline),
+      'earliestStart': serializer.toJson<DateTime?>(earliestStart),
+      'latestFinish': serializer.toJson<DateTime?>(latestFinish),
       'canSplit': serializer.toJson<bool>(canSplit),
       'minimumUsefulMinutes': serializer.toJson<int>(minimumUsefulMinutes),
       'sortOrder': serializer.toJson<int>(sortOrder),
@@ -3578,6 +3717,8 @@ class Task extends DataClass implements Insertable<Task> {
     String? title,
     Value<String?> notes = const Value.absent(),
     Value<String?> energyRequired = const Value.absent(),
+    Value<String?> cognitiveLoad = const Value.absent(),
+    String? dependencyIdsJson,
     Value<String?> requestedDay = const Value.absent(),
     Value<String?> requestedStartTime = const Value.absent(),
     Value<String?> requestedEndTime = const Value.absent(),
@@ -3589,6 +3730,8 @@ class Task extends DataClass implements Insertable<Task> {
     String? status,
     Value<String?> sourceId = const Value.absent(),
     Value<DateTime?> deadline = const Value.absent(),
+    Value<DateTime?> earliestStart = const Value.absent(),
+    Value<DateTime?> latestFinish = const Value.absent(),
     bool? canSplit,
     int? minimumUsefulMinutes,
     int? sortOrder,
@@ -3607,6 +3750,10 @@ class Task extends DataClass implements Insertable<Task> {
     energyRequired: energyRequired.present
         ? energyRequired.value
         : this.energyRequired,
+    cognitiveLoad: cognitiveLoad.present
+        ? cognitiveLoad.value
+        : this.cognitiveLoad,
+    dependencyIdsJson: dependencyIdsJson ?? this.dependencyIdsJson,
     requestedDay: requestedDay.present ? requestedDay.value : this.requestedDay,
     requestedStartTime: requestedStartTime.present
         ? requestedStartTime.value
@@ -3624,6 +3771,10 @@ class Task extends DataClass implements Insertable<Task> {
     status: status ?? this.status,
     sourceId: sourceId.present ? sourceId.value : this.sourceId,
     deadline: deadline.present ? deadline.value : this.deadline,
+    earliestStart: earliestStart.present
+        ? earliestStart.value
+        : this.earliestStart,
+    latestFinish: latestFinish.present ? latestFinish.value : this.latestFinish,
     canSplit: canSplit ?? this.canSplit,
     minimumUsefulMinutes: minimumUsefulMinutes ?? this.minimumUsefulMinutes,
     sortOrder: sortOrder ?? this.sortOrder,
@@ -3646,6 +3797,12 @@ class Task extends DataClass implements Insertable<Task> {
       energyRequired: data.energyRequired.present
           ? data.energyRequired.value
           : this.energyRequired,
+      cognitiveLoad: data.cognitiveLoad.present
+          ? data.cognitiveLoad.value
+          : this.cognitiveLoad,
+      dependencyIdsJson: data.dependencyIdsJson.present
+          ? data.dependencyIdsJson.value
+          : this.dependencyIdsJson,
       requestedDay: data.requestedDay.present
           ? data.requestedDay.value
           : this.requestedDay,
@@ -3669,6 +3826,12 @@ class Task extends DataClass implements Insertable<Task> {
       status: data.status.present ? data.status.value : this.status,
       sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
+      earliestStart: data.earliestStart.present
+          ? data.earliestStart.value
+          : this.earliestStart,
+      latestFinish: data.latestFinish.present
+          ? data.latestFinish.value
+          : this.latestFinish,
       canSplit: data.canSplit.present ? data.canSplit.value : this.canSplit,
       minimumUsefulMinutes: data.minimumUsefulMinutes.present
           ? data.minimumUsefulMinutes.value
@@ -3696,6 +3859,8 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('title: $title, ')
           ..write('notes: $notes, ')
           ..write('energyRequired: $energyRequired, ')
+          ..write('cognitiveLoad: $cognitiveLoad, ')
+          ..write('dependencyIdsJson: $dependencyIdsJson, ')
           ..write('requestedDay: $requestedDay, ')
           ..write('requestedStartTime: $requestedStartTime, ')
           ..write('requestedEndTime: $requestedEndTime, ')
@@ -3707,6 +3872,8 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('status: $status, ')
           ..write('sourceId: $sourceId, ')
           ..write('deadline: $deadline, ')
+          ..write('earliestStart: $earliestStart, ')
+          ..write('latestFinish: $latestFinish, ')
           ..write('canSplit: $canSplit, ')
           ..write('minimumUsefulMinutes: $minimumUsefulMinutes, ')
           ..write('sortOrder: $sortOrder, ')
@@ -3728,6 +3895,8 @@ class Task extends DataClass implements Insertable<Task> {
     title,
     notes,
     energyRequired,
+    cognitiveLoad,
+    dependencyIdsJson,
     requestedDay,
     requestedStartTime,
     requestedEndTime,
@@ -3739,6 +3908,8 @@ class Task extends DataClass implements Insertable<Task> {
     status,
     sourceId,
     deadline,
+    earliestStart,
+    latestFinish,
     canSplit,
     minimumUsefulMinutes,
     sortOrder,
@@ -3759,6 +3930,8 @@ class Task extends DataClass implements Insertable<Task> {
           other.title == this.title &&
           other.notes == this.notes &&
           other.energyRequired == this.energyRequired &&
+          other.cognitiveLoad == this.cognitiveLoad &&
+          other.dependencyIdsJson == this.dependencyIdsJson &&
           other.requestedDay == this.requestedDay &&
           other.requestedStartTime == this.requestedStartTime &&
           other.requestedEndTime == this.requestedEndTime &&
@@ -3770,6 +3943,8 @@ class Task extends DataClass implements Insertable<Task> {
           other.status == this.status &&
           other.sourceId == this.sourceId &&
           other.deadline == this.deadline &&
+          other.earliestStart == this.earliestStart &&
+          other.latestFinish == this.latestFinish &&
           other.canSplit == this.canSplit &&
           other.minimumUsefulMinutes == this.minimumUsefulMinutes &&
           other.sortOrder == this.sortOrder &&
@@ -3788,6 +3963,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String> title;
   final Value<String?> notes;
   final Value<String?> energyRequired;
+  final Value<String?> cognitiveLoad;
+  final Value<String> dependencyIdsJson;
   final Value<String?> requestedDay;
   final Value<String?> requestedStartTime;
   final Value<String?> requestedEndTime;
@@ -3799,6 +3976,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String> status;
   final Value<String?> sourceId;
   final Value<DateTime?> deadline;
+  final Value<DateTime?> earliestStart;
+  final Value<DateTime?> latestFinish;
   final Value<bool> canSplit;
   final Value<int> minimumUsefulMinutes;
   final Value<int> sortOrder;
@@ -3816,6 +3995,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.title = const Value.absent(),
     this.notes = const Value.absent(),
     this.energyRequired = const Value.absent(),
+    this.cognitiveLoad = const Value.absent(),
+    this.dependencyIdsJson = const Value.absent(),
     this.requestedDay = const Value.absent(),
     this.requestedStartTime = const Value.absent(),
     this.requestedEndTime = const Value.absent(),
@@ -3827,6 +4008,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.status = const Value.absent(),
     this.sourceId = const Value.absent(),
     this.deadline = const Value.absent(),
+    this.earliestStart = const Value.absent(),
+    this.latestFinish = const Value.absent(),
     this.canSplit = const Value.absent(),
     this.minimumUsefulMinutes = const Value.absent(),
     this.sortOrder = const Value.absent(),
@@ -3845,6 +4028,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     required String title,
     this.notes = const Value.absent(),
     this.energyRequired = const Value.absent(),
+    this.cognitiveLoad = const Value.absent(),
+    this.dependencyIdsJson = const Value.absent(),
     this.requestedDay = const Value.absent(),
     this.requestedStartTime = const Value.absent(),
     this.requestedEndTime = const Value.absent(),
@@ -3856,6 +4041,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     required String status,
     this.sourceId = const Value.absent(),
     this.deadline = const Value.absent(),
+    this.earliestStart = const Value.absent(),
+    this.latestFinish = const Value.absent(),
     this.canSplit = const Value.absent(),
     this.minimumUsefulMinutes = const Value.absent(),
     required int sortOrder,
@@ -3882,6 +4069,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? title,
     Expression<String>? notes,
     Expression<String>? energyRequired,
+    Expression<String>? cognitiveLoad,
+    Expression<String>? dependencyIdsJson,
     Expression<String>? requestedDay,
     Expression<String>? requestedStartTime,
     Expression<String>? requestedEndTime,
@@ -3893,6 +4082,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? status,
     Expression<String>? sourceId,
     Expression<DateTime>? deadline,
+    Expression<DateTime>? earliestStart,
+    Expression<DateTime>? latestFinish,
     Expression<bool>? canSplit,
     Expression<int>? minimumUsefulMinutes,
     Expression<int>? sortOrder,
@@ -3911,6 +4102,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (title != null) 'title': title,
       if (notes != null) 'notes': notes,
       if (energyRequired != null) 'energy_required': energyRequired,
+      if (cognitiveLoad != null) 'cognitive_load': cognitiveLoad,
+      if (dependencyIdsJson != null) 'dependency_ids_json': dependencyIdsJson,
       if (requestedDay != null) 'requested_day': requestedDay,
       if (requestedStartTime != null)
         'requested_start_time': requestedStartTime,
@@ -3923,6 +4116,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (status != null) 'status': status,
       if (sourceId != null) 'source_id': sourceId,
       if (deadline != null) 'deadline': deadline,
+      if (earliestStart != null) 'earliest_start': earliestStart,
+      if (latestFinish != null) 'latest_finish': latestFinish,
       if (canSplit != null) 'can_split': canSplit,
       if (minimumUsefulMinutes != null)
         'minimum_useful_minutes': minimumUsefulMinutes,
@@ -3944,6 +4139,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<String>? title,
     Value<String?>? notes,
     Value<String?>? energyRequired,
+    Value<String?>? cognitiveLoad,
+    Value<String>? dependencyIdsJson,
     Value<String?>? requestedDay,
     Value<String?>? requestedStartTime,
     Value<String?>? requestedEndTime,
@@ -3955,6 +4152,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<String>? status,
     Value<String?>? sourceId,
     Value<DateTime?>? deadline,
+    Value<DateTime?>? earliestStart,
+    Value<DateTime?>? latestFinish,
     Value<bool>? canSplit,
     Value<int>? minimumUsefulMinutes,
     Value<int>? sortOrder,
@@ -3973,6 +4172,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       title: title ?? this.title,
       notes: notes ?? this.notes,
       energyRequired: energyRequired ?? this.energyRequired,
+      cognitiveLoad: cognitiveLoad ?? this.cognitiveLoad,
+      dependencyIdsJson: dependencyIdsJson ?? this.dependencyIdsJson,
       requestedDay: requestedDay ?? this.requestedDay,
       requestedStartTime: requestedStartTime ?? this.requestedStartTime,
       requestedEndTime: requestedEndTime ?? this.requestedEndTime,
@@ -3984,6 +4185,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
       status: status ?? this.status,
       sourceId: sourceId ?? this.sourceId,
       deadline: deadline ?? this.deadline,
+      earliestStart: earliestStart ?? this.earliestStart,
+      latestFinish: latestFinish ?? this.latestFinish,
       canSplit: canSplit ?? this.canSplit,
       minimumUsefulMinutes: minimumUsefulMinutes ?? this.minimumUsefulMinutes,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -4018,6 +4221,12 @@ class TasksCompanion extends UpdateCompanion<Task> {
     if (energyRequired.present) {
       map['energy_required'] = Variable<String>(energyRequired.value);
     }
+    if (cognitiveLoad.present) {
+      map['cognitive_load'] = Variable<String>(cognitiveLoad.value);
+    }
+    if (dependencyIdsJson.present) {
+      map['dependency_ids_json'] = Variable<String>(dependencyIdsJson.value);
+    }
     if (requestedDay.present) {
       map['requested_day'] = Variable<String>(requestedDay.value);
     }
@@ -4050,6 +4259,12 @@ class TasksCompanion extends UpdateCompanion<Task> {
     }
     if (deadline.present) {
       map['deadline'] = Variable<DateTime>(deadline.value);
+    }
+    if (earliestStart.present) {
+      map['earliest_start'] = Variable<DateTime>(earliestStart.value);
+    }
+    if (latestFinish.present) {
+      map['latest_finish'] = Variable<DateTime>(latestFinish.value);
     }
     if (canSplit.present) {
       map['can_split'] = Variable<bool>(canSplit.value);
@@ -4095,6 +4310,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('title: $title, ')
           ..write('notes: $notes, ')
           ..write('energyRequired: $energyRequired, ')
+          ..write('cognitiveLoad: $cognitiveLoad, ')
+          ..write('dependencyIdsJson: $dependencyIdsJson, ')
           ..write('requestedDay: $requestedDay, ')
           ..write('requestedStartTime: $requestedStartTime, ')
           ..write('requestedEndTime: $requestedEndTime, ')
@@ -4106,6 +4323,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('status: $status, ')
           ..write('sourceId: $sourceId, ')
           ..write('deadline: $deadline, ')
+          ..write('earliestStart: $earliestStart, ')
+          ..write('latestFinish: $latestFinish, ')
           ..write('canSplit: $canSplit, ')
           ..write('minimumUsefulMinutes: $minimumUsefulMinutes, ')
           ..write('sortOrder: $sortOrder, ')
@@ -7118,6 +7337,543 @@ class FocusSessionsCompanion extends UpdateCompanion<FocusSession> {
   }
 }
 
+class $FocusSessionStatesTable extends FocusSessionStates
+    with TableInfo<$FocusSessionStatesTable, FocusSessionState> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FocusSessionStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES focus_sessions (id)',
+    ),
+  );
+  static const VerificationMeta _modeMeta = const VerificationMeta('mode');
+  @override
+  late final GeneratedColumn<String> mode = GeneratedColumn<String>(
+    'mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _elapsedMillisecondsMeta =
+      const VerificationMeta('elapsedMilliseconds');
+  @override
+  late final GeneratedColumn<int> elapsedMilliseconds = GeneratedColumn<int>(
+    'elapsed_milliseconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _anchorMillisecondsMeta =
+      const VerificationMeta('anchorMilliseconds');
+  @override
+  late final GeneratedColumn<int> anchorMilliseconds = GeneratedColumn<int>(
+    'anchor_milliseconds',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bootTokenMeta = const VerificationMeta(
+    'bootToken',
+  );
+  @override
+  late final GeneratedColumn<String> bootToken = GeneratedColumn<String>(
+    'boot_token',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _estimateAtStartMeta = const VerificationMeta(
+    'estimateAtStart',
+  );
+  @override
+  late final GeneratedColumn<int> estimateAtStart = GeneratedColumn<int>(
+    'estimate_at_start',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    sessionId,
+    mode,
+    elapsedMilliseconds,
+    anchorMilliseconds,
+    bootToken,
+    version,
+    estimateAtStart,
+    active,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'focus_session_states';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FocusSessionState> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('mode')) {
+      context.handle(
+        _modeMeta,
+        mode.isAcceptableOrUnknown(data['mode']!, _modeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modeMeta);
+    }
+    if (data.containsKey('elapsed_milliseconds')) {
+      context.handle(
+        _elapsedMillisecondsMeta,
+        elapsedMilliseconds.isAcceptableOrUnknown(
+          data['elapsed_milliseconds']!,
+          _elapsedMillisecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('anchor_milliseconds')) {
+      context.handle(
+        _anchorMillisecondsMeta,
+        anchorMilliseconds.isAcceptableOrUnknown(
+          data['anchor_milliseconds']!,
+          _anchorMillisecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('boot_token')) {
+      context.handle(
+        _bootTokenMeta,
+        bootToken.isAcceptableOrUnknown(data['boot_token']!, _bootTokenMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('estimate_at_start')) {
+      context.handle(
+        _estimateAtStartMeta,
+        estimateAtStart.isAcceptableOrUnknown(
+          data['estimate_at_start']!,
+          _estimateAtStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {sessionId};
+  @override
+  FocusSessionState map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FocusSessionState(
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      )!,
+      mode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mode'],
+      )!,
+      elapsedMilliseconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}elapsed_milliseconds'],
+      )!,
+      anchorMilliseconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anchor_milliseconds'],
+      ),
+      bootToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}boot_token'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      estimateAtStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}estimate_at_start'],
+      ),
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+    );
+  }
+
+  @override
+  $FocusSessionStatesTable createAlias(String alias) {
+    return $FocusSessionStatesTable(attachedDatabase, alias);
+  }
+}
+
+class FocusSessionState extends DataClass
+    implements Insertable<FocusSessionState> {
+  final String sessionId;
+  final String mode;
+  final int elapsedMilliseconds;
+  final int? anchorMilliseconds;
+  final String? bootToken;
+  final int version;
+  final int? estimateAtStart;
+  final bool active;
+  const FocusSessionState({
+    required this.sessionId,
+    required this.mode,
+    required this.elapsedMilliseconds,
+    this.anchorMilliseconds,
+    this.bootToken,
+    required this.version,
+    this.estimateAtStart,
+    required this.active,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['session_id'] = Variable<String>(sessionId);
+    map['mode'] = Variable<String>(mode);
+    map['elapsed_milliseconds'] = Variable<int>(elapsedMilliseconds);
+    if (!nullToAbsent || anchorMilliseconds != null) {
+      map['anchor_milliseconds'] = Variable<int>(anchorMilliseconds);
+    }
+    if (!nullToAbsent || bootToken != null) {
+      map['boot_token'] = Variable<String>(bootToken);
+    }
+    map['version'] = Variable<int>(version);
+    if (!nullToAbsent || estimateAtStart != null) {
+      map['estimate_at_start'] = Variable<int>(estimateAtStart);
+    }
+    map['active'] = Variable<bool>(active);
+    return map;
+  }
+
+  FocusSessionStatesCompanion toCompanion(bool nullToAbsent) {
+    return FocusSessionStatesCompanion(
+      sessionId: Value(sessionId),
+      mode: Value(mode),
+      elapsedMilliseconds: Value(elapsedMilliseconds),
+      anchorMilliseconds: anchorMilliseconds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anchorMilliseconds),
+      bootToken: bootToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bootToken),
+      version: Value(version),
+      estimateAtStart: estimateAtStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(estimateAtStart),
+      active: Value(active),
+    );
+  }
+
+  factory FocusSessionState.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FocusSessionState(
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      mode: serializer.fromJson<String>(json['mode']),
+      elapsedMilliseconds: serializer.fromJson<int>(
+        json['elapsedMilliseconds'],
+      ),
+      anchorMilliseconds: serializer.fromJson<int?>(json['anchorMilliseconds']),
+      bootToken: serializer.fromJson<String?>(json['bootToken']),
+      version: serializer.fromJson<int>(json['version']),
+      estimateAtStart: serializer.fromJson<int?>(json['estimateAtStart']),
+      active: serializer.fromJson<bool>(json['active']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'sessionId': serializer.toJson<String>(sessionId),
+      'mode': serializer.toJson<String>(mode),
+      'elapsedMilliseconds': serializer.toJson<int>(elapsedMilliseconds),
+      'anchorMilliseconds': serializer.toJson<int?>(anchorMilliseconds),
+      'bootToken': serializer.toJson<String?>(bootToken),
+      'version': serializer.toJson<int>(version),
+      'estimateAtStart': serializer.toJson<int?>(estimateAtStart),
+      'active': serializer.toJson<bool>(active),
+    };
+  }
+
+  FocusSessionState copyWith({
+    String? sessionId,
+    String? mode,
+    int? elapsedMilliseconds,
+    Value<int?> anchorMilliseconds = const Value.absent(),
+    Value<String?> bootToken = const Value.absent(),
+    int? version,
+    Value<int?> estimateAtStart = const Value.absent(),
+    bool? active,
+  }) => FocusSessionState(
+    sessionId: sessionId ?? this.sessionId,
+    mode: mode ?? this.mode,
+    elapsedMilliseconds: elapsedMilliseconds ?? this.elapsedMilliseconds,
+    anchorMilliseconds: anchorMilliseconds.present
+        ? anchorMilliseconds.value
+        : this.anchorMilliseconds,
+    bootToken: bootToken.present ? bootToken.value : this.bootToken,
+    version: version ?? this.version,
+    estimateAtStart: estimateAtStart.present
+        ? estimateAtStart.value
+        : this.estimateAtStart,
+    active: active ?? this.active,
+  );
+  FocusSessionState copyWithCompanion(FocusSessionStatesCompanion data) {
+    return FocusSessionState(
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      mode: data.mode.present ? data.mode.value : this.mode,
+      elapsedMilliseconds: data.elapsedMilliseconds.present
+          ? data.elapsedMilliseconds.value
+          : this.elapsedMilliseconds,
+      anchorMilliseconds: data.anchorMilliseconds.present
+          ? data.anchorMilliseconds.value
+          : this.anchorMilliseconds,
+      bootToken: data.bootToken.present ? data.bootToken.value : this.bootToken,
+      version: data.version.present ? data.version.value : this.version,
+      estimateAtStart: data.estimateAtStart.present
+          ? data.estimateAtStart.value
+          : this.estimateAtStart,
+      active: data.active.present ? data.active.value : this.active,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusSessionState(')
+          ..write('sessionId: $sessionId, ')
+          ..write('mode: $mode, ')
+          ..write('elapsedMilliseconds: $elapsedMilliseconds, ')
+          ..write('anchorMilliseconds: $anchorMilliseconds, ')
+          ..write('bootToken: $bootToken, ')
+          ..write('version: $version, ')
+          ..write('estimateAtStart: $estimateAtStart, ')
+          ..write('active: $active')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    sessionId,
+    mode,
+    elapsedMilliseconds,
+    anchorMilliseconds,
+    bootToken,
+    version,
+    estimateAtStart,
+    active,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FocusSessionState &&
+          other.sessionId == this.sessionId &&
+          other.mode == this.mode &&
+          other.elapsedMilliseconds == this.elapsedMilliseconds &&
+          other.anchorMilliseconds == this.anchorMilliseconds &&
+          other.bootToken == this.bootToken &&
+          other.version == this.version &&
+          other.estimateAtStart == this.estimateAtStart &&
+          other.active == this.active);
+}
+
+class FocusSessionStatesCompanion extends UpdateCompanion<FocusSessionState> {
+  final Value<String> sessionId;
+  final Value<String> mode;
+  final Value<int> elapsedMilliseconds;
+  final Value<int?> anchorMilliseconds;
+  final Value<String?> bootToken;
+  final Value<int> version;
+  final Value<int?> estimateAtStart;
+  final Value<bool> active;
+  final Value<int> rowid;
+  const FocusSessionStatesCompanion({
+    this.sessionId = const Value.absent(),
+    this.mode = const Value.absent(),
+    this.elapsedMilliseconds = const Value.absent(),
+    this.anchorMilliseconds = const Value.absent(),
+    this.bootToken = const Value.absent(),
+    this.version = const Value.absent(),
+    this.estimateAtStart = const Value.absent(),
+    this.active = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FocusSessionStatesCompanion.insert({
+    required String sessionId,
+    required String mode,
+    this.elapsedMilliseconds = const Value.absent(),
+    this.anchorMilliseconds = const Value.absent(),
+    this.bootToken = const Value.absent(),
+    this.version = const Value.absent(),
+    this.estimateAtStart = const Value.absent(),
+    this.active = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : sessionId = Value(sessionId),
+       mode = Value(mode);
+  static Insertable<FocusSessionState> custom({
+    Expression<String>? sessionId,
+    Expression<String>? mode,
+    Expression<int>? elapsedMilliseconds,
+    Expression<int>? anchorMilliseconds,
+    Expression<String>? bootToken,
+    Expression<int>? version,
+    Expression<int>? estimateAtStart,
+    Expression<bool>? active,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (sessionId != null) 'session_id': sessionId,
+      if (mode != null) 'mode': mode,
+      if (elapsedMilliseconds != null)
+        'elapsed_milliseconds': elapsedMilliseconds,
+      if (anchorMilliseconds != null) 'anchor_milliseconds': anchorMilliseconds,
+      if (bootToken != null) 'boot_token': bootToken,
+      if (version != null) 'version': version,
+      if (estimateAtStart != null) 'estimate_at_start': estimateAtStart,
+      if (active != null) 'active': active,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FocusSessionStatesCompanion copyWith({
+    Value<String>? sessionId,
+    Value<String>? mode,
+    Value<int>? elapsedMilliseconds,
+    Value<int?>? anchorMilliseconds,
+    Value<String?>? bootToken,
+    Value<int>? version,
+    Value<int?>? estimateAtStart,
+    Value<bool>? active,
+    Value<int>? rowid,
+  }) {
+    return FocusSessionStatesCompanion(
+      sessionId: sessionId ?? this.sessionId,
+      mode: mode ?? this.mode,
+      elapsedMilliseconds: elapsedMilliseconds ?? this.elapsedMilliseconds,
+      anchorMilliseconds: anchorMilliseconds ?? this.anchorMilliseconds,
+      bootToken: bootToken ?? this.bootToken,
+      version: version ?? this.version,
+      estimateAtStart: estimateAtStart ?? this.estimateAtStart,
+      active: active ?? this.active,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (mode.present) {
+      map['mode'] = Variable<String>(mode.value);
+    }
+    if (elapsedMilliseconds.present) {
+      map['elapsed_milliseconds'] = Variable<int>(elapsedMilliseconds.value);
+    }
+    if (anchorMilliseconds.present) {
+      map['anchor_milliseconds'] = Variable<int>(anchorMilliseconds.value);
+    }
+    if (bootToken.present) {
+      map['boot_token'] = Variable<String>(bootToken.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (estimateAtStart.present) {
+      map['estimate_at_start'] = Variable<int>(estimateAtStart.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusSessionStatesCompanion(')
+          ..write('sessionId: $sessionId, ')
+          ..write('mode: $mode, ')
+          ..write('elapsedMilliseconds: $elapsedMilliseconds, ')
+          ..write('anchorMilliseconds: $anchorMilliseconds, ')
+          ..write('bootToken: $bootToken, ')
+          ..write('version: $version, ')
+          ..write('estimateAtStart: $estimateAtStart, ')
+          ..write('active: $active, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ShareLinksTable extends ShareLinks
     with TableInfo<$ShareLinksTable, ShareLink> {
   @override
@@ -7959,6 +8715,1223 @@ class CalendarConnectionsCompanion extends UpdateCompanion<CalendarConnection> {
   }
 }
 
+class $SavedTemplatesTable extends SavedTemplates
+    with TableInfo<$SavedTemplatesTable, SavedTemplate> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SavedTemplatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _blocksJsonMeta = const VerificationMeta(
+    'blocksJson',
+  );
+  @override
+  late final GeneratedColumn<String> blocksJson = GeneratedColumn<String>(
+    'blocks_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _formatVersionMeta = const VerificationMeta(
+    'formatVersion',
+  );
+  @override
+  late final GeneratedColumn<int> formatVersion = GeneratedColumn<int>(
+    'format_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    blocksJson,
+    formatVersion,
+    version,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'saved_templates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SavedTemplate> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('blocks_json')) {
+      context.handle(
+        _blocksJsonMeta,
+        blocksJson.isAcceptableOrUnknown(data['blocks_json']!, _blocksJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_blocksJsonMeta);
+    }
+    if (data.containsKey('format_version')) {
+      context.handle(
+        _formatVersionMeta,
+        formatVersion.isAcceptableOrUnknown(
+          data['format_version']!,
+          _formatVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SavedTemplate map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SavedTemplate(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      blocksJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}blocks_json'],
+      )!,
+      formatVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}format_version'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $SavedTemplatesTable createAlias(String alias) {
+    return $SavedTemplatesTable(attachedDatabase, alias);
+  }
+}
+
+class SavedTemplate extends DataClass implements Insertable<SavedTemplate> {
+  final String id;
+  final String name;
+  final String blocksJson;
+  final int formatVersion;
+  final int version;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const SavedTemplate({
+    required this.id,
+    required this.name,
+    required this.blocksJson,
+    required this.formatVersion,
+    required this.version,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['blocks_json'] = Variable<String>(blocksJson);
+    map['format_version'] = Variable<int>(formatVersion);
+    map['version'] = Variable<int>(version);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  SavedTemplatesCompanion toCompanion(bool nullToAbsent) {
+    return SavedTemplatesCompanion(
+      id: Value(id),
+      name: Value(name),
+      blocksJson: Value(blocksJson),
+      formatVersion: Value(formatVersion),
+      version: Value(version),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory SavedTemplate.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SavedTemplate(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      blocksJson: serializer.fromJson<String>(json['blocksJson']),
+      formatVersion: serializer.fromJson<int>(json['formatVersion']),
+      version: serializer.fromJson<int>(json['version']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'blocksJson': serializer.toJson<String>(blocksJson),
+      'formatVersion': serializer.toJson<int>(formatVersion),
+      'version': serializer.toJson<int>(version),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  SavedTemplate copyWith({
+    String? id,
+    String? name,
+    String? blocksJson,
+    int? formatVersion,
+    int? version,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => SavedTemplate(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    blocksJson: blocksJson ?? this.blocksJson,
+    formatVersion: formatVersion ?? this.formatVersion,
+    version: version ?? this.version,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  SavedTemplate copyWithCompanion(SavedTemplatesCompanion data) {
+    return SavedTemplate(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      blocksJson: data.blocksJson.present
+          ? data.blocksJson.value
+          : this.blocksJson,
+      formatVersion: data.formatVersion.present
+          ? data.formatVersion.value
+          : this.formatVersion,
+      version: data.version.present ? data.version.value : this.version,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedTemplate(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('blocksJson: $blocksJson, ')
+          ..write('formatVersion: $formatVersion, ')
+          ..write('version: $version, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    blocksJson,
+    formatVersion,
+    version,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SavedTemplate &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.blocksJson == this.blocksJson &&
+          other.formatVersion == this.formatVersion &&
+          other.version == this.version &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class SavedTemplatesCompanion extends UpdateCompanion<SavedTemplate> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> blocksJson;
+  final Value<int> formatVersion;
+  final Value<int> version;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const SavedTemplatesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.blocksJson = const Value.absent(),
+    this.formatVersion = const Value.absent(),
+    this.version = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SavedTemplatesCompanion.insert({
+    required String id,
+    required String name,
+    required String blocksJson,
+    this.formatVersion = const Value.absent(),
+    this.version = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       blocksJson = Value(blocksJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<SavedTemplate> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? blocksJson,
+    Expression<int>? formatVersion,
+    Expression<int>? version,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (blocksJson != null) 'blocks_json': blocksJson,
+      if (formatVersion != null) 'format_version': formatVersion,
+      if (version != null) 'version': version,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SavedTemplatesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? blocksJson,
+    Value<int>? formatVersion,
+    Value<int>? version,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return SavedTemplatesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      blocksJson: blocksJson ?? this.blocksJson,
+      formatVersion: formatVersion ?? this.formatVersion,
+      version: version ?? this.version,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (blocksJson.present) {
+      map['blocks_json'] = Variable<String>(blocksJson.value);
+    }
+    if (formatVersion.present) {
+      map['format_version'] = Variable<int>(formatVersion.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedTemplatesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('blocksJson: $blocksJson, ')
+          ..write('formatVersion: $formatVersion, ')
+          ..write('version: $version, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TemplateRecurrencesTable extends TemplateRecurrences
+    with TableInfo<$TemplateRecurrencesTable, TemplateRecurrence> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TemplateRecurrencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _templateIdMeta = const VerificationMeta(
+    'templateId',
+  );
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+    'template_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ruleJsonMeta = const VerificationMeta(
+    'ruleJson',
+  );
+  @override
+  late final GeneratedColumn<String> ruleJson = GeneratedColumn<String>(
+    'rule_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    templateId,
+    ruleJson,
+    version,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'template_recurrences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TemplateRecurrence> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('template_id')) {
+      context.handle(
+        _templateIdMeta,
+        templateId.isAcceptableOrUnknown(data['template_id']!, _templateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    if (data.containsKey('rule_json')) {
+      context.handle(
+        _ruleJsonMeta,
+        ruleJson.isAcceptableOrUnknown(data['rule_json']!, _ruleJsonMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {templateId};
+  @override
+  TemplateRecurrence map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TemplateRecurrence(
+      templateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_id'],
+      )!,
+      ruleJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rule_json'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TemplateRecurrencesTable createAlias(String alias) {
+    return $TemplateRecurrencesTable(attachedDatabase, alias);
+  }
+}
+
+class TemplateRecurrence extends DataClass
+    implements Insertable<TemplateRecurrence> {
+  final String templateId;
+  final String? ruleJson;
+  final int version;
+  final DateTime updatedAt;
+  const TemplateRecurrence({
+    required this.templateId,
+    this.ruleJson,
+    required this.version,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['template_id'] = Variable<String>(templateId);
+    if (!nullToAbsent || ruleJson != null) {
+      map['rule_json'] = Variable<String>(ruleJson);
+    }
+    map['version'] = Variable<int>(version);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TemplateRecurrencesCompanion toCompanion(bool nullToAbsent) {
+    return TemplateRecurrencesCompanion(
+      templateId: Value(templateId),
+      ruleJson: ruleJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ruleJson),
+      version: Value(version),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TemplateRecurrence.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TemplateRecurrence(
+      templateId: serializer.fromJson<String>(json['templateId']),
+      ruleJson: serializer.fromJson<String?>(json['ruleJson']),
+      version: serializer.fromJson<int>(json['version']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'templateId': serializer.toJson<String>(templateId),
+      'ruleJson': serializer.toJson<String?>(ruleJson),
+      'version': serializer.toJson<int>(version),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TemplateRecurrence copyWith({
+    String? templateId,
+    Value<String?> ruleJson = const Value.absent(),
+    int? version,
+    DateTime? updatedAt,
+  }) => TemplateRecurrence(
+    templateId: templateId ?? this.templateId,
+    ruleJson: ruleJson.present ? ruleJson.value : this.ruleJson,
+    version: version ?? this.version,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TemplateRecurrence copyWithCompanion(TemplateRecurrencesCompanion data) {
+    return TemplateRecurrence(
+      templateId: data.templateId.present
+          ? data.templateId.value
+          : this.templateId,
+      ruleJson: data.ruleJson.present ? data.ruleJson.value : this.ruleJson,
+      version: data.version.present ? data.version.value : this.version,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TemplateRecurrence(')
+          ..write('templateId: $templateId, ')
+          ..write('ruleJson: $ruleJson, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(templateId, ruleJson, version, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TemplateRecurrence &&
+          other.templateId == this.templateId &&
+          other.ruleJson == this.ruleJson &&
+          other.version == this.version &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TemplateRecurrencesCompanion extends UpdateCompanion<TemplateRecurrence> {
+  final Value<String> templateId;
+  final Value<String?> ruleJson;
+  final Value<int> version;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const TemplateRecurrencesCompanion({
+    this.templateId = const Value.absent(),
+    this.ruleJson = const Value.absent(),
+    this.version = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TemplateRecurrencesCompanion.insert({
+    required String templateId,
+    this.ruleJson = const Value.absent(),
+    this.version = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : templateId = Value(templateId),
+       updatedAt = Value(updatedAt);
+  static Insertable<TemplateRecurrence> custom({
+    Expression<String>? templateId,
+    Expression<String>? ruleJson,
+    Expression<int>? version,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (templateId != null) 'template_id': templateId,
+      if (ruleJson != null) 'rule_json': ruleJson,
+      if (version != null) 'version': version,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TemplateRecurrencesCompanion copyWith({
+    Value<String>? templateId,
+    Value<String?>? ruleJson,
+    Value<int>? version,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return TemplateRecurrencesCompanion(
+      templateId: templateId ?? this.templateId,
+      ruleJson: ruleJson ?? this.ruleJson,
+      version: version ?? this.version,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (ruleJson.present) {
+      map['rule_json'] = Variable<String>(ruleJson.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TemplateRecurrencesCompanion(')
+          ..write('templateId: $templateId, ')
+          ..write('ruleJson: $ruleJson, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AllocationDraftsTable extends AllocationDrafts
+    with TableInfo<$AllocationDraftsTable, AllocationDraft> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AllocationDraftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dayPlanIdMeta = const VerificationMeta(
+    'dayPlanId',
+  );
+  @override
+  late final GeneratedColumn<String> dayPlanId = GeneratedColumn<String>(
+    'day_plan_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES day_plans (id)',
+    ),
+  );
+  static const VerificationMeta _planRevisionMeta = const VerificationMeta(
+    'planRevision',
+  );
+  @override
+  late final GeneratedColumn<int> planRevision = GeneratedColumn<int>(
+    'plan_revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _allocationsJsonMeta = const VerificationMeta(
+    'allocationsJson',
+  );
+  @override
+  late final GeneratedColumn<String> allocationsJson = GeneratedColumn<String>(
+    'allocations_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    dayPlanId,
+    planRevision,
+    version,
+    allocationsJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'allocation_drafts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AllocationDraft> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('day_plan_id')) {
+      context.handle(
+        _dayPlanIdMeta,
+        dayPlanId.isAcceptableOrUnknown(data['day_plan_id']!, _dayPlanIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayPlanIdMeta);
+    }
+    if (data.containsKey('plan_revision')) {
+      context.handle(
+        _planRevisionMeta,
+        planRevision.isAcceptableOrUnknown(
+          data['plan_revision']!,
+          _planRevisionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_planRevisionMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('allocations_json')) {
+      context.handle(
+        _allocationsJsonMeta,
+        allocationsJson.isAcceptableOrUnknown(
+          data['allocations_json']!,
+          _allocationsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_allocationsJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {dayPlanId};
+  @override
+  AllocationDraft map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AllocationDraft(
+      dayPlanId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day_plan_id'],
+      )!,
+      planRevision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}plan_revision'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      allocationsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}allocations_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AllocationDraftsTable createAlias(String alias) {
+    return $AllocationDraftsTable(attachedDatabase, alias);
+  }
+}
+
+class AllocationDraft extends DataClass implements Insertable<AllocationDraft> {
+  final String dayPlanId;
+  final int planRevision;
+  final int version;
+  final String allocationsJson;
+  final DateTime updatedAt;
+  const AllocationDraft({
+    required this.dayPlanId,
+    required this.planRevision,
+    required this.version,
+    required this.allocationsJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['day_plan_id'] = Variable<String>(dayPlanId);
+    map['plan_revision'] = Variable<int>(planRevision);
+    map['version'] = Variable<int>(version);
+    map['allocations_json'] = Variable<String>(allocationsJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AllocationDraftsCompanion toCompanion(bool nullToAbsent) {
+    return AllocationDraftsCompanion(
+      dayPlanId: Value(dayPlanId),
+      planRevision: Value(planRevision),
+      version: Value(version),
+      allocationsJson: Value(allocationsJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AllocationDraft.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AllocationDraft(
+      dayPlanId: serializer.fromJson<String>(json['dayPlanId']),
+      planRevision: serializer.fromJson<int>(json['planRevision']),
+      version: serializer.fromJson<int>(json['version']),
+      allocationsJson: serializer.fromJson<String>(json['allocationsJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'dayPlanId': serializer.toJson<String>(dayPlanId),
+      'planRevision': serializer.toJson<int>(planRevision),
+      'version': serializer.toJson<int>(version),
+      'allocationsJson': serializer.toJson<String>(allocationsJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AllocationDraft copyWith({
+    String? dayPlanId,
+    int? planRevision,
+    int? version,
+    String? allocationsJson,
+    DateTime? updatedAt,
+  }) => AllocationDraft(
+    dayPlanId: dayPlanId ?? this.dayPlanId,
+    planRevision: planRevision ?? this.planRevision,
+    version: version ?? this.version,
+    allocationsJson: allocationsJson ?? this.allocationsJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AllocationDraft copyWithCompanion(AllocationDraftsCompanion data) {
+    return AllocationDraft(
+      dayPlanId: data.dayPlanId.present ? data.dayPlanId.value : this.dayPlanId,
+      planRevision: data.planRevision.present
+          ? data.planRevision.value
+          : this.planRevision,
+      version: data.version.present ? data.version.value : this.version,
+      allocationsJson: data.allocationsJson.present
+          ? data.allocationsJson.value
+          : this.allocationsJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AllocationDraft(')
+          ..write('dayPlanId: $dayPlanId, ')
+          ..write('planRevision: $planRevision, ')
+          ..write('version: $version, ')
+          ..write('allocationsJson: $allocationsJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(dayPlanId, planRevision, version, allocationsJson, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AllocationDraft &&
+          other.dayPlanId == this.dayPlanId &&
+          other.planRevision == this.planRevision &&
+          other.version == this.version &&
+          other.allocationsJson == this.allocationsJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AllocationDraftsCompanion extends UpdateCompanion<AllocationDraft> {
+  final Value<String> dayPlanId;
+  final Value<int> planRevision;
+  final Value<int> version;
+  final Value<String> allocationsJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AllocationDraftsCompanion({
+    this.dayPlanId = const Value.absent(),
+    this.planRevision = const Value.absent(),
+    this.version = const Value.absent(),
+    this.allocationsJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AllocationDraftsCompanion.insert({
+    required String dayPlanId,
+    required int planRevision,
+    required int version,
+    required String allocationsJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : dayPlanId = Value(dayPlanId),
+       planRevision = Value(planRevision),
+       version = Value(version),
+       allocationsJson = Value(allocationsJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<AllocationDraft> custom({
+    Expression<String>? dayPlanId,
+    Expression<int>? planRevision,
+    Expression<int>? version,
+    Expression<String>? allocationsJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (dayPlanId != null) 'day_plan_id': dayPlanId,
+      if (planRevision != null) 'plan_revision': planRevision,
+      if (version != null) 'version': version,
+      if (allocationsJson != null) 'allocations_json': allocationsJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AllocationDraftsCompanion copyWith({
+    Value<String>? dayPlanId,
+    Value<int>? planRevision,
+    Value<int>? version,
+    Value<String>? allocationsJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AllocationDraftsCompanion(
+      dayPlanId: dayPlanId ?? this.dayPlanId,
+      planRevision: planRevision ?? this.planRevision,
+      version: version ?? this.version,
+      allocationsJson: allocationsJson ?? this.allocationsJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (dayPlanId.present) {
+      map['day_plan_id'] = Variable<String>(dayPlanId.value);
+    }
+    if (planRevision.present) {
+      map['plan_revision'] = Variable<int>(planRevision.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (allocationsJson.present) {
+      map['allocations_json'] = Variable<String>(allocationsJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AllocationDraftsCompanion(')
+          ..write('dayPlanId: $dayPlanId, ')
+          ..write('planRevision: $planRevision, ')
+          ..write('version: $version, ')
+          ..write('allocationsJson: $allocationsJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DayweftDatabase extends GeneratedDatabase {
   _$DayweftDatabase(QueryExecutor e) : super(e);
   $DayweftDatabaseManager get managers => $DayweftDatabaseManager(this);
@@ -7976,9 +9949,17 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
       $EstimationRecordsTable(this);
   late final $EnergyCheckInsTable energyCheckIns = $EnergyCheckInsTable(this);
   late final $FocusSessionsTable focusSessions = $FocusSessionsTable(this);
+  late final $FocusSessionStatesTable focusSessionStates =
+      $FocusSessionStatesTable(this);
   late final $ShareLinksTable shareLinks = $ShareLinksTable(this);
   late final $CalendarConnectionsTable calendarConnections =
       $CalendarConnectionsTable(this);
+  late final $SavedTemplatesTable savedTemplates = $SavedTemplatesTable(this);
+  late final $TemplateRecurrencesTable templateRecurrences =
+      $TemplateRecurrencesTable(this);
+  late final $AllocationDraftsTable allocationDrafts = $AllocationDraftsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7994,8 +9975,12 @@ abstract class _$DayweftDatabase extends GeneratedDatabase {
     estimationRecords,
     energyCheckIns,
     focusSessions,
+    focusSessionStates,
     shareLinks,
     calendarConnections,
+    savedTemplates,
+    templateRecurrences,
+    allocationDrafts,
   ];
 }
 
@@ -8084,6 +10069,27 @@ final class $$DayPlansTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _scheduleRevisionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AllocationDraftsTable, List<AllocationDraft>>
+  _allocationDraftsRefsTable(_$DayweftDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.allocationDrafts,
+        aliasName: 'day_plans__id__allocation_drafts__day_plan_id',
+      );
+
+  $$AllocationDraftsTableProcessedTableManager get allocationDraftsRefs {
+    final manager = $$AllocationDraftsTableTableManager(
+      $_db,
+      $_db.allocationDrafts,
+    ).filter((f) => f.dayPlanId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _allocationDraftsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -8217,6 +10223,31 @@ class $$DayPlansTableFilterComposer
           }) => $$ScheduleRevisionsTableFilterComposer(
             $db: $db,
             $table: $db.scheduleRevisions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> allocationDraftsRefs(
+    Expression<bool> Function($$AllocationDraftsTableFilterComposer f) f,
+  ) {
+    final $$AllocationDraftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.allocationDrafts,
+      getReferencedColumn: (t) => t.dayPlanId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AllocationDraftsTableFilterComposer(
+            $db: $db,
+            $table: $db.allocationDrafts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -8405,6 +10436,31 @@ class $$DayPlansTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> allocationDraftsRefs<T extends Object>(
+    Expression<T> Function($$AllocationDraftsTableAnnotationComposer a) f,
+  ) {
+    final $$AllocationDraftsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.allocationDrafts,
+      getReferencedColumn: (t) => t.dayPlanId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AllocationDraftsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.allocationDrafts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$DayPlansTableTableManager
@@ -8424,6 +10480,7 @@ class $$DayPlansTableTableManager
             bool timeBlocksRefs,
             bool tasksRefs,
             bool scheduleRevisionsRefs,
+            bool allocationDraftsRefs,
           })
         > {
   $$DayPlansTableTableManager(_$DayweftDatabase db, $DayPlansTable table)
@@ -8492,7 +10549,7 @@ class $$DayPlansTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DayPlansTable, DayPlan>(table),
                   $$DayPlansTableReferences(db, table, e),
                 ),
               )
@@ -8502,6 +10559,7 @@ class $$DayPlansTableTableManager
                 timeBlocksRefs = false,
                 tasksRefs = false,
                 scheduleRevisionsRefs = false,
+                allocationDraftsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -8509,15 +10567,17 @@ class $$DayPlansTableTableManager
                     if (timeBlocksRefs) db.timeBlocks,
                     if (tasksRefs) db.tasks,
                     if (scheduleRevisionsRefs) db.scheduleRevisions,
+                    if (allocationDraftsRefs) db.allocationDrafts,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (timeBlocksRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           DayPlan,
                           $DayPlansTable,
-                          TimeBlock
+                          TimeBlock,
+                          $TimeBlocksTable
                         >(
                           currentTable: table,
                           referencedTable: $$DayPlansTableReferences
@@ -8528,17 +10588,16 @@ class $$DayPlansTableTableManager
                                 table,
                                 p0,
                               ).timeBlocksRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.dayPlanId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
                           typedResults: items,
                         ),
                       if (tasksRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           DayPlan,
                           $DayPlansTable,
-                          Task
+                          Task,
+                          $TasksTable
                         >(
                           currentTable: table,
                           referencedTable: $$DayPlansTableReferences
@@ -8549,17 +10608,16 @@ class $$DayPlansTableTableManager
                                 table,
                                 p0,
                               ).tasksRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.dayPlanId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
                           typedResults: items,
                         ),
                       if (scheduleRevisionsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           DayPlan,
                           $DayPlansTable,
-                          ScheduleRevision
+                          ScheduleRevision,
+                          $ScheduleRevisionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$DayPlansTableReferences
@@ -8570,10 +10628,28 @@ class $$DayPlansTableTableManager
                                 table,
                                 p0,
                               ).scheduleRevisionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.dayPlanId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
+                          typedResults: items,
+                        ),
+                      if (allocationDraftsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          DayPlan,
+                          $DayPlansTable,
+                          AllocationDraft,
+                          $AllocationDraftsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DayPlansTableReferences
+                              ._allocationDraftsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DayPlansTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).allocationDraftsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'day_plan_id',
                           typedResults: items,
                         ),
                     ];
@@ -8600,6 +10676,7 @@ typedef $$DayPlansTableProcessedTableManager =
         bool timeBlocksRefs,
         bool tasksRefs,
         bool scheduleRevisionsRefs,
+        bool allocationDraftsRefs,
       })
     >;
 typedef $$UserPreferencesTableCreateCompanionBuilder =
@@ -9017,7 +11094,16 @@ class $$UserPreferencesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$UserPreferencesTable, UserPreference>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $UserPreferencesTable,
+                    UserPreference
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -9646,7 +11732,7 @@ class $$TimeBlocksTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$TimeBlocksTable, TimeBlock>(table),
                   $$TimeBlocksTableReferences(db, table, e),
                 ),
               )
@@ -9690,18 +11776,19 @@ class $$TimeBlocksTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (tasksRefs)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       TimeBlock,
                       $TimeBlocksTable,
-                      Task
+                      Task,
+                      $TasksTable
                     >(
                       currentTable: table,
                       referencedTable: $$TimeBlocksTableReferences
                           ._tasksRefsTable(db),
                       managerFromTypedResult: (p0) =>
                           $$TimeBlocksTableReferences(db, table, p0).tasksRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.blockId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'block_id',
                       typedResults: items,
                     ),
                 ];
@@ -9734,6 +11821,8 @@ typedef $$TasksTableCreateCompanionBuilder =
       required String title,
       Value<String?> notes,
       Value<String?> energyRequired,
+      Value<String?> cognitiveLoad,
+      Value<String> dependencyIdsJson,
       Value<String?> requestedDay,
       Value<String?> requestedStartTime,
       Value<String?> requestedEndTime,
@@ -9745,6 +11834,8 @@ typedef $$TasksTableCreateCompanionBuilder =
       required String status,
       Value<String?> sourceId,
       Value<DateTime?> deadline,
+      Value<DateTime?> earliestStart,
+      Value<DateTime?> latestFinish,
       Value<bool> canSplit,
       Value<int> minimumUsefulMinutes,
       required int sortOrder,
@@ -9764,6 +11855,8 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String?> notes,
       Value<String?> energyRequired,
+      Value<String?> cognitiveLoad,
+      Value<String> dependencyIdsJson,
       Value<String?> requestedDay,
       Value<String?> requestedStartTime,
       Value<String?> requestedEndTime,
@@ -9775,6 +11868,8 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String?> sourceId,
       Value<DateTime?> deadline,
+      Value<DateTime?> earliestStart,
+      Value<DateTime?> latestFinish,
       Value<bool> canSplit,
       Value<int> minimumUsefulMinutes,
       Value<int> sortOrder,
@@ -9895,6 +11990,16 @@ class $$TasksTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get cognitiveLoad => $composableBuilder(
+    column: $table.cognitiveLoad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dependencyIdsJson => $composableBuilder(
+    column: $table.dependencyIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get requestedDay => $composableBuilder(
     column: $table.requestedDay,
     builder: (column) => ColumnFilters(column),
@@ -9947,6 +12052,16 @@ class $$TasksTableFilterComposer
 
   ColumnFilters<DateTime> get deadline => $composableBuilder(
     column: $table.deadline,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get earliestStart => $composableBuilder(
+    column: $table.earliestStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get latestFinish => $composableBuilder(
+    column: $table.latestFinish,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10122,6 +12237,16 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get cognitiveLoad => $composableBuilder(
+    column: $table.cognitiveLoad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dependencyIdsJson => $composableBuilder(
+    column: $table.dependencyIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get requestedDay => $composableBuilder(
     column: $table.requestedDay,
     builder: (column) => ColumnOrderings(column),
@@ -10174,6 +12299,16 @@ class $$TasksTableOrderingComposer
 
   ColumnOrderings<DateTime> get deadline => $composableBuilder(
     column: $table.deadline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get earliestStart => $composableBuilder(
+    column: $table.earliestStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get latestFinish => $composableBuilder(
+    column: $table.latestFinish,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -10292,6 +12427,16 @@ class $$TasksTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get cognitiveLoad => $composableBuilder(
+    column: $table.cognitiveLoad,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get dependencyIdsJson => $composableBuilder(
+    column: $table.dependencyIdsJson,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get requestedDay => $composableBuilder(
     column: $table.requestedDay,
     builder: (column) => column,
@@ -10336,6 +12481,16 @@ class $$TasksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deadline =>
       $composableBuilder(column: $table.deadline, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get earliestStart => $composableBuilder(
+    column: $table.earliestStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get latestFinish => $composableBuilder(
+    column: $table.latestFinish,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get canSplit =>
       $composableBuilder(column: $table.canSplit, builder: (column) => column);
@@ -10507,6 +12662,8 @@ class $$TasksTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> energyRequired = const Value.absent(),
+                Value<String?> cognitiveLoad = const Value.absent(),
+                Value<String> dependencyIdsJson = const Value.absent(),
                 Value<String?> requestedDay = const Value.absent(),
                 Value<String?> requestedStartTime = const Value.absent(),
                 Value<String?> requestedEndTime = const Value.absent(),
@@ -10518,6 +12675,8 @@ class $$TasksTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> sourceId = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
+                Value<DateTime?> earliestStart = const Value.absent(),
+                Value<DateTime?> latestFinish = const Value.absent(),
                 Value<bool> canSplit = const Value.absent(),
                 Value<int> minimumUsefulMinutes = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
@@ -10535,6 +12694,8 @@ class $$TasksTableTableManager
                 title: title,
                 notes: notes,
                 energyRequired: energyRequired,
+                cognitiveLoad: cognitiveLoad,
+                dependencyIdsJson: dependencyIdsJson,
                 requestedDay: requestedDay,
                 requestedStartTime: requestedStartTime,
                 requestedEndTime: requestedEndTime,
@@ -10546,6 +12707,8 @@ class $$TasksTableTableManager
                 status: status,
                 sourceId: sourceId,
                 deadline: deadline,
+                earliestStart: earliestStart,
+                latestFinish: latestFinish,
                 canSplit: canSplit,
                 minimumUsefulMinutes: minimumUsefulMinutes,
                 sortOrder: sortOrder,
@@ -10565,6 +12728,8 @@ class $$TasksTableTableManager
                 required String title,
                 Value<String?> notes = const Value.absent(),
                 Value<String?> energyRequired = const Value.absent(),
+                Value<String?> cognitiveLoad = const Value.absent(),
+                Value<String> dependencyIdsJson = const Value.absent(),
                 Value<String?> requestedDay = const Value.absent(),
                 Value<String?> requestedStartTime = const Value.absent(),
                 Value<String?> requestedEndTime = const Value.absent(),
@@ -10576,6 +12741,8 @@ class $$TasksTableTableManager
                 required String status,
                 Value<String?> sourceId = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
+                Value<DateTime?> earliestStart = const Value.absent(),
+                Value<DateTime?> latestFinish = const Value.absent(),
                 Value<bool> canSplit = const Value.absent(),
                 Value<int> minimumUsefulMinutes = const Value.absent(),
                 required int sortOrder,
@@ -10593,6 +12760,8 @@ class $$TasksTableTableManager
                 title: title,
                 notes: notes,
                 energyRequired: energyRequired,
+                cognitiveLoad: cognitiveLoad,
+                dependencyIdsJson: dependencyIdsJson,
                 requestedDay: requestedDay,
                 requestedStartTime: requestedStartTime,
                 requestedEndTime: requestedEndTime,
@@ -10604,6 +12773,8 @@ class $$TasksTableTableManager
                 status: status,
                 sourceId: sourceId,
                 deadline: deadline,
+                earliestStart: earliestStart,
+                latestFinish: latestFinish,
                 canSplit: canSplit,
                 minimumUsefulMinutes: minimumUsefulMinutes,
                 sortOrder: sortOrder,
@@ -10617,8 +12788,10 @@ class $$TasksTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$TasksTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$TasksTable, Task>(table),
+                  $$TasksTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback:
@@ -10682,10 +12855,11 @@ class $$TasksTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (estimationRecordsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Task,
                           $TasksTable,
-                          EstimationRecord
+                          EstimationRecord,
+                          $EstimationRecordsTable
                         >(
                           currentTable: table,
                           referencedTable: $$TasksTableReferences
@@ -10696,17 +12870,16 @@ class $$TasksTableTableManager
                                 table,
                                 p0,
                               ).estimationRecordsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.taskId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'task_id',
                           typedResults: items,
                         ),
                       if (focusSessionsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Task,
                           $TasksTable,
-                          FocusSession
+                          FocusSession,
+                          $FocusSessionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$TasksTableReferences
@@ -10717,10 +12890,8 @@ class $$TasksTableTableManager
                                 table,
                                 p0,
                               ).focusSessionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.taskId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'task_id',
                           typedResults: items,
                         ),
                     ];
@@ -11109,7 +13280,7 @@ class $$ScheduleRevisionsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ScheduleRevisionsTable, ScheduleRevision>(table),
                   $$ScheduleRevisionsTableReferences(db, table, e),
                 ),
               )
@@ -11158,10 +13329,11 @@ class $$ScheduleRevisionsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (revisionUndosRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           ScheduleRevision,
                           $ScheduleRevisionsTable,
-                          RevisionUndo
+                          RevisionUndo,
+                          $RevisionUndosTable
                         >(
                           currentTable: table,
                           referencedTable: $$ScheduleRevisionsTableReferences
@@ -11172,10 +13344,8 @@ class $$ScheduleRevisionsTableTableManager
                                 table,
                                 p0,
                               ).revisionUndosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.revisionId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'revision_id',
                           typedResults: items,
                         ),
                     ];
@@ -11424,7 +13594,7 @@ class $$RevisionUndosTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$RevisionUndosTable, RevisionUndo>(table),
                   $$RevisionUndosTableReferences(db, table, e),
                 ),
               )
@@ -11737,7 +13907,16 @@ class $$SyncOperationsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$SyncOperationsTable, SyncOperation>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $SyncOperationsTable,
+                    SyncOperation
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -12209,7 +14388,7 @@ class $$EstimationRecordsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$EstimationRecordsTable, EstimationRecord>(table),
                   $$EstimationRecordsTableReferences(db, table, e),
                 ),
               )
@@ -12438,7 +14617,16 @@ class $$EnergyCheckInsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$EnergyCheckInsTable, EnergyCheckIn>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $EnergyCheckInsTable,
+                    EnergyCheckIn
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -12514,6 +14702,27 @@ final class $$FocusSessionsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$FocusSessionStatesTable, List<FocusSessionState>>
+  _focusSessionStatesRefsTable(_$DayweftDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.focusSessionStates,
+        aliasName: 'focus_sessions__id__focus_session_states__session_id',
+      );
+
+  $$FocusSessionStatesTableProcessedTableManager get focusSessionStatesRefs {
+    final manager = $$FocusSessionStatesTableTableManager(
+      $_db,
+      $_db.focusSessionStates,
+    ).filter((f) => f.sessionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _focusSessionStatesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -12593,6 +14802,31 @@ class $$FocusSessionsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> focusSessionStatesRefs(
+    Expression<bool> Function($$FocusSessionStatesTableFilterComposer f) f,
+  ) {
+    final $$FocusSessionStatesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.focusSessionStates,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionStatesTableFilterComposer(
+            $db: $db,
+            $table: $db.focusSessionStates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -12738,6 +14972,32 @@ class $$FocusSessionsTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> focusSessionStatesRefs<T extends Object>(
+    Expression<T> Function($$FocusSessionStatesTableAnnotationComposer a) f,
+  ) {
+    final $$FocusSessionStatesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.focusSessionStates,
+          getReferencedColumn: (t) => t.sessionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$FocusSessionStatesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.focusSessionStates,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$FocusSessionsTableTableManager
@@ -12753,7 +15013,7 @@ class $$FocusSessionsTableTableManager
           $$FocusSessionsTableUpdateCompanionBuilder,
           (FocusSession, $$FocusSessionsTableReferences),
           FocusSession,
-          PrefetchHooks Function({bool taskId})
+          PrefetchHooks Function({bool taskId, bool focusSessionStatesRefs})
         > {
   $$FocusSessionsTableTableManager(
     _$DayweftDatabase db,
@@ -12823,12 +15083,435 @@ class $$FocusSessionsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$FocusSessionsTable, FocusSession>(table),
                   $$FocusSessionsTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({taskId = false}) {
+          prefetchHooksCallback:
+              ({taskId = false, focusSessionStatesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (focusSessionStatesRefs) db.focusSessionStates,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (taskId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.taskId,
+                                    referencedTable:
+                                        $$FocusSessionsTableReferences
+                                            ._taskIdTable(db),
+                                    referencedColumn:
+                                        $$FocusSessionsTableReferences
+                                            ._taskIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (focusSessionStatesRefs)
+                        await $_getPrefetchedDataByColumns<
+                          FocusSession,
+                          $FocusSessionsTable,
+                          FocusSessionState,
+                          $FocusSessionStatesTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FocusSessionsTableReferences
+                              ._focusSessionStatesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FocusSessionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).focusSessionStatesRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'session_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$FocusSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $FocusSessionsTable,
+      FocusSession,
+      $$FocusSessionsTableFilterComposer,
+      $$FocusSessionsTableOrderingComposer,
+      $$FocusSessionsTableAnnotationComposer,
+      $$FocusSessionsTableCreateCompanionBuilder,
+      $$FocusSessionsTableUpdateCompanionBuilder,
+      (FocusSession, $$FocusSessionsTableReferences),
+      FocusSession,
+      PrefetchHooks Function({bool taskId, bool focusSessionStatesRefs})
+    >;
+typedef $$FocusSessionStatesTableCreateCompanionBuilder =
+    FocusSessionStatesCompanion Function({
+      required String sessionId,
+      required String mode,
+      Value<int> elapsedMilliseconds,
+      Value<int?> anchorMilliseconds,
+      Value<String?> bootToken,
+      Value<int> version,
+      Value<int?> estimateAtStart,
+      Value<bool> active,
+      Value<int> rowid,
+    });
+typedef $$FocusSessionStatesTableUpdateCompanionBuilder =
+    FocusSessionStatesCompanion Function({
+      Value<String> sessionId,
+      Value<String> mode,
+      Value<int> elapsedMilliseconds,
+      Value<int?> anchorMilliseconds,
+      Value<String?> bootToken,
+      Value<int> version,
+      Value<int?> estimateAtStart,
+      Value<bool> active,
+      Value<int> rowid,
+    });
+
+final class $$FocusSessionStatesTableReferences
+    extends
+        BaseReferences<
+          _$DayweftDatabase,
+          $FocusSessionStatesTable,
+          FocusSessionState
+        > {
+  $$FocusSessionStatesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FocusSessionsTable _sessionIdTable(_$DayweftDatabase db) => db
+      .focusSessions
+      .createAlias('focus_session_states__session_id__focus_sessions__id');
+
+  $$FocusSessionsTableProcessedTableManager get sessionId {
+    final $_column = $_itemColumn<String>('session_id')!;
+
+    final manager = $$FocusSessionsTableTableManager(
+      $_db,
+      $_db.focusSessions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FocusSessionStatesTableFilterComposer
+    extends Composer<_$DayweftDatabase, $FocusSessionStatesTable> {
+  $$FocusSessionStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get elapsedMilliseconds => $composableBuilder(
+    column: $table.elapsedMilliseconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get anchorMilliseconds => $composableBuilder(
+    column: $table.anchorMilliseconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bootToken => $composableBuilder(
+    column: $table.bootToken,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get estimateAtStart => $composableBuilder(
+    column: $table.estimateAtStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FocusSessionsTableFilterComposer get sessionId {
+    final $$FocusSessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FocusSessionStatesTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $FocusSessionStatesTable> {
+  $$FocusSessionStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get elapsedMilliseconds => $composableBuilder(
+    column: $table.elapsedMilliseconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get anchorMilliseconds => $composableBuilder(
+    column: $table.anchorMilliseconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bootToken => $composableBuilder(
+    column: $table.bootToken,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get estimateAtStart => $composableBuilder(
+    column: $table.estimateAtStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FocusSessionsTableOrderingComposer get sessionId {
+    final $$FocusSessionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FocusSessionStatesTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $FocusSessionStatesTable> {
+  $$FocusSessionStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get mode =>
+      $composableBuilder(column: $table.mode, builder: (column) => column);
+
+  GeneratedColumn<int> get elapsedMilliseconds => $composableBuilder(
+    column: $table.elapsedMilliseconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get anchorMilliseconds => $composableBuilder(
+    column: $table.anchorMilliseconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get bootToken =>
+      $composableBuilder(column: $table.bootToken, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<int> get estimateAtStart => $composableBuilder(
+    column: $table.estimateAtStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  $$FocusSessionsTableAnnotationComposer get sessionId {
+    final $$FocusSessionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.focusSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.focusSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FocusSessionStatesTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $FocusSessionStatesTable,
+          FocusSessionState,
+          $$FocusSessionStatesTableFilterComposer,
+          $$FocusSessionStatesTableOrderingComposer,
+          $$FocusSessionStatesTableAnnotationComposer,
+          $$FocusSessionStatesTableCreateCompanionBuilder,
+          $$FocusSessionStatesTableUpdateCompanionBuilder,
+          (FocusSessionState, $$FocusSessionStatesTableReferences),
+          FocusSessionState,
+          PrefetchHooks Function({bool sessionId})
+        > {
+  $$FocusSessionStatesTableTableManager(
+    _$DayweftDatabase db,
+    $FocusSessionStatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FocusSessionStatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FocusSessionStatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FocusSessionStatesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> sessionId = const Value.absent(),
+                Value<String> mode = const Value.absent(),
+                Value<int> elapsedMilliseconds = const Value.absent(),
+                Value<int?> anchorMilliseconds = const Value.absent(),
+                Value<String?> bootToken = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int?> estimateAtStart = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FocusSessionStatesCompanion(
+                sessionId: sessionId,
+                mode: mode,
+                elapsedMilliseconds: elapsedMilliseconds,
+                anchorMilliseconds: anchorMilliseconds,
+                bootToken: bootToken,
+                version: version,
+                estimateAtStart: estimateAtStart,
+                active: active,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String sessionId,
+                required String mode,
+                Value<int> elapsedMilliseconds = const Value.absent(),
+                Value<int?> anchorMilliseconds = const Value.absent(),
+                Value<String?> bootToken = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int?> estimateAtStart = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FocusSessionStatesCompanion.insert(
+                sessionId: sessionId,
+                mode: mode,
+                elapsedMilliseconds: elapsedMilliseconds,
+                anchorMilliseconds: anchorMilliseconds,
+                bootToken: bootToken,
+                version: version,
+                estimateAtStart: estimateAtStart,
+                active: active,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FocusSessionStatesTable, FocusSessionState>(
+                    table,
+                  ),
+                  $$FocusSessionStatesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({sessionId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -12848,16 +15531,18 @@ class $$FocusSessionsTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (taskId) {
+                    if (sessionId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.taskId,
-                                referencedTable: $$FocusSessionsTableReferences
-                                    ._taskIdTable(db),
-                                referencedColumn: $$FocusSessionsTableReferences
-                                    ._taskIdTable(db)
-                                    .id,
+                                currentColumn: table.sessionId,
+                                referencedTable:
+                                    $$FocusSessionStatesTableReferences
+                                        ._sessionIdTable(db),
+                                referencedColumn:
+                                    $$FocusSessionStatesTableReferences
+                                        ._sessionIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -12873,19 +15558,19 @@ class $$FocusSessionsTableTableManager
       );
 }
 
-typedef $$FocusSessionsTableProcessedTableManager =
+typedef $$FocusSessionStatesTableProcessedTableManager =
     ProcessedTableManager<
       _$DayweftDatabase,
-      $FocusSessionsTable,
-      FocusSession,
-      $$FocusSessionsTableFilterComposer,
-      $$FocusSessionsTableOrderingComposer,
-      $$FocusSessionsTableAnnotationComposer,
-      $$FocusSessionsTableCreateCompanionBuilder,
-      $$FocusSessionsTableUpdateCompanionBuilder,
-      (FocusSession, $$FocusSessionsTableReferences),
-      FocusSession,
-      PrefetchHooks Function({bool taskId})
+      $FocusSessionStatesTable,
+      FocusSessionState,
+      $$FocusSessionStatesTableFilterComposer,
+      $$FocusSessionStatesTableOrderingComposer,
+      $$FocusSessionStatesTableAnnotationComposer,
+      $$FocusSessionStatesTableCreateCompanionBuilder,
+      $$FocusSessionStatesTableUpdateCompanionBuilder,
+      (FocusSessionState, $$FocusSessionStatesTableReferences),
+      FocusSessionState,
+      PrefetchHooks Function({bool sessionId})
     >;
 typedef $$ShareLinksTableCreateCompanionBuilder =
     ShareLinksCompanion Function({
@@ -13103,7 +15788,16 @@ class $$ShareLinksTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ShareLinksTable, ShareLink>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $ShareLinksTable,
+                    ShareLink
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -13317,7 +16011,18 @@ class $$CalendarConnectionsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$CalendarConnectionsTable, CalendarConnection>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $CalendarConnectionsTable,
+                    CalendarConnection
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -13345,6 +16050,826 @@ typedef $$CalendarConnectionsTableProcessedTableManager =
       CalendarConnection,
       PrefetchHooks Function()
     >;
+typedef $$SavedTemplatesTableCreateCompanionBuilder =
+    SavedTemplatesCompanion Function({
+      required String id,
+      required String name,
+      required String blocksJson,
+      Value<int> formatVersion,
+      Value<int> version,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$SavedTemplatesTableUpdateCompanionBuilder =
+    SavedTemplatesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> blocksJson,
+      Value<int> formatVersion,
+      Value<int> version,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$SavedTemplatesTableFilterComposer
+    extends Composer<_$DayweftDatabase, $SavedTemplatesTable> {
+  $$SavedTemplatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get blocksJson => $composableBuilder(
+    column: $table.blocksJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get formatVersion => $composableBuilder(
+    column: $table.formatVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SavedTemplatesTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $SavedTemplatesTable> {
+  $$SavedTemplatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get blocksJson => $composableBuilder(
+    column: $table.blocksJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get formatVersion => $composableBuilder(
+    column: $table.formatVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SavedTemplatesTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $SavedTemplatesTable> {
+  $$SavedTemplatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get blocksJson => $composableBuilder(
+    column: $table.blocksJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get formatVersion => $composableBuilder(
+    column: $table.formatVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$SavedTemplatesTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $SavedTemplatesTable,
+          SavedTemplate,
+          $$SavedTemplatesTableFilterComposer,
+          $$SavedTemplatesTableOrderingComposer,
+          $$SavedTemplatesTableAnnotationComposer,
+          $$SavedTemplatesTableCreateCompanionBuilder,
+          $$SavedTemplatesTableUpdateCompanionBuilder,
+          (
+            SavedTemplate,
+            BaseReferences<
+              _$DayweftDatabase,
+              $SavedTemplatesTable,
+              SavedTemplate
+            >,
+          ),
+          SavedTemplate,
+          PrefetchHooks Function()
+        > {
+  $$SavedTemplatesTableTableManager(
+    _$DayweftDatabase db,
+    $SavedTemplatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SavedTemplatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SavedTemplatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SavedTemplatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> blocksJson = const Value.absent(),
+                Value<int> formatVersion = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SavedTemplatesCompanion(
+                id: id,
+                name: name,
+                blocksJson: blocksJson,
+                formatVersion: formatVersion,
+                version: version,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String blocksJson,
+                Value<int> formatVersion = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SavedTemplatesCompanion.insert(
+                id: id,
+                name: name,
+                blocksJson: blocksJson,
+                formatVersion: formatVersion,
+                version: version,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SavedTemplatesTable, SavedTemplate>(table),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $SavedTemplatesTable,
+                    SavedTemplate
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SavedTemplatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $SavedTemplatesTable,
+      SavedTemplate,
+      $$SavedTemplatesTableFilterComposer,
+      $$SavedTemplatesTableOrderingComposer,
+      $$SavedTemplatesTableAnnotationComposer,
+      $$SavedTemplatesTableCreateCompanionBuilder,
+      $$SavedTemplatesTableUpdateCompanionBuilder,
+      (
+        SavedTemplate,
+        BaseReferences<_$DayweftDatabase, $SavedTemplatesTable, SavedTemplate>,
+      ),
+      SavedTemplate,
+      PrefetchHooks Function()
+    >;
+typedef $$TemplateRecurrencesTableCreateCompanionBuilder =
+    TemplateRecurrencesCompanion Function({
+      required String templateId,
+      Value<String?> ruleJson,
+      Value<int> version,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$TemplateRecurrencesTableUpdateCompanionBuilder =
+    TemplateRecurrencesCompanion Function({
+      Value<String> templateId,
+      Value<String?> ruleJson,
+      Value<int> version,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$TemplateRecurrencesTableFilterComposer
+    extends Composer<_$DayweftDatabase, $TemplateRecurrencesTable> {
+  $$TemplateRecurrencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruleJson => $composableBuilder(
+    column: $table.ruleJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TemplateRecurrencesTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $TemplateRecurrencesTable> {
+  $$TemplateRecurrencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruleJson => $composableBuilder(
+    column: $table.ruleJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TemplateRecurrencesTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $TemplateRecurrencesTable> {
+  $$TemplateRecurrencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ruleJson =>
+      $composableBuilder(column: $table.ruleJson, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$TemplateRecurrencesTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $TemplateRecurrencesTable,
+          TemplateRecurrence,
+          $$TemplateRecurrencesTableFilterComposer,
+          $$TemplateRecurrencesTableOrderingComposer,
+          $$TemplateRecurrencesTableAnnotationComposer,
+          $$TemplateRecurrencesTableCreateCompanionBuilder,
+          $$TemplateRecurrencesTableUpdateCompanionBuilder,
+          (
+            TemplateRecurrence,
+            BaseReferences<
+              _$DayweftDatabase,
+              $TemplateRecurrencesTable,
+              TemplateRecurrence
+            >,
+          ),
+          TemplateRecurrence,
+          PrefetchHooks Function()
+        > {
+  $$TemplateRecurrencesTableTableManager(
+    _$DayweftDatabase db,
+    $TemplateRecurrencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TemplateRecurrencesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TemplateRecurrencesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$TemplateRecurrencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> templateId = const Value.absent(),
+                Value<String?> ruleJson = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TemplateRecurrencesCompanion(
+                templateId: templateId,
+                ruleJson: ruleJson,
+                version: version,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String templateId,
+                Value<String?> ruleJson = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => TemplateRecurrencesCompanion.insert(
+                templateId: templateId,
+                ruleJson: ruleJson,
+                version: version,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TemplateRecurrencesTable, TemplateRecurrence>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$DayweftDatabase,
+                    $TemplateRecurrencesTable,
+                    TemplateRecurrence
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TemplateRecurrencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $TemplateRecurrencesTable,
+      TemplateRecurrence,
+      $$TemplateRecurrencesTableFilterComposer,
+      $$TemplateRecurrencesTableOrderingComposer,
+      $$TemplateRecurrencesTableAnnotationComposer,
+      $$TemplateRecurrencesTableCreateCompanionBuilder,
+      $$TemplateRecurrencesTableUpdateCompanionBuilder,
+      (
+        TemplateRecurrence,
+        BaseReferences<
+          _$DayweftDatabase,
+          $TemplateRecurrencesTable,
+          TemplateRecurrence
+        >,
+      ),
+      TemplateRecurrence,
+      PrefetchHooks Function()
+    >;
+typedef $$AllocationDraftsTableCreateCompanionBuilder =
+    AllocationDraftsCompanion Function({
+      required String dayPlanId,
+      required int planRevision,
+      required int version,
+      required String allocationsJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AllocationDraftsTableUpdateCompanionBuilder =
+    AllocationDraftsCompanion Function({
+      Value<String> dayPlanId,
+      Value<int> planRevision,
+      Value<int> version,
+      Value<String> allocationsJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$AllocationDraftsTableReferences
+    extends
+        BaseReferences<
+          _$DayweftDatabase,
+          $AllocationDraftsTable,
+          AllocationDraft
+        > {
+  $$AllocationDraftsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DayPlansTable _dayPlanIdTable(_$DayweftDatabase db) =>
+      db.dayPlans.createAlias('allocation_drafts__day_plan_id__day_plans__id');
+
+  $$DayPlansTableProcessedTableManager get dayPlanId {
+    final $_column = $_itemColumn<String>('day_plan_id')!;
+
+    final manager = $$DayPlansTableTableManager(
+      $_db,
+      $_db.dayPlans,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_dayPlanIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AllocationDraftsTableFilterComposer
+    extends Composer<_$DayweftDatabase, $AllocationDraftsTable> {
+  $$AllocationDraftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get planRevision => $composableBuilder(
+    column: $table.planRevision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$DayPlansTableFilterComposer get dayPlanId {
+    final $$DayPlansTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dayPlanId,
+      referencedTable: $db.dayPlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DayPlansTableFilterComposer(
+            $db: $db,
+            $table: $db.dayPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationDraftsTableOrderingComposer
+    extends Composer<_$DayweftDatabase, $AllocationDraftsTable> {
+  $$AllocationDraftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get planRevision => $composableBuilder(
+    column: $table.planRevision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$DayPlansTableOrderingComposer get dayPlanId {
+    final $$DayPlansTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dayPlanId,
+      referencedTable: $db.dayPlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DayPlansTableOrderingComposer(
+            $db: $db,
+            $table: $db.dayPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationDraftsTableAnnotationComposer
+    extends Composer<_$DayweftDatabase, $AllocationDraftsTable> {
+  $$AllocationDraftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get planRevision => $composableBuilder(
+    column: $table.planRevision,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$DayPlansTableAnnotationComposer get dayPlanId {
+    final $$DayPlansTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.dayPlanId,
+      referencedTable: $db.dayPlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DayPlansTableAnnotationComposer(
+            $db: $db,
+            $table: $db.dayPlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationDraftsTableTableManager
+    extends
+        RootTableManager<
+          _$DayweftDatabase,
+          $AllocationDraftsTable,
+          AllocationDraft,
+          $$AllocationDraftsTableFilterComposer,
+          $$AllocationDraftsTableOrderingComposer,
+          $$AllocationDraftsTableAnnotationComposer,
+          $$AllocationDraftsTableCreateCompanionBuilder,
+          $$AllocationDraftsTableUpdateCompanionBuilder,
+          (AllocationDraft, $$AllocationDraftsTableReferences),
+          AllocationDraft,
+          PrefetchHooks Function({bool dayPlanId})
+        > {
+  $$AllocationDraftsTableTableManager(
+    _$DayweftDatabase db,
+    $AllocationDraftsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AllocationDraftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AllocationDraftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AllocationDraftsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> dayPlanId = const Value.absent(),
+                Value<int> planRevision = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String> allocationsJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AllocationDraftsCompanion(
+                dayPlanId: dayPlanId,
+                planRevision: planRevision,
+                version: version,
+                allocationsJson: allocationsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String dayPlanId,
+                required int planRevision,
+                required int version,
+                required String allocationsJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AllocationDraftsCompanion.insert(
+                dayPlanId: dayPlanId,
+                planRevision: planRevision,
+                version: version,
+                allocationsJson: allocationsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AllocationDraftsTable, AllocationDraft>(table),
+                  $$AllocationDraftsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({dayPlanId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (dayPlanId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.dayPlanId,
+                                referencedTable:
+                                    $$AllocationDraftsTableReferences
+                                        ._dayPlanIdTable(db),
+                                referencedColumn:
+                                    $$AllocationDraftsTableReferences
+                                        ._dayPlanIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AllocationDraftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DayweftDatabase,
+      $AllocationDraftsTable,
+      AllocationDraft,
+      $$AllocationDraftsTableFilterComposer,
+      $$AllocationDraftsTableOrderingComposer,
+      $$AllocationDraftsTableAnnotationComposer,
+      $$AllocationDraftsTableCreateCompanionBuilder,
+      $$AllocationDraftsTableUpdateCompanionBuilder,
+      (AllocationDraft, $$AllocationDraftsTableReferences),
+      AllocationDraft,
+      PrefetchHooks Function({bool dayPlanId})
+    >;
 
 class $DayweftDatabaseManager {
   final _$DayweftDatabase _db;
@@ -13369,8 +16894,16 @@ class $DayweftDatabaseManager {
       $$EnergyCheckInsTableTableManager(_db, _db.energyCheckIns);
   $$FocusSessionsTableTableManager get focusSessions =>
       $$FocusSessionsTableTableManager(_db, _db.focusSessions);
+  $$FocusSessionStatesTableTableManager get focusSessionStates =>
+      $$FocusSessionStatesTableTableManager(_db, _db.focusSessionStates);
   $$ShareLinksTableTableManager get shareLinks =>
       $$ShareLinksTableTableManager(_db, _db.shareLinks);
   $$CalendarConnectionsTableTableManager get calendarConnections =>
       $$CalendarConnectionsTableTableManager(_db, _db.calendarConnections);
+  $$SavedTemplatesTableTableManager get savedTemplates =>
+      $$SavedTemplatesTableTableManager(_db, _db.savedTemplates);
+  $$TemplateRecurrencesTableTableManager get templateRecurrences =>
+      $$TemplateRecurrencesTableTableManager(_db, _db.templateRecurrences);
+  $$AllocationDraftsTableTableManager get allocationDrafts =>
+      $$AllocationDraftsTableTableManager(_db, _db.allocationDrafts);
 }

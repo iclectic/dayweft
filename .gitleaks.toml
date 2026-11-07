@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Local build outputs and dependency caches, never application source"
+paths = ['''(^|/)(build|\.dart_tool|coverage|\.gradle)/''']

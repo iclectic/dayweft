@@ -1,33 +1,203 @@
 import 'dart:io';
 
 import 'package:dayweft_mobile/core/database/dayweft_database.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('database schema starts at version 9 and creates core tables', () async {
-    final database = DayweftDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
+  Future<void> removeTaskWindowColumns(DayweftDatabase database) async {
+    await database.customStatement('DROP TABLE allocation_drafts');
+    await database.customStatement(
+      'ALTER TABLE tasks DROP COLUMN earliest_start',
+    );
+    await database.customStatement(
+      'ALTER TABLE tasks DROP COLUMN latest_finish',
+    );
+  }
 
-    expect(database.schemaVersion, 9);
+  test(
+    'version 14 upgrade preserves a real task and creates empty draft storage',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v14-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 11, 6);
+      await old
+          .into(old.tasks)
+          .insert(
+            TasksCompanion.insert(
+              id: 'keep',
+              title: 'Existing task',
+              estimatedMinutes: 45,
+              priority: 'high',
+              status: 'inbox',
+              sortOrder: 0,
+              syncState: SyncState.localOnly,
+              earliestStart: Value(now),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await old.customStatement('DROP TABLE allocation_drafts');
+      await old.customStatement('PRAGMA user_version = 14');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final task = await upgraded.select(upgraded.tasks).getSingle();
+      expect(task.title, 'Existing task');
+      expect(task.earliestStart, now);
+      expect(await upgraded.select(upgraded.allocationDrafts).get(), isEmpty);
+    },
+  );
 
-    final tables = await database
-        .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
-        .get();
+  test(
+    'version 13 task rows retain their data and gain unset windows',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v13-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 11, 6);
+      await old
+          .into(old.tasks)
+          .insert(
+            TasksCompanion.insert(
+              id: 'existing',
+              title: 'Keep this task',
+              estimatedMinutes: 45,
+              priority: 'high',
+              status: 'inbox',
+              sortOrder: 0,
+              syncState: SyncState.localOnly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await removeTaskWindowColumns(old);
+      await old.customStatement('PRAGMA user_version = 13');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final task = await upgraded.select(upgraded.tasks).getSingle();
+      expect(task.title, 'Keep this task');
+      expect(task.estimatedMinutes, 45);
+      expect(task.earliestStart, isNull);
+      expect(task.latestFinish, isNull);
+    },
+  );
+  test(
+    'version 12 upgrade preserves templates and creates recurrence storage',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v12-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 11, 6);
+      await old
+          .into(old.savedTemplates)
+          .insert(
+            SavedTemplatesCompanion.insert(
+              id: 'user:existing',
+              name: 'Existing pattern',
+              blocksJson: '[]',
+              version: const Value(4),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await old.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(old);
+      await old.customStatement('PRAGMA user_version = 12');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final row = await upgraded.select(upgraded.savedTemplates).getSingle();
+      expect(row.name, 'Existing pattern');
+      expect(row.version, 4);
+      expect(
+        await upgraded.select(upgraded.templateRecurrences).get(),
+        isEmpty,
+      );
+    },
+  );
+  test(
+    'version 11 migration preserves focus state and creates an empty template library',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v11-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final old = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 10, 29);
+      await old
+          .into(old.focusSessions)
+          .insert(
+            FocusSessionsCompanion.insert(
+              id: 'keep-focus',
+              title: 'Existing session',
+              startedAt: now,
+              plannedMinutes: 25,
+              status: 'paused',
+              createdAt: now,
+            ),
+          );
+      await old
+          .into(old.focusSessionStates)
+          .insert(
+            FocusSessionStatesCompanion.insert(
+              sessionId: 'keep-focus',
+              mode: 'countUp',
+              elapsedMilliseconds: const Value(65000),
+              version: const Value(3),
+            ),
+          );
+      await old.customStatement('DROP TABLE saved_templates');
+      await old.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(old);
+      await old.customStatement('PRAGMA user_version = 11');
+      await old.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      expect(
+        (await upgraded.select(upgraded.focusSessions).getSingle()).title,
+        'Existing session',
+      );
+      final timing = await upgraded
+          .select(upgraded.focusSessionStates)
+          .getSingle();
+      expect(timing.elapsedMilliseconds, 65000);
+      expect(timing.version, 3);
+      expect(await upgraded.select(upgraded.savedTemplates).get(), isEmpty);
+    },
+  );
 
-    final tableNames = tables.map((row) => row.read<String>('name'));
-    expect(tableNames, contains('day_plans'));
-    expect(tableNames, contains('user_preferences'));
-    expect(tableNames, contains('time_blocks'));
-    expect(tableNames, contains('tasks'));
-    expect(tableNames, contains('schedule_revisions'));
-    expect(tableNames, contains('sync_operations'));
-    expect(tableNames, contains('estimation_records'));
-    expect(tableNames, contains('energy_check_ins'));
-    expect(tableNames, contains('focus_sessions'));
-    expect(tableNames, contains('share_links'));
-    expect(tableNames, contains('calendar_connections'));
-  });
+  test(
+    'database schema starts at version 15 and creates core tables',
+    () async {
+      final database = DayweftDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      expect(database.schemaVersion, 15);
+
+      final tables = await database
+          .customSelect("SELECT name FROM sqlite_master WHERE type = 'table'")
+          .get();
+
+      final tableNames = tables.map((row) => row.read<String>('name'));
+      expect(tableNames, contains('day_plans'));
+      expect(tableNames, contains('user_preferences'));
+      expect(tableNames, contains('time_blocks'));
+      expect(tableNames, contains('tasks'));
+      expect(tableNames, contains('schedule_revisions'));
+      expect(tableNames, contains('sync_operations'));
+      expect(tableNames, contains('estimation_records'));
+      expect(tableNames, contains('energy_check_ins'));
+      expect(tableNames, contains('focus_sessions'));
+      expect(tableNames, contains('share_links'));
+      expect(tableNames, contains('calendar_connections'));
+    },
+  );
 
   test('version 5 preferences migrate without losing local choices', () async {
     final executor = NativeDatabase.memory(
@@ -76,7 +246,7 @@ void main() {
     final version = await database
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 9);
+    expect(version.read<int>('user_version'), 15);
     final legacy = await database
         .select(database.estimationRecords)
         .getSingle();
@@ -108,6 +278,8 @@ void main() {
           ),
         );
     for (final column in [
+      'cognitive_load',
+      'dependency_ids_json',
       'energy_required',
       'requested_day',
       'requested_start_time',
@@ -116,6 +288,10 @@ void main() {
     ]) {
       await previous.customStatement('ALTER TABLE tasks DROP COLUMN $column');
     }
+    await previous.customStatement('DROP TABLE focus_session_states');
+    await previous.customStatement('DROP TABLE saved_templates');
+    await previous.customStatement('DROP TABLE template_recurrences');
+    await removeTaskWindowColumns(previous);
     await previous.customStatement('PRAGMA user_version = 8');
     await previous.close();
     final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
@@ -134,4 +310,90 @@ void main() {
       contains('revision_undos'),
     );
   });
+
+  test(
+    'version 9 task details survive the cognitive-load/dependency upgrade',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('calm-time-v9-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final previous = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime.now();
+      await previous
+          .into(previous.tasks)
+          .insert(
+            TasksCompanion.insert(
+              id: 'v9-task',
+              title: 'Preserve existing details',
+              estimatedMinutes: 45,
+              priority: 'high',
+              status: 'inbox',
+              sortOrder: 0,
+              notes: const Value('Personal notes'),
+              energyRequired: const Value('low'),
+              syncState: SyncState.localOnly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await previous.customStatement(
+        'ALTER TABLE tasks DROP COLUMN cognitive_load',
+      );
+      await previous.customStatement(
+        'ALTER TABLE tasks DROP COLUMN dependency_ids_json',
+      );
+      await previous.customStatement('DROP TABLE focus_session_states');
+      await previous.customStatement('DROP TABLE saved_templates');
+      await previous.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(previous);
+      await previous.customStatement('PRAGMA user_version = 9');
+      await previous.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final task = await upgraded.select(upgraded.tasks).getSingle();
+      expect(task.title, 'Preserve existing details');
+      expect(task.notes, 'Personal notes');
+      expect(task.energyRequired, 'low');
+      expect(task.cognitiveLoad, isNull);
+      expect(task.dependencyIdsJson, '[]');
+      expect(task.localVersion, 1);
+    },
+  );
+
+  test(
+    'version 10 focus records survive durable-state table migration',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('dayweft-v10-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/migration.sqlite');
+      final previous = DayweftDatabase.forTesting(NativeDatabase(file));
+      final now = DateTime(2026, 10, 27);
+      await previous
+          .into(previous.focusSessions)
+          .insert(
+            FocusSessionsCompanion.insert(
+              id: 'legacy-focus',
+              title: 'Keep my record',
+              startedAt: now,
+              plannedMinutes: 25,
+              actualMinutes: const Value(10),
+              status: 'completed',
+              createdAt: now,
+            ),
+          );
+      await previous.customStatement('DROP TABLE focus_session_states');
+      await previous.customStatement('DROP TABLE saved_templates');
+      await previous.customStatement('DROP TABLE template_recurrences');
+      await removeTaskWindowColumns(previous);
+      await previous.customStatement('PRAGMA user_version = 10');
+      await previous.close();
+      final upgraded = DayweftDatabase.forTesting(NativeDatabase(file));
+      addTearDown(upgraded.close);
+      final session = await upgraded.select(upgraded.focusSessions).getSingle();
+      expect(session.actualMinutes, 10);
+      expect(session.title, 'Keep my record');
+      expect(await upgraded.select(upgraded.focusSessionStates).get(), isEmpty);
+      expect(upgraded.schemaVersion, 15);
+    },
+  );
 }

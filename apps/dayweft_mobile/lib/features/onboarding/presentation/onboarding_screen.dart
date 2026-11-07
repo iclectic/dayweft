@@ -53,7 +53,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     const headings = [
-      'Welcome to Calm Time',
+      'Welcome to Dayweft',
       'Your working pattern',
       'Your day boundaries',
       'Your planning preferences',

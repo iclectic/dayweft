@@ -1,6 +1,117 @@
-# Calm Time implementation status
+# Dayweft implementation status
 
-Initially checked on 24 October 2026; updated on 25 October 2026. This ledger distinguishes working local behaviours from partial surfaces and missing integrations. The baseline table below records the starting gaps; the completed changes section records subsequent progress. The historical phase summaries are not proof that a requirement is complete. The new Step 1 pack is provisional and does not supersede implemented behaviour without an explicit implementation decision.
+## Disruption-aware allocation proposal — 6 November 2026
+
+- Last completed slice: allocation proposals can account for an explicit unavailable interval, preserve fixed commitments and persist that interval with a validated draft. The controller/repository test confirms the interval changes fragment placement without changing the live plan.
+- Changed files: adaptive allocation generator/tests, planning controller/repository and their controller/draft tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed all tests (129 mobile, 34 domain, 25 engine, 2 design; mobile domain/application 97.2%, domain 94.1%, engine 92.7%). One engine lint notice from that run was fixed; engine formatting, analysis and focused proposal tests then passed with no issues.
+- Outstanding defects and unfinished requirements: this API is not yet connected to user-facing Reweave. Live fragment persistence, editing, deletion, display, import/export and atomic application/undo are not implemented; split applications remain rejected. Other release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: live fragment representation across task lifecycle and import/export, then explicit disruption-aware Reweave preview and atomic apply/undo with no-loss real-chain coverage.
+
+## Fragment protection checkpoint — 6 November 2026
+
+- Last completed slice: allocation validation protects fixed commitments, rejects overlapping blocks and reserves buffer time at block ends. The real SQLite draft-save path rejects an attempted move out of a fixed commitment without saving a draft or changing the task.
+- Changed files: domain allocation validator/tests, mobile allocation-draft repository test, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed (128 mobile, 34 domain, 23 engine and 2 design tests); after adding the repository-chain regression, `flutter test test/allocation_draft_test.dart` passed (2 tests). The full run preceded that test-only addition.
+- Outstanding defects and unfinished requirements: live fragments, UI, disruption-aware recovery, atomic apply/undo and import/export remain unimplemented. Block-end buffer reservation is conservative because individual buffer positions are not stored. Other 1.0 gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: implement live fragment representation across edits, completion, deletion, rendering and import/export, then integrate disruption-aware recovery and atomic apply/undo with real-chain no-loss tests.
+
+## Concrete allocation proposal checkpoint — 6 November 2026
+
+- Last completed slice: the engine can construct a deterministic concrete allocation proposal and the controller can preview it without altering the plan; the repository can save it as a validated draft. A real controller/repository test covers the path.
+- Changed files: adaptive-engine proposal/export/tests, mobile planning repository/controller and controller test, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting and `bash scripts/verify.sh` passed (128 mobile, 31 domain, 23 engine and 2 design tests; mobile domain/application 97.2%, domain 93.9%, engine 92.6%). Earlier engine lint notices were corrected before the final run.
+- Outstanding defects and unfinished requirements: this is not a Reweave alternative and does not account for a disruption. It is not connected to live task fragments, UI, import/export or undo; split application remains rejected. No proposal is not proof of infeasibility. Exact buffer placement is unknown, so block-end reservation is conservative. Other release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: represent live fragments safely across placement, deletion, rendering and import/export with forward migration, then integrate disruption-aware preview and atomic apply/undo with no-loss real-chain tests.
+
+## Fragment draft storage checkpoint — 6 November 2026
+
+- Last completed slice: schema v15 stores per-day allocation drafts separately from live task assignments. Writes validate complete allocations and check plan and draft versions atomically; reopening preserves the draft and flags it stale after plan or validation changes. A real-row v14 upgrade preserves existing task data.
+- Changed files: mobile database schema and regenerated Drift output, planning repository, migration and file-backed allocation-draft tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: generation, formatting, mobile analysis and focused migration/draft tests, then `bash scripts/verify.sh` (127 mobile, 31 domain, 17 engine and 2 design tests passed; mobile domain/application 97.2%, domain 93.9%, engine 91.7%).
+- Outstanding defects and unfinished requirements: drafts do not alter a live plan and are not exposed in the UI. Real split allocations, recovery preview/application, durable undo and import/export remain unimplemented; split suggestions continue to be rejected. Buffer positioning and other 1.0 gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: produce concrete recovery fragments and integrate validated atomic live allocation persistence and durable undo, including stale, partial-write, deletion, import/export and restart tests before exposing the feature.
+
+## Fragment validation foundation — 6 November 2026
+
+- Last completed slice: a pure Dart fragment model and complete-proposal validator checks identity, conservation of each planned task's estimate, split permissions, minimum durations, time bounds, capacity, overlap and predecessor order.
+- Changed files: `packages/dayweft_domain/lib/src/task_allocation.dart`, its export and tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: domain formatting, analysis and focused allocation tests; `bash scripts/verify.sh` passed (125 mobile, 31 domain, 17 engine and 2 design tests; all coverage gates passed).
+- Outstanding defects and unfinished requirements: fragment data has no storage, engine/controller integration, preview, UI, export or durable undo. Split proposals remain rejected. Buffer positions are not represented, so the validator checks buffer capacity only. All other 1.0 gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: implement forward-migrated fragment storage and atomic versioned persistence with real-row upgrade/reopen tests, then integrate validated preview/apply/undo before exposing the feature.
+
+## Task-window persistence checkpoint — 6 November 2026
+
+- Last completed slice: task earliest-start/latest-finish bounds can be edited and persist through schema v14, task revision/undo and day import/export. Reality Check and recovery receive stored bounds; a real-row v13 migration test preserves existing tasks with unset bounds.
+- Changed files: mobile database schema and regenerated Drift output, import validator, planning repository/revision comparison, task editor, migration/repository/controller/widget tests and task-editor goldens, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: `dart run build_runner build`, formatting, mobile analysis and focused tests; `flutter test --update-goldens test/task_editor_widget_test.dart` (light/dark fixtures visually inspected); final `bash scripts/verify.sh` passed (125 mobile, 26 domain, 17 engine and 2 design tests). Coverage: mobile domain/application 97.2%, domain 90.3%, engine 91.7%. The first full run stopped at formatting and the final rerun passed.
+- Outstanding defects and unfinished requirements: manual placement outside bounds is reported by Reality Check rather than blocked, while recovery rejects invalid candidates. The engine constrains the whole block, which may reject a feasible individual allocation. Persisted splits, comprehensive DST/device tests and all other release gates remain open; no device or TalkBack verification is claimed.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: persisted task fragment allocations with non-destructive migration, explicit preview, atomic apply/undo, minimum-fragment and dependency tests through the real controller/repository chain.
+
+## Task-window engine foundation — 6 November 2026
+
+- Last completed slice: optional hard earliest-start/latest-finish bounds in domain tasks and validation; Reality Check and recovery conservatively require a constrained task's containing block to fit its window. Bounds survive engine deferral and recovery proposal validation checks they were not changed.
+- Changed files: domain models/validation and tests; adaptive engine and regression tests; timeline observation icon and recovery proposal validation; `docs/ROADMAP.md` and this ledger.
+- Tests actually run: package analyses and tests, focused engine regression tests and `bash scripts/verify.sh` passed (121 mobile, 26 domain, 17 engine and 2 design tests; coverage gates passed). Root analysis initially reported a missing root lints include and the new enum switch case; the switch was corrected and package analyses passed. A first verification attempt stopped at formatting before the successful rerun.
+- Outstanding defects and unfinished requirements: users cannot yet set or persist these bounds; application mapping, import/export, migration, editor and end-to-end validation remain unimplemented. Whole-block enforcement can reject otherwise feasible placements without individual allocations. No device or live-backend verification is claimed.
+- Human action required: existing identity, upload signing, hosting, hardware and Play gates remain unchanged.
+- Exact next implementation task: non-destructive task-window migration and repository mapping, revision/undo and import/export, followed by editor controls and real-chain tests.
+
+## Recurrence controls checkpoint — 6 November 2026
+
+- Last completed slice: the custom-template library offers weekly recurrence editing, optional date boundaries and exclusions, confirmed removal, and selected-day preview/application. Each application requires confirmation and uses durable undo; recurrence does not automatically alter plans.
+- Changed files: template library provider, picker, recurrence editor, `apps/dayweft_mobile/test/custom_templates_widget_test.dart`, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting, mobile analysis, focused widget tests and full `bash scripts/verify.sh` passed (121 mobile, 25 domain, 15 engine and 2 design tests). Coverage gates: mobile domain/application 96.9%, domain 90.2%, engine 90.2%. A first full run exposed a test-only semantics-handle cleanup error, fixed before the final run. Automated coverage includes cancellation, exclusion, confirmed removal, stale rule, undo and narrow dark 200% text/touch targets.
+- Outstanding defects and unfinished requirements: no device/TalkBack or visual screenshot verification is claimed; day export is not a full backup and excludes recurrence. Automatic application, hard task windows, persisted splits, native/cloud integrations and release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play requirements remain unchanged.
+- Exact next implementation task: hard earliest/latest task windows across validation, persistence, editing and scheduling, with a non-destructive migration and real repository/controller regression tests.
+
+## Recurrence occurrence checkpoint — 6 November 2026
+
+- Last completed slice: selected-date recurrence preview and atomic application through the real planning controller/repository, using existing conflict reconciliation, source identity duplicate protection and durable revision/undo. Rule, template and plan versions are checked before writes.
+- Changed files: planning repository/controller, `apps/dayweft_mobile/test/recurring_template_application_test.dart`, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: formatting, mobile `flutter analyze`, focused occurrence tests and full `bash scripts/verify.sh` passed (117 mobile, 25 domain, 15 engine and 2 design tests). Coverage gates: mobile domain/application 96.8%, domain 90.2%, engine 90.2%. File-backed reopen/undo, excluded dates, stale rules/dates, duplicate prevention, existing commitments and an overnight occurrence were exercised.
+- Outstanding defects and unfinished requirements: no recurrence editor, exception controls or user-facing occurrence entry exists yet; no automatic application occurs. The full product and release gates remain open.
+- Human action required: existing identity, upload signing, service ownership, hardware and Play gates remain unchanged.
+- Exact next implementation task: add accessible weekly-rule and exception controls plus reviewed selected-date application; verify cancellation, stale/error handling and large-text UI through the real controller.
+
+## Recurrence storage checkpoint — 6 November 2026
+
+- Last completed slice: schema v13 adds a local recurrence table. Rules, civil-date exceptions and versioned removal survive a database reopen; writes reject stale rule and template versions. A real-row v12 upgrade retains existing template data.
+- Changed files: `apps/dayweft_mobile/lib/core/database/dayweft_database.dart` and regenerated Drift output, recurrence repository and migration/repository tests, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: `dart run build_runner build`, formatting, mobile `flutter analyze`, focused migration and recurrence repository tests (10 passed), and `bash scripts/verify.sh` (114 mobile, 25 domain, 15 engine and 2 design tests passed). Coverage gates: mobile domain/application 96.8%, domain 90.2%, engine 90.2%.
+- Outstanding defects and unfinished requirements: no recurrence UI or occurrence preview/application/undo exists yet; stored rules do not change any plans. Complete backups, native integrations, hosted services and release gates remain open.
+- Human action required: existing identity, upload signing, hosting, hardware and Play requirements remain unchanged.
+- Exact next implementation task: connect selected-date occurrence preview and atomic version-checked application/undo, covering stale rules, duplicates and overnight schedules before exposing recurrence controls.
+
+## Recurrence foundation — 6 November 2026
+
+- Last completed slice: a pure Dart weekly civil-date rule with inclusive start/end dates, excluded dates and validation. It is not yet connected to the application.
+- Changed files: `packages/dayweft_domain/lib/dayweft_domain.dart`, `packages/dayweft_domain/lib/src/template_recurrence.dart`, `packages/dayweft_domain/test/template_recurrence_test.dart`, `docs/ROADMAP.md` and this ledger.
+- Tests actually run: `dart format lib/dayweft_domain.dart lib/src/template_recurrence.dart test/template_recurrence_test.dart`, `dart analyze` and `dart test` in `packages/dayweft_domain`; all 25 tests passed.
+- Outstanding defects and unfinished requirements: recurrence has no persistence, exception controls, occurrence identity, preview/application integration or durable undo yet. Other 1.0 gaps and release gates remain open.
+- Human action required: existing identity, signing, hosting, device and Play gates remain unchanged.
+- Exact next implementation task: persist versioned recurrence rules and exceptions with a non-destructive migration and real-row upgrade coverage, then connect reviewed occurrence application to existing revision/undo safeguards.
+
+## Continuation checkpoint — 6 November 2026
+
+- Last completed slice: CI reads the repository Flutter pin and invokes `scripts/verify.sh` for lockfile enforcement, generated-code drift, analysis, tests and coverage. Its GitHub token is read-only. Android and iOS simulator build steps remain in the workflow.
+- Changed files: `.github/workflows/ci.yml`, `docs/DEVELOPMENT.md`, `docs/ROADMAP.md`, `docs/audit/release-blockers.md` and this ledger.
+- Tests actually run: `bash scripts/verify.sh` passed all checks and suites; coverage was 96.8% mobile domain/application, 89.5% domain and 90.2% engine. No new device or live-backend test was performed.
+- Outstanding defects: the workflow's keyword search is not a real secret scanner; hosted Actions execution and release-bundle validation remain unverified. The existing Kotlin warning and calendar/share scaffolds remain.
+- Unfinished requirements: recurrence, scheduling constraints and persisted splits, native integrations, cloud and hosted sharing, and the remaining quality and release gates remain open.
+- Human action required: owner decisions and access for identity, signing, services, privacy/support, hardware testing and Play remain outstanding.
+- Exact next implementation task: recurring-template rules and exceptions with stable occurrence identities, reviewed version-checked application and durable undo, protected by migration and civil-time regression tests.
+
+Current product identity is **Dayweft**. The historical sections below retain earlier decisions and results; the 29 October continuation checkpoint at the end supersedes outdated gap/count statements. See [ROADMAP](ROADMAP.md) for the active execution ledger.
+
+Initially checked on 24 October 2026; updated on 26 October 2026. This ledger distinguishes working local behaviours from partial surfaces and missing integrations. The baseline table below records the starting gaps; the completed changes section records subsequent progress. The historical phase summaries are not proof that a requirement is complete. The Step 1 pack's consequential redesign proposals remain provisional; the user authorised continuation on the existing architecture and branch.
 
 ## Baseline validation
 
@@ -38,18 +149,51 @@ Initially checked on 24 October 2026; updated on 25 October 2026. This ledger di
 - Recovery application rejects stale previews, fixed-event changes, unresolved hard observations and unallocated splits. This guard is not a complete solver implementation; persisted splits and all scheduling constraints remain unfinished.
 - Manual actual-duration entry never substitutes the estimate as a measurement. Overall median comparisons require 12 eligible measured records and show empirical middle-half spread, not a probability. Category/context modelling is available in pure Dart; richer cohort UI and focus linkage remain missing.
 - Measurements have provenance; legacy records of unknown origin are excluded from calibration. Individual records can be excluded or deleted. Energy collection defaults to disabled, can be disabled again and is hidden from current summaries when disabled. Deleting learning history removes stored learning rows. Energy-aware scheduling remains missing.
-- Database schema is now v9, with v5 preference/legacy-evidence and v8 task-preservation upgrade tests. An onboarding golden and large-text touch-target/journey checks cover the current local surfaces.
+- Database schema is now v10, with v5 preference/legacy-evidence, v8 capture-field and v9 task-detail upgrade tests. Cognitive load and predecessor IDs are stored locally; old rows receive nullable/empty defaults.
+- Today and Inbox share task editing, deletion, return-to-Inbox, explicit move menus and drag-to-block placement. Edits include estimate, priority, category, notes, deadline, energy/load and split policy. Dependency validation rejects missing/self/duplicate/cyclic links. Deleting an active predecessor is blocked.
+- Task and block writes increment local versions. Editors reject stale versions, and new edit revisions retain before/after values. Undo restores attributes and placement; deletion snackbar undo names its revision and cannot undo a later unrelated change. Supported history remains after repository recreation.
+- Block editing exposes category and internal travel/preparation/transition/recovery buffers, with explicit next-day end times. Timeline capture uses the same parsed-value confirmation as Inbox. Unscheduled/deferred work remains visible. Local import preserves task constraints and remaps dependency identities.
+- Reality Check now checks all overlapping pairs, aggregate sequential task demand, invalid identities/references/durations/buffers and flexible work outside working hours. Utilisation uses clipped union occupancy and does not double-count internal buffers.
+- Recovery accounts for entered unavailable minutes, checks resulting candidates before returning them, and returns no applicable option for unresolved fixed conflicts or unsupported splits. Application cross-checks preview identities, stored estimates/dependencies and change-list times. Explanations describe user-estimate evidence rather than confidence percentages. Solving runs in a worker isolate.
 
 ## Validation and release limits
 
 - Current SDK: Flutter 3.47.8 stable / Dart 3.13.7.
-- Mobile: 34 tests pass, including widget/golden/accessibility smoke and SQLite upgrade tests. Shared domain: 12 tests pass. Adaptive engine: 7 tests pass, including the final completed-dependency guard. Flutter/shared-domain analysis and formatting pass.
-- Measured shared-domain line coverage: 125/152 (82.2%). Measured mobile application-layer line coverage: 18/107 (16.8%). **The required 80% coverage across domain/application layers has not been achieved.** Generated and presentation code are not used to inflate that metric.
-- Android debug APK builds successfully. The build warns about AGP 8.11.1 and Kotlin 2.2.20 approaching unsupported status; compatible upgrades remain pending. No iOS build, signing, store submission or real-device accessibility/performance validation is claimed.
+- Mobile: 59 tests pass, including controller-to-SQLite journeys, task/block editing, gesture placement, confirmation/cancellation, revision comparisons, stale proposals, migration and large-text checks. Shared domain: 15 tests pass. Adaptive engine: 15 tests pass, including independent pair checks across 100 seeded cases and the earlier 25-case invariant fixture. Design-system baseline: 2 tests pass.
+- Measured shared-domain line coverage: 144/171 (84.2%); engine: 405/449 (90.2%). Mobile domain/application coverage is 100% in the latest LCOV. CI now enforces a separate 80% gate for each group; generated and presentation code are excluded. Coverage does not establish completion of missing features.
+- Android debug APK and unsigned iOS simulator builds succeed. Flutter upgraded iOS integration to an iOS 15 minimum with a generated Swift package; the remaining CocoaPods integration builds successfully. Android still warns about Gradle 8.14.0, AGP 8.11.1 and Kotlin 2.2.20 approaching unsupported status; compatible upgrades remain pending. No signing, store submission or real-device accessibility/performance validation is claimed.
+- New task-editor light/dark goldens were inspected as layout regressions; they use Flutter's test font and are not store screenshots. No browser or real-device UI verification is claimed. The CI workflow changes have been checked locally but have not yet run on GitHub.
 - Supabase, public sharing, native calendar import, background focus surfaces and other baseline gaps remain unfinished. This is a draft implementation PR, not a production-ready release.
+- Timeline date navigation, permitted-window editing, a whole-day original-plan baseline, complete cross-day history, native capture, real routine reconciliation and durable focus still need implementation. The recovery algorithm remains a conservative reflow with validation, not the complete bounded-search solver or a proof of infeasibility; energy/new-urgent-work input, persisted split allocations and decision learning remain unfinished.
 
 ## Remaining execution order
 
 Continue in the supplied vertical-slice order, hardening existing local behaviour rather than re-scaffolding. Each slice requires persistence, meaningful tests, offline/error/accessibility states and documentation. No work is complete merely because a route, table, dependency or document exists.
 
 Unconfigured Supabase resources, verified public domain, developer accounts/signing and reference-source access are external inputs. Implement and validate everything independent of those inputs; record exact remaining deployment/device gates instead of claiming production readiness.
+
+## Dayweft continuation checkpoint — 27 October 2026
+
+- Last completed slices: baseline audit documents; date-scoped local planning; five safe starter-template previews/application; strict previewed single-day import; durable local Focus state and measured task completion; Android build/signing guards. Whole directive phases remain IN PROGRESS.
+- Changed files: `AGENTS.md`, `.flutter-version`, `.gitleaks.toml`, `scripts/`, `docs/audit/`, `docs/ROADMAP.md`, development/dependency/release/security records, README/CHANGELOG, mobile clock/configuration/database/controller/repository, template/import/focus/date presentation and regression tests, domain template reconciliation, package locks and Android configuration/native clock adapter. Generated Drift code was regenerated, not edited by hand.
+- Tests actually run: `bash scripts/verify.sh` passed locked resolution, generation-drift, formatting, analysis and all four suites: mobile 81, domain 19, engine 15, design system 2. Coverage: mobile domain/application 94.7%, domain 88.6%, engine 90.2%. `flutter build apk --debug` passed. The release script correctly refused an unconfigured upload key. Gitleaks worktree/history scans and OSV checks of 165 locked package versions found no matches.
+- SQLite schema is v11. Upgrade fixtures preserve existing rows through v5, v8, v9 and v10. Durable Focus stores monotonic anchors and excludes unknown reboot time; iOS/other fallback references require review across process restart. No real device lifecycle result is claimed.
+- Outstanding defects/limits: application still uses legacy Kotlin plugin compatibility; CI pin/real-scan integration is pending; native calendar and sharing controls remain scaffolds. Existing test helpers can emit Drift's multiple-database warning when intentionally opening independent databases; production uses one provider-owned connection.
+- Unfinished requirements: custom/recurring templates, hard task windows and persisted split allocations, complete backups, onboarding draft recovery, richer insights/settings/localisation, native notifications/calendar/capture, optional auth/sync/account deletion, secured hosted sharing, biometric lock and release assets/device/performance/accessibility checks.
+- Human action required: confirm Android ID, configure protected upload signing, provide live cloud/HTTPS host and policy/support details, perform named-device exercises and owner-controlled Play testing/approval. No production-ready, signed-release or published status is claimed.
+- Exact next task: add widget/integration coverage for date selection, template-selection/error paths and import confirmation; exercise the Android Focus native clock through lock/background/kill/reboot, then continue permitted-window and custom-template persistence.
+- Review/verification detail: [executed evidence](audit/verification-2026-10-27.md). Do not reset user data, edit generated files manually or activate production services as a shortcut.
+
+## Dayweft continuation checkpoint — 29 October 2026
+
+- Last completed slice: custom-template library in Phase 7, with workflow regression coverage and native Focus lifecycle probes. Recurrence and whole-phase release acceptance remain unfinished.
+- Changed files: custom-template repository/Riverpod controller/editor and picker; planning template resolution/application; domain template identities/buffers/validation; schema v12 and regenerated Drift code; migration, file/repository/controller/widget tests and two light/dark goldens; native Focus integration test/driver and SDK test-only dependency/lock; README, CHANGELOG, audit/data/testing/dependency/security/release docs and roadmap.
+- Working behaviour: create/edit/rename/duplicate custom patterns, save a reviewed day's block settings without task details/notes, edit all four buffers, preview selected blocks around existing work, confirm deletion and undo it after the library closes. Stable block IDs preserve duplicate protection through rename/removal; version checks reject old editors/previews after a source edit/deletion. Capacity and malformed-data failures preserve existing plans. A library refresh error no longer misreports an already-completed save as failed.
+- SQLite v12 adds `saved_templates` without changing existing tables. Historical v5/v8/v9/v10/v11 upgrades pass; the v11 file fixture retains saved Focus state, elapsed time and version. Template identity/buffers/tombstone restoration survive an actual file close/reopen. Single-day JSON export still excludes this library and remains explicitly short of a device backup.
+- Tests actually run/results: full `bash scripts/verify.sh` passed generation drift, format, analysis and 110 mobile + 21 domain + 15 engine + 2 design tests. Coverage: 96.8% mobile domain/application, 89.5% domain, 90.2% engine. Normal Android debug build passed. Editor goldens were visually inspected as test-font layout fixtures; narrow dark 200% text/buffer validation and automated target-size checks passed.
+- Native verification: disposable Android 36 ARM64 emulator exercised the actual Android boot-count/elapsed-time channel with file-backed SQLite. Same-boot process death recovered elapsed time; actual reboot preserved measured time and required review of unknown downtime; background/screen-off/force-stop recovery also passed. These probes do not certify the complete Focus UI, hardware power policies, timezone/clock changes, TalkBack or notifications. See [29 October evidence](audit/verification-2026-10-29.md).
+- Security: fresh Gitleaks worktree scan found no leaks. OSV returned no matches for `process` 5.0.6, `sync_http` 0.3.1 and `webdriver` 3.2.0, added only through Flutter's SDK integration-test dependency. No new runtime plugin, permission or remote initialisation was introduced. No new CI or live-backend verification is claimed.
+- Outstanding defects: existing legacy Kotlin-plugin warning and pending CI pin/scanner integration; remaining scaffold calendar/share controls. Sequential main-thread review fixed refresh-after-write failure reporting; no independent reviewer is claimed.
+- Unfinished requirements: recurring rules/exceptions, complete temporal task constraints/persisted splits, full backups, native integrations, optional cloud/security/privacy controls, full accessibility/localisation, genuine release assets/hardware performance and owner-controlled Play acceptance.
+- Human action required: final application identity and upload signing, cloud/HTTPS host configuration, privacy/support publication and review, hardware/manual journeys and actual Play track/tester/approval actions. No signed release, submission-ready, deployed or published status is claimed.
+- Exact next implementation task: recurring-template persistence and per-date exceptions, stable occurrence deduplication and selected-date preview/apply/undo, protected by civil weekday/overnight/stale and migration tests; then hard permitted windows and persisted task splits. Preserve user data and use forward migrations.

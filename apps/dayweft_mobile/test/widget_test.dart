@@ -4,6 +4,7 @@ import 'package:dayweft_mobile/core/database/dayweft_database.dart';
 import 'package:dayweft_mobile/features/planning/data/local_planning_repository.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -40,7 +41,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Welcome to Calm Time'), findsOneWidget);
+    expect(find.text('Welcome to Dayweft'), findsOneWidget);
     expect(find.text('Local first'), findsOneWidget);
     expect(find.text('Skip setup'), findsOneWidget);
   });
@@ -119,6 +120,21 @@ void main() {
   testWidgets('bottom navigation reaches Quiet Focus and Your Rhythm', (
     tester,
   ) async {
+    const channel = MethodChannel('app.dayweft/focus_time');
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      channel,
+      (_) async => {
+        'wallMilliseconds': DateTime(2026, 10, 27, 9).millisecondsSinceEpoch,
+        'elapsedMilliseconds': 100000,
+        'bootToken': 'test-boot',
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        channel,
+        null,
+      ),
+    );
     final database = DayweftDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     await LocalPlanningRepository(
@@ -136,6 +152,9 @@ void main() {
     await tester.tap(find.text('Focus'));
     await tester.pumpAndSettle();
     expect(find.text('Quiet Focus'), findsWidgets);
+    expect(find.text('Start session'), findsOneWidget);
+    await tester.tap(find.text('Start session'));
+    await tester.pumpAndSettle();
     expect(find.text('Log interruption (0)'), findsOneWidget);
 
     await tester.tap(find.text('Rhythm'));

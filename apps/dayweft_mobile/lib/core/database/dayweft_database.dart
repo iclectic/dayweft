@@ -98,6 +98,9 @@ class Tasks extends Table {
   TextColumn get title => text()();
   TextColumn get notes => text().nullable()();
   TextColumn get energyRequired => text().nullable()();
+  TextColumn get cognitiveLoad => text().nullable()();
+  TextColumn get dependencyIdsJson =>
+      text().withDefault(const Constant('[]'))();
   TextColumn get requestedDay => text().nullable()();
   TextColumn get requestedStartTime => text().nullable()();
   TextColumn get requestedEndTime => text().nullable()();
@@ -110,6 +113,8 @@ class Tasks extends Table {
   TextColumn get status => text()();
   TextColumn get sourceId => text().nullable()();
   DateTimeColumn get deadline => dateTime().nullable()();
+  DateTimeColumn get earliestStart => dateTime().nullable()();
+  DateTimeColumn get latestFinish => dateTime().nullable()();
   BoolColumn get canSplit => boolean().withDefault(const Constant(false))();
   IntColumn get minimumUsefulMinutes =>
       integer().withDefault(const Constant(15))();
@@ -220,6 +225,20 @@ class ShareLinks extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class FocusSessionStates extends Table {
+  TextColumn get sessionId => text().references(FocusSessions, #id)();
+  TextColumn get mode => text()();
+  IntColumn get elapsedMilliseconds =>
+      integer().withDefault(const Constant(0))();
+  IntColumn get anchorMilliseconds => integer().nullable()();
+  TextColumn get bootToken => text().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  IntColumn get estimateAtStart => integer().nullable()();
+  BoolColumn get active => boolean().withDefault(const Constant(true))();
+  @override
+  Set<Column<Object>> get primaryKey => {sessionId};
+}
+
 class CalendarConnections extends Table {
   TextColumn get id => text()();
   TextColumn get platform => text()();
@@ -229,6 +248,41 @@ class CalendarConnections extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+}
+
+class SavedTemplates extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get blocksJson => text()();
+  IntColumn get formatVersion => integer().withDefault(const Constant(1))();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class TemplateRecurrences extends Table {
+  TextColumn get templateId => text()();
+  TextColumn get ruleJson => text().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {templateId};
+}
+
+/// Drafts are separate from the live plan until allocation application exists.
+class AllocationDrafts extends Table {
+  TextColumn get dayPlanId => text().references(DayPlans, #id)();
+  IntColumn get planRevision => integer()();
+  IntColumn get version => integer()();
+  TextColumn get allocationsJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {dayPlanId};
 }
 
 @DriftDatabase(
@@ -243,8 +297,12 @@ class CalendarConnections extends Table {
     EstimationRecords,
     EnergyCheckIns,
     FocusSessions,
+    FocusSessionStates,
     ShareLinks,
     CalendarConnections,
+    SavedTemplates,
+    TemplateRecurrences,
+    AllocationDrafts,
   ],
 )
 class DayweftDatabase extends _$DayweftDatabase {
@@ -253,12 +311,15 @@ class DayweftDatabase extends _$DayweftDatabase {
   DayweftDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
-      onCreate: (migrator) => migrator.createAll(),
+      onCreate: (migrator) async {
+        await migrator.createAll();
+        await _focusIndex();
+      },
       onUpgrade: (migrator, from, to) async {
         if (from < 2) {
           await migrator.createTable(userPreferences);
@@ -331,9 +392,34 @@ class DayweftDatabase extends _$DayweftDatabase {
           await migrator.addColumn(tasks, tasks.requestedEndTime);
           await migrator.addColumn(tasks, tasks.approximateTime);
         }
+        if (from < 10) {
+          await migrator.addColumn(tasks, tasks.cognitiveLoad);
+          await migrator.addColumn(tasks, tasks.dependencyIdsJson);
+        }
+        if (from < 11) {
+          await migrator.createTable(focusSessionStates);
+          await _focusIndex();
+        }
+        if (from < 12) {
+          await migrator.createTable(savedTemplates);
+        }
+        if (from < 13) {
+          await migrator.createTable(templateRecurrences);
+        }
+        if (from < 14) {
+          await migrator.addColumn(tasks, tasks.earliestStart);
+          await migrator.addColumn(tasks, tasks.latestFinish);
+        }
+        if (from < 15) {
+          await migrator.createTable(allocationDrafts);
+        }
       },
     );
   }
+
+  Future<void> _focusIndex() => customStatement(
+    'CREATE UNIQUE INDEX focus_one_active ON focus_session_states (active) WHERE active = 1',
+  );
 }
 
 LazyDatabase _openConnection() {

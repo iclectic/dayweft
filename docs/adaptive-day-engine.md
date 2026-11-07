@@ -4,6 +4,8 @@
 
 The Dayweft Adaptive Engine is a pure Dart scheduling package. It evaluates whether a plan still fits reality and generates explainable recovery alternatives while protecting user control.
 
+The Inputs, Outputs, Constraints and Invariants below describe the target contract. The implemented subset and its limits are recorded separately; the current reflow is not the complete bounded-search solver proposed in the Step 1 pack.
+
 ## Inputs
 
 - Planning day, timezone and locale calendar context.
@@ -70,7 +72,9 @@ Reduce Pressure preserves commitments and recovery time, defers optional or lowe
 
 The current pure Dart package implements the first explainable rule set:
 
-- overlap detection;
+- all-pair overlap detection, including nested reservations;
+- invalid identity/reference/duration/buffer and working-window observations;
+- aggregate sequential task-capacity checks;
 - excessive planned-utilisation observations;
 - insufficient transition observations;
 - missing-break observations for heavily scheduled days;
@@ -81,13 +85,15 @@ The current pure Dart package implements the first explainable rule set:
 - generation of Protect Essentials, Balanced Reweave and Reduce Pressure alternatives;
 - protected fixed-commitment IDs;
 - lower-priority task deferral previews;
-- split-capable oversized task recommendations;
+- rejection of applicable candidates requiring unallocated split fragments;
 - flexible-block reflow around protected fixed commitments;
 - explicit travel/preparation/transition/recovery buffers from local storage;
 - user-controlled break, contingency and transition thresholds;
-- trade-offs and confidence derived from observed constraints.
+- entered unavailable-time intervals that constrain flexible reflow;
+- independent Reality Check validation of every returned candidate;
+- trade-offs and explicit user-estimate evidence explanations; the former numerical confidence field has been removed from the internal API.
 
-The mobile app applies only confirmed deferrals and flexible-block movement from these alternatives and records them as reversible local revisions. Persisted split fragments and richer permitted-window editing remain planned Phase 4 depth.
+The mobile app solves in a worker isolate, applies only confirmed deferrals and flexible-block movement, checks proposal identities/estimates against stored data, and records reversible local revisions. No valid candidate means no schedule change; it is not a proof that every possible schedule is infeasible. Persisted split fragments, permitted windows, comprehensive disruption/energy inputs and decision learning remain planned.
 
 ## Learning Model
 
